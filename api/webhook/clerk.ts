@@ -1,36 +1,34 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Client } from 'pg';
-import crypto from 'crypto';
+import { Webhook, type WebhookRequiredHeaders } from 'svix';
 
-// Ensure this matches your Clerk webhook secret
-const CLERK_WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET!;
 const DATABASE_URL = process.env.DATABASE_URL!;
+const CLERK_WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET!;
 
 const client = new Client({ connectionString: DATABASE_URL });
 client.connect();
 
-function verifyClerkSignature(req: VercelRequest) {
-  const signature = req.headers['clerk-signature'] as string;
-  const payload = JSON.stringify(req.body);
-
-  if (!signature) return false;
-
-  const expectedSignature = crypto
-    .createHmac('sha256', CLERK_WEBHOOK_SECRET)
-    .update(payload)
-    .digest('hex');
-
-  return signature === expectedSignature;
-}
+// Initialize Svix Webhook verifier
+const wh = new Webhook(CLERK_WEBHOOK_SECRET);
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
-  if (!verifyClerkSignature(req)) {
+  const headers: WebhookRequiredHeaders = {
+    'svix-id': req.headers['svix-id'] as string,
+    'svix-signature': req.headers['svix-signature'] as string,
+    'svix-timestamp': req.headers['svix-timestamp'] as string,
+  };
+
+  let event: any;
+
+  try {
+    // Svix verifies the signature and returns the parsed event
+    event = wh.verify(req.body, headers);
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err);
     return res.status(401).send('Unauthorized');
   }
-
-  const event = req.body;
 
   try {
     switch (event.type) {
