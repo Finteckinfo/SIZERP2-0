@@ -15,6 +15,8 @@
     "deploy": "touch dist/.nojekyll && gh-pages -d dist --dotfiles"
   },
   "dependencies": {
+    "@clerk/clerk-js": "^5.82.0",
+    "@clerk/vue": "^1.10.0",
     "@mdi/js": "^7.4.47",
     "@tsconfig/node22": "^22.0.0",
     "@typescript-eslint/parser": "^8.19.0",

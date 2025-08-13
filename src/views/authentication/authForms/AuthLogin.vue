@@ -1,33 +1,70 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from "vue";
 import Google from '@/assets/images/auth/social-google.svg';
-import { useAuthStore } from '@/stores/auth';
-import { Form } from 'vee-validate';
+import { useSignIn, useClerk } from "@clerk/vue";
 
-const checkbox = ref(false);
-const valid = ref(false);
-const show1 = ref(false);
-//const logform = ref();
-const password = ref('admin123');
-const username = ref('info@codedthemes.com');
-const passwordRules = ref([
-  (v: string) => !!v || 'Password is required',
-  (v: string) => (v && v.length <= 10) || 'Password must be less than 10 characters'
+const email = ref('');
+const password = ref('');
+const loading = ref(false);
+const errorMsg = ref('');
+const showPassword = ref(false);
+
+const emailRules = ref([
+  (v: string) => !!v || 'E-mail is required',
+  (v: string) => /.+@.+\..+/.test(v) || 'E-mail must be valid'
 ]);
-const emailRules = ref([(v: string) => !!v || 'E-mail is required', (v: string) => /.+@.+\..+/.test(v) || 'E-mail must be valid']);
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-function validate(values: any, { setErrors }: any) {
-  const authStore = useAuthStore();
-  return authStore.login(username.value, password.value).catch((error) => setErrors({ apiError: error }));
+const passwordRules = ref([
+  (v: string) => !!v || 'Password is required'
+]);
+
+const { signIn, isLoaded } = useSignIn();
+const clerkRef = useClerk();
+
+async function handleLogin() {
+  if (!isLoaded.value || !signIn.value) {
+    errorMsg.value = "Sign-in service not ready.";
+    return;
+  }
+
+  try {
+    loading.value = true;
+    const result = await signIn.value.create({
+      identifier: email.value,
+      password: password.value,
+    });
+
+    if (result.status === "complete") {
+      const setActive = clerkRef.value?.setActive;
+      if (setActive) {
+        await setActive({ session: result.createdSessionId! });
+      }
+      window.location.href = "/";
+    }
+  } catch (err: any) {
+    errorMsg.value = err.errors?.[0]?.message || "Login failed.";
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function handleGoogleLogin() {
+  if (!isLoaded.value || !signIn.value) return;
+
+  await signIn.value.authenticateWithRedirect({
+    strategy: "oauth_google",
+    redirectUrl: "/sso-callback",
+    redirectUrlComplete: "/",
+  });
 }
 </script>
 
 <template>
-  <v-btn block color="primary" variant="outlined" class="text-lightText googleBtn">
+  <v-btn block color="primary" variant="outlined" class="text-lightText googleBtn" @click="handleGoogleLogin">
     <img :src="Google" alt="google" />
-    <span class="ml-2">Sign in with Google</span></v-btn
-  >
+    <span class="ml-2">Sign in with Google</span>
+  </v-btn>
+
   <v-row>
     <v-col class="d-flex align-center">
       <v-divider class="custom-devider" />
@@ -35,19 +72,22 @@ function validate(values: any, { setErrors }: any) {
       <v-divider class="custom-devider" />
     </v-col>
   </v-row>
+
   <h5 class="text-h5 text-center my-4 mb-8">Sign in with Email address</h5>
-  <Form @submit="validate" class="mt-7 loginForm" v-slot="{ errors, isSubmitting }">
+
+  <v-form lazy-validation class="mt-7 loginForm">
     <v-text-field
-      v-model="username"
+      v-model="email"
       :rules="emailRules"
       label="Email Address / Username"
-      class="mt-4 mb-8"
+      class="mt-4 mb-4"
       required
       density="comfortable"
       hide-details="auto"
       variant="outlined"
       color="primary"
-    ></v-text-field>
+    />
+
     <v-text-field
       v-model="password"
       :rules="passwordRules"
@@ -57,38 +97,33 @@ function validate(values: any, { setErrors }: any) {
       variant="outlined"
       color="primary"
       hide-details="auto"
-      :append-icon="show1 ? '$eye' : '$eyeOff'"
-      :type="show1 ? 'text' : 'password'"
-      @click:append="show1 = !show1"
+      :append-icon="showPassword ? '$eye' : '$eyeOff'"
+      :type="showPassword ? 'text' : 'password'"
+      @click:append="showPassword = !showPassword"
       class="pwdInput"
-    ></v-text-field>
+    />
 
-    <div class="d-sm-flex align-center mt-2 mb-7 mb-sm-0">
-      <v-checkbox
-        v-model="checkbox"
-        :rules="[(v: any) => !!v || 'You must agree to continue!']"
-        label="Remember me?"
-        required
-        color="primary"
-        class="ms-n2"
-        hide-details
-      ></v-checkbox>
-      <div class="ml-auto">
-        <a href="javascript:void(0)" class="text-primary text-decoration-none">Forgot password?</a>
-      </div>
-    </div>
-    <v-btn color="secondary" :loading="isSubmitting" block class="mt-2" variant="flat" size="large" :disabled="valid" type="submit">
-      Sign In</v-btn
+    <v-btn
+      color="secondary"
+      block
+      class="mt-4"
+      variant="flat"
+      size="large"
+      @click="handleLogin"
+      :disabled="loading"
     >
-    <div v-if="errors.apiError" class="mt-2">
-      <v-alert color="error">{{ errors.apiError }}</v-alert>
-    </div>
-  </Form>
+      {{ loading ? "Logging in..." : "Login" }}
+    </v-btn>
+
+    <p v-if="errorMsg" class="mt-4 text-red-500">{{ errorMsg }}</p>
+  </v-form>
+
   <div class="mt-5 text-right">
     <v-divider />
-    <v-btn variant="plain" to="/register" class="mt-2 text-capitalize mr-n2">Don't Have an account?</v-btn>
+    <v-btn variant="plain" to="/register" class="mt-2 text-capitalize mr-n2">Don't have an account?</v-btn>
   </div>
 </template>
+
 <style lang="scss">
 .custom-devider {
   border-color: rgba(0, 0, 0, 0.08) !important;
@@ -96,10 +131,6 @@ function validate(values: any, { setErrors }: any) {
 .googleBtn {
   border-color: rgba(0, 0, 0, 0.08);
   margin: 30px 0 20px 0;
-}
-.outlinedInput .v-field {
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: none;
 }
 .orbtn {
   padding: 2px 40px;
@@ -113,11 +144,6 @@ function validate(values: any, { setErrors }: any) {
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
-  }
-}
-.loginForm {
-  .v-text-field .v-field--active input {
-    font-weight: 500;
   }
 }
 </style>
