@@ -9,12 +9,16 @@ import { PerfectScrollbarPlugin } from 'vue3-perfect-scrollbar';
 import VueApexCharts from 'vue3-apexcharts';
 import VueTablerIcons from 'vue-tabler-icons';
 import print from 'vue3-print-nb';
-
 import { clerkPlugin } from '@clerk/vue';
+
+import WalletService from '@/services/wallet.js'; // our wrapper service
 
 const app = createApp(App);
 
-// fakeBackend(); // remove this
+// Clerk
+app.use(clerkPlugin, {
+  publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+});
 
 app.use(router);
 app.use(PerfectScrollbarPlugin);
@@ -23,9 +27,7 @@ app.use(VueTablerIcons);
 app.use(print);
 app.use(VueApexCharts);
 
-// ✅ Add Clerk plugin
-app.use(clerkPlugin, {
-  publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY, // set in .env
-});
+// provide wallet instance to components
+app.provide('wallet', WalletService);
 
 app.use(vuetify).mount('#app');
