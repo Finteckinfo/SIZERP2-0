@@ -3,16 +3,25 @@ import { ref } from 'vue';
 import axios from 'axios';
 import { useUser } from '@clerk/vue';
 import { connectedWallet, isWalletModalOpen } from '@/stores/walletStore';
+import { useWalletStore } from '@/lib/walletManager';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const manualWallet = ref({ address: '', secret: '' });
 const { user } = useUser();
 
-interface WalletOption { name: string; img: string; }
+const walletStore = useWalletStore();
+const { activeAccount, wallets: walletProviders } = walletStore;
+
+interface WalletOption {
+  id: string;
+  name: string;
+  img: string;
+}
+
 const walletOptions: WalletOption[] = [
-  { name: 'Defly', img: '/src/assets/images/wallets/defly.png' },
-  { name: 'Pera', img: '/src/assets/images/wallets/pera.png' },
-  { name: 'WalletConnect', img: '/src/assets/images/wallets/walletconnect.png' },
+  { id: 'defly', name: 'Defly', img: '/src/assets/images/wallets/defly.png' },
+  { id: 'pera', name: 'Pera', img: '/src/assets/images/wallets/pera.png' },
+  { id: 'walletconnect', name: 'WalletConnect', img: '/src/assets/images/wallets/walletconnect.png' },
 ];
 
 async function syncWallet(walletAddress: string) {
@@ -38,9 +47,31 @@ async function connectManualWallet() {
   await syncWallet(manualWallet.value.address);
 }
 
-async function connectProviderWallet(walletName: string) {
-  const fakeAddress = 'ALG-' + Math.random().toString(36).substring(2, 10);
-  await syncWallet(fakeAddress);
+async function connectProviderWallet(walletId: string) {
+  try {
+    const provider = walletProviders.value.find(
+      p => p.id.toLowerCase() === walletId.toLowerCase()
+    );
+    if (!provider) {
+      throw new Error(`Wallet "${walletId}" not found`);
+    }
+
+    await provider.connect(); // triggers the wallet connection UI
+
+    if (activeAccount.value) {
+      await syncWallet(activeAccount.value.address);
+    } else {
+      alert('No account returned from wallet.');
+    }
+  } catch (e) {
+    if (e instanceof Error) {
+      console.error(e);
+      alert(`Failed to connect to wallet: ${e.message}`);
+    } else {
+      console.error(e);
+      alert('An unknown error occurred while connecting to the wallet.');
+    }
+  }
 }
 </script>
 
@@ -88,9 +119,9 @@ async function connectProviderWallet(walletName: string) {
           <v-list>
             <v-list-item
               v-for="wallet in walletOptions"
-              :key="wallet.name"
+              :key="wallet.id"
               class="wallet-option"
-              @click="connectProviderWallet(wallet.name)"
+              @click="connectProviderWallet(wallet.id)"
             >
               <v-list-item-avatar size="40">
                 <v-img :src="wallet.img" alt="wallet logo" />
