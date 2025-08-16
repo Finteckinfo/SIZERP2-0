@@ -1,85 +1,59 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import axios from 'axios';
-import { useUser } from '@clerk/vue';
-import { connectedWallet, isWalletModalOpen } from '@/stores/walletStore';
-import { useWalletStore } from '@/lib/walletManager';
+import type { SupportedWallet } from '@txnlab/use-wallet-vue'; // ✅ type-only import
+import { WalletId, useWallet } from '@txnlab/use-wallet-vue';
+import { wallets as rawWallets, activeAccount, addManualWallet } from '@/lib/walletManager';
+import { isWalletModalOpen as storeWalletModalOpen } from '@/stores/walletStore';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const manualWallet = ref({ address: '', secret: '' });
-const { user } = useUser();
+// Refs
+const isWalletModalOpen = storeWalletModalOpen; // boolean ref
+const showDisconnectConfirm = ref(false);
 
-const walletStore = useWalletStore();
-const { activeAccount, wallets: walletProviders } = walletStore;
+// Manual wallet
+const manualWallet = ref<{ address: string; secret: string }>({ address: '', secret: '' });
 
-interface WalletOption {
-  id: string;
-  name: string;
-  img: string;
+// Ensure wallets array has proper TS type
+const wallets: { id: WalletId; options?: any }[] = rawWallets.filter(
+  (w): w is { id: WalletId; options?: any } => 'id' in w
+);
+
+// Wallet provider
+const { connect, activeAccount: providerAccount } = useWallet() as any;
+
+// Connect manual wallet
+function connectManualWallet() {
+  if (!manualWallet.value.address) return alert('Enter wallet address!');
+  addManualWallet(manualWallet.value.address);
+  isWalletModalOpen.value = false;
 }
 
-const walletOptions: WalletOption[] = [
-  { id: 'defly', name: 'Defly', img: '/src/assets/images/wallets/defly.png' },
-  { id: 'pera', name: 'Pera', img: '/src/assets/images/wallets/pera.png' },
-  { id: 'walletconnect', name: 'WalletConnect', img: '/src/assets/images/wallets/walletconnect.png' },
-];
-
-async function syncWallet(walletAddress: string) {
+// Connect provider wallet
+async function connectProviderWallet(walletId: WalletId) {
   try {
-    const res = await axios.post(`${BACKEND_URL}/api/user/wallet`, {
-      userId: user.value?.id,
-      walletAddress,
-    });
-    connectedWallet.value = res.data.wallet;
-    isWalletModalOpen.value = false;
-    alert('Wallet connected and synced!');
-  } catch (err: any) {
-    console.error(err);
-    alert(err.response?.data?.error || 'Failed to connect wallet');
+    await connect(walletId);
+    if (providerAccount.value?.address) {
+      addManualWallet(providerAccount.value.address);
+      isWalletModalOpen.value = false;
+    } else {
+      alert('No accounts returned from wallet.');
+    }
+  } catch (e: any) {
+    alert(e.message || 'Wallet connection failed.');
   }
 }
 
-async function connectManualWallet() {
-  if (!manualWallet.value.address) {
-    alert('Please enter wallet address.');
-    return;
-  }
-  await syncWallet(manualWallet.value.address);
-}
-
-async function connectProviderWallet(walletId: string) {
-  try {
-    const provider = walletProviders.value.find(
-      p => p.id.toLowerCase() === walletId.toLowerCase()
-    );
-    if (!provider) {
-      throw new Error(`Wallet "${walletId}" not found`);
-    }
-
-    await provider.connect(); // triggers the wallet connection UI
-
-    if (activeAccount.value) {
-      await syncWallet(activeAccount.value.address);
-    } else {
-      alert('No account returned from wallet.');
-    }
-  } catch (e) {
-    if (e instanceof Error) {
-      console.error(e);
-      alert(`Failed to connect to wallet: ${e.message}`);
-    } else {
-      console.error(e);
-      alert('An unknown error occurred while connecting to the wallet.');
-    }
-  }
+// Disconnect wallet
+function disconnectWallet() {
+  activeAccount.value = null;
+  showDisconnectConfirm.value = false;
 }
 </script>
 
 <template>
-  <v-dialog v-model="isWalletModalOpen" max-width="500">
+  <v-dialog v-model="isWalletModalOpen.value" max-width="500">
     <v-card class="rounded-xl elevation-3">
       <v-card-title class="headline text-primary font-weight-bold">
-        Connect Your Wallet
+        Connect Wallet
       </v-card-title>
 
       <v-card-text>
@@ -87,26 +61,21 @@ async function connectProviderWallet(walletId: string) {
         <section class="mb-6">
           <h6 class="mb-2 text-subtitle-1 font-weight-medium">Manual Entry</h6>
           <v-text-field
-            v-model="manualWallet.address"
+            v-model="manualWallet.value.address"
             label="Wallet Address"
             outlined
             dense
             hide-details
           />
           <v-text-field
-            v-model="manualWallet.secret"
+            v-model="manualWallet.value.secret"
             label="Mnemonic / Secret"
             type="password"
             outlined
             dense
             hide-details
           />
-          <v-btn
-            color="primary"
-            class="mt-3"
-            block
-            @click="connectManualWallet"
-          >
+          <v-btn color="primary" class="mt-3" block @click="connectManualWallet">
             Connect Manual Wallet
           </v-btn>
         </section>
@@ -118,27 +87,34 @@ async function connectProviderWallet(walletId: string) {
           <h6 class="mb-3 text-subtitle-1 font-weight-medium">Wallet Providers</h6>
           <v-list>
             <v-list-item
-              v-for="wallet in walletOptions"
+              v-for="wallet in wallets"
               :key="wallet.id"
               class="wallet-option"
               @click="connectProviderWallet(wallet.id)"
             >
               <v-list-item-avatar size="40">
-                <v-img :src="wallet.img" alt="wallet logo" />
+                <v-img :src="`/src/assets/images/wallets/${wallet.id}.png`" alt="wallet logo" />
               </v-list-item-avatar>
-              <v-list-item-title class="font-weight-medium">
-                {{ wallet.name }}
-              </v-list-item-title>
+              <v-list-item-title class="font-weight-medium">{{ wallet.id }}</v-list-item-title>
             </v-list-item>
           </v-list>
         </section>
+
+        <!-- Disconnect confirm -->
+        <v-dialog v-model="showDisconnectConfirm.value" max-width="300">
+          <v-card class="rounded-lg">
+            <v-card-title class="headline">Disconnect Wallet?</v-card-title>
+            <v-card-actions>
+              <v-btn color="grey" @click="showDisconnectConfirm.value = false">Cancel</v-btn>
+              <v-btn color="red" @click="disconnectWallet">Disconnect</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-card-text>
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn variant="text" color="grey" @click="isWalletModalOpen = false">
-          Cancel
-        </v-btn>
+        <v-btn variant="text" color="grey" @click="isWalletModalOpen.value = false">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

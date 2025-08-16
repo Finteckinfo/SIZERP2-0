@@ -11,12 +11,33 @@ import print from 'vue3-print-nb';
 import VueApexCharts from 'vue3-apexcharts';
 import { clerkPlugin } from '@clerk/vue';
 
-import { WalletManagerPlugin, NetworkId } from '@txnlab/use-wallet-vue';
+import { WalletManagerPlugin } from '@txnlab/use-wallet-vue';
+import { wallets } from './lib/walletManager';
 
-import { wallets, networks } from './lib/walletManager';
+// Define networks with required properties
+const networks = {
+  mainnet: {
+    algod: {
+      server: 'https://mainnet-algorand.api.purestake.io/ps2',
+      port: '',
+      token: 'YOUR_ALGOD_TOKEN',
+      baseServer: 'https://mainnet-algorand.api.purestake.io/ps2'
+    },
+    indexer: {
+      server: 'https://mainnet-algorand.api.purestake.io/idx2',
+      port: '',
+      token: 'YOUR_INDEXER_TOKEN',
+      baseServer: 'https://mainnet-algorand.api.purestake.io/idx2'
+    }
+  }
+  // Add other networks as needed
+};
 
 const app = createApp(App);
-app.use(clerkPlugin, { publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY });
+
+app.use(clerkPlugin, {
+  publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+});
 app.use(router);
 app.use(PerfectScrollbarPlugin);
 app.use(createPinia());
@@ -24,10 +45,11 @@ app.use(VueTablerIcons);
 app.use(print);
 app.use(VueApexCharts);
 
+// ✅ Register Wallet Manager plugin
 app.use(WalletManagerPlugin, {
   wallets,
   networks,
-  defaultNetwork: NetworkId.MAINNET, // Now resolves correctly
+  defaultNetwork: 'mainnet'
 });
 
 app.use(vuetify).mount('#app');

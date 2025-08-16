@@ -1,10 +1,13 @@
-import { ref } from 'vue';
+// src/stores/walletStore.ts
+import { ref, type Ref } from 'vue';
 
-// Reactive state for wallet
-export const connectedWallet = ref('');
-export const isWalletModalOpen = ref(false);
+// Make sure TypeScript knows these are Refs
+export const connectedWallet: Ref<string> = ref('');
+export const isWalletModalOpen: Ref<boolean> = ref(false);
 
-// Function to open wallet modal
 export function openWalletModal() {
   isWalletModalOpen.value = true;
+}
+export function closeWalletModal() {
+  isWalletModalOpen.value = false;
 }

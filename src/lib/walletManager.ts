@@ -1,70 +1,47 @@
-import {
-  NetworkId,
-  WalletId,
-  type SupportedWallet,
-  type WalletConnectOptions,
-  useWallet
-} from '@txnlab/use-wallet-vue';
-import { GeneratedWalletProvider } from './GeneratedWalletProvider';
-import type { WalletAccount } from '@txnlab/use-wallet-vue';
+// src/lib/walletManager.ts
+import { ref } from 'vue';
+import { WalletId, NetworkId, type SupportedWallet } from '@txnlab/use-wallet-vue';
 
-const local = typeof window !== 'undefined' && localStorage.getItem('generated-wallet');
-const customGeneratedWallet: SupportedWallet[] = local
-  ? [
-      {
-        id: WalletId.CUSTOM,
-        options: {
-          provider: new GeneratedWalletProvider(JSON.parse(local) as WalletAccount),
-        },
-        metadata: {
-          name: 'Generated Wallet',
-          icon: '/algorand-logo.svg',
-        },
-      }
-    ]
-  : [];
+// Reactive store for manual wallet
+export const activeAccount = ref<{ address: string } | null>(null);
 
+// Wallets configuration (typed)
 export const wallets: SupportedWallet[] = [
-  { id: WalletId.PERA },
   { id: WalletId.DEFLY },
-  {
-    id: WalletId.LUTE,
-    options: { siteName: 'Sizland' },
-  },
+  { id: WalletId.PERA },
   {
     id: WalletId.WALLETCONNECT,
     options: {
-      projectId: 'ca6bb8f4043b588e05597964fc1bcbb7',
+      projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID as string,
       metadata: {
         name: 'Sizland',
-        description: 'SizLand ERP',
+        description: 'Vue dApp with Algorand WalletConnect',
         url: 'https://sizerp-2-0.vercel.app/',
-        icons: ['https://sizerp-2-0.vercel.app/favicon.svg'],
+        icons: ['https://sizerp-2-0.vercel.app/favicon.ico'],
       },
-    } satisfies WalletConnectOptions,
+    },
   },
-  ...customGeneratedWallet,
 ];
 
-export const networks = {
-  [NetworkId.TESTNET]: {
-    name: 'Testnet',
-    algod: { baseServer: 'https://testnet-api.algonode.cloud', port: '', token: '' },
-    indexer: { baseServer: 'https://testnet-idx.algonode.cloud', port: '', token: '' },
-    chainId: 'algorand:416001', // <-- CAIP-2 format
-  },
+// Networks configuration (typed)
+export const networks: Record<NetworkId, {
+  algod: { server: string; port: string };
+  indexer: { server: string; port: string };
+}> = {
   [NetworkId.MAINNET]: {
-    name: 'MainNet',
-    algod: { baseServer: 'https://mainnet-api.algonode.cloud', port: '', token: '' },
-    indexer: { baseServer: 'https://mainnet-idx.algonode.cloud', port: '', token: '' },
-    chainId: 'algorand:4160', // <-- CAIP-2 format
+    algod: { server: 'https://mainnet-api.algonode.cloud', port: '' },
+    indexer: { server: 'https://mainnet-idx.algonode.cloud', port: '' },
   },
+  [NetworkId.TESTNET]: {
+    algod: { server: 'https://testnet-api.algonode.cloud', port: '' },
+    indexer: { server: 'https://testnet-idx.algonode.cloud', port: '' },
+  },
+  [NetworkId.BETANET]: { algod: { server: '', port: '' }, indexer: { server: '', port: '' } },
+  [NetworkId.FNET]: { algod: { server: '', port: '' }, indexer: { server: '', port: '' } },
+  [NetworkId.LOCALNET]: { algod: { server: '', port: '' }, indexer: { server: '', port: '' } },
 };
 
-// WalletManager instance
-
-// Hook to use in components
-export function useWalletStore() {
-  
-  return useWallet();
+// Helper to manually add a wallet
+export function addManualWallet(address: string) {
+  activeAccount.value = { address };
 }
