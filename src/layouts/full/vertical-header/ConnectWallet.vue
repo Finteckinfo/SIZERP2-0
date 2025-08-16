@@ -14,7 +14,7 @@ const manualWallet = ref<{ address: string; secret: string }>({ address: '', sec
 
 // Ensure wallets array has proper TS type
 const wallets: { id: WalletId; options?: any }[] = rawWallets.filter(
-  (w): w is { id: WalletId; options?: any } => 'id' in w
+  (w): w is { id: WalletId; options?: any } => typeof w === 'object' && w !== null && 'id' in w
 );
 
 // Wallet provider
@@ -50,7 +50,7 @@ function disconnectWallet() {
 </script>
 
 <template>
-  <v-dialog v-model="isWalletModalOpen.value" max-width="500">
+  <v-dialog v-model="isWalletModalOpen" max-width="500">
     <v-card class="rounded-xl elevation-3">
       <v-card-title class="headline text-primary font-weight-bold">
         Connect Wallet
@@ -61,14 +61,14 @@ function disconnectWallet() {
         <section class="mb-6">
           <h6 class="mb-2 text-subtitle-1 font-weight-medium">Manual Entry</h6>
           <v-text-field
-            v-model="manualWallet.value.address"
+            v-model="manualWallet.address"
             label="Wallet Address"
             outlined
             dense
             hide-details
           />
           <v-text-field
-            v-model="manualWallet.value.secret"
+            v-model="manualWallet.secret"
             label="Mnemonic / Secret"
             type="password"
             outlined
@@ -101,11 +101,11 @@ function disconnectWallet() {
         </section>
 
         <!-- Disconnect confirm -->
-        <v-dialog v-model="showDisconnectConfirm.value" max-width="300">
+        <v-dialog v-model="showDisconnectConfirm" max-width="300">
           <v-card class="rounded-lg">
             <v-card-title class="headline">Disconnect Wallet?</v-card-title>
             <v-card-actions>
-              <v-btn color="grey" @click="showDisconnectConfirm.value = false">Cancel</v-btn>
+              <v-btn color="grey" @click="showDisconnectConfirm = false">Cancel</v-btn>
               <v-btn color="red" @click="disconnectWallet">Disconnect</v-btn>
             </v-card-actions>
           </v-card>
@@ -114,7 +114,7 @@ function disconnectWallet() {
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn variant="text" color="grey" @click="isWalletModalOpen.value = false">Close</v-btn>
+        <v-btn variant="text" color="grey" @click="isWalletModalOpen = false">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
