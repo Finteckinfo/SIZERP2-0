@@ -38,23 +38,26 @@ const API_BASE = import.meta.env.VITE_BACKEND_URL;
 const fetchDashboardStats = async () => {
   try {
     const response = await fetch(`${API_BASE}/api/dashboard/stats?userId=${user.value?.id}`);
-    if (!response.ok) throw new Error('Failed to fetch dashboard stats');
+    if (!response.ok) {
+      console.warn('Dashboard stats API not available, using default values');
+      return; // Use default values instead of throwing error
+    }
     const data = await response.json();
     
     // Transform API response to match our interface
     projectStats.value = {
-      totalProjects: data.totalProjects,
-      activeProjects: data.activeProjects,
-      completedProjects: data.totalProjects - data.activeProjects,
-      totalTasks: data.totalTasks,
-      completedTasks: data.completedTasks,
-      pendingTasks: data.totalTasks - data.completedTasks,
-      teamMembers: data.totalTeamMembers,
-      totalDepartments: data.totalProjects // Using projects as proxy for departments
+      totalProjects: data.totalProjects || 0,
+      activeProjects: data.activeProjects || 0,
+      completedProjects: (data.totalProjects || 0) - (data.activeProjects || 0),
+      totalTasks: data.totalTasks || 0,
+      completedTasks: data.completedTasks || 0,
+      pendingTasks: (data.totalTasks || 0) - (data.completedTasks || 0),
+      teamMembers: data.totalTeamMembers || 0,
+      totalDepartments: data.totalProjects || 0 // Using projects as proxy for departments
     };
   } catch (err) {
-    console.error('Error fetching dashboard stats:', err);
-    error.value = 'Failed to load dashboard statistics';
+    console.warn('Dashboard stats API error, using default values:', err);
+    // Don't set error, just use default values
   }
 };
 
@@ -62,7 +65,10 @@ const fetchDashboardStats = async () => {
 const fetchUserProjects = async () => {
   try {
     const response = await fetch(`${API_BASE}/api/user/projects?userId=${user.value?.id}`);
-    if (!response.ok) throw new Error('Failed to fetch user projects');
+    if (!response.ok) {
+      console.warn('User projects API not available, using empty array');
+      return; // Use empty array instead of throwing error
+    }
     const data = await response.json();
     
     // Transform API response to match our Project interface
@@ -78,8 +84,8 @@ const fetchUserProjects = async () => {
       completedTasks: project.completedTasks
     }));
   } catch (err) {
-    console.error('Error fetching user projects:', err);
-    error.value = 'Failed to load projects';
+    console.warn('User projects API error, using empty array:', err);
+    // Don't set error, just use empty array
   }
 };
 
@@ -87,7 +93,10 @@ const fetchUserProjects = async () => {
 const fetchRecentActivities = async () => {
   try {
     const response = await fetch(`${API_BASE}/api/user/activities?userId=${user.value?.id}&limit=10`);
-    if (!response.ok) throw new Error('Failed to fetch recent activities');
+    if (!response.ok) {
+      console.warn('Recent activities API not available, using empty array');
+      return; // Use empty array instead of throwing error
+    }
     const data = await response.json();
     
     // Transform API response to match our Activity interface
@@ -101,8 +110,8 @@ const fetchRecentActivities = async () => {
       user: activity.userName
     }));
   } catch (err) {
-    console.error('Error fetching recent activities:', err);
-    error.value = 'Failed to load recent activities';
+    console.warn('Recent activities API error, using empty array:', err);
+    // Don't set error, just use empty array
   }
 };
 
@@ -110,16 +119,19 @@ const fetchRecentActivities = async () => {
 const fetchWeeklyProgress = async () => {
   try {
     const response = await fetch(`${API_BASE}/api/dashboard/weekly-progress?userId=${user.value?.id}`);
-    if (!response.ok) throw new Error('Failed to fetch weekly progress');
+    if (!response.ok) {
+      console.warn('Weekly progress API not available, using default values');
+      return; // Use default values instead of throwing error
+    }
     const data = await response.json();
     
     weeklyProgress.value = {
-      tasksCompletedThisWeek: data.tasksCompletedThisWeek,
-      activeProjects: data.activeProjects
+      tasksCompletedThisWeek: data.tasksCompletedThisWeek || 0,
+      activeProjects: data.activeProjects || 0
     };
   } catch (err) {
-    console.error('Error fetching weekly progress:', err);
-    error.value = 'Failed to load weekly progress';
+    console.warn('Weekly progress API error, using default values:', err);
+    // Don't set error, just use default values
   }
 };
 
@@ -127,7 +139,10 @@ const fetchWeeklyProgress = async () => {
 const fetchDeadlines = async () => {
   try {
     const response = await fetch(`${API_BASE}/api/user/deadlines?userId=${user.value?.id}`);
-    if (!response.ok) throw new Error('Failed to fetch deadlines');
+    if (!response.ok) {
+      console.warn('Deadlines API not available, using empty array');
+      return; // Use empty array instead of throwing error
+    }
     const data = await response.json();
     
     deadlines.value = data.map((deadline: any) => ({
@@ -139,8 +154,8 @@ const fetchDeadlines = async () => {
       createdAt: new Date(deadline.createdAt)
     }));
   } catch (err) {
-    console.error('Error fetching deadlines:', err);
-    error.value = 'Failed to load deadlines';
+    console.warn('Deadlines API error, using empty array:', err);
+    // Don't set error, just use empty array
   }
 };
 
@@ -160,8 +175,8 @@ const loadDashboardData = async () => {
       fetchDeadlines()
     ]);
   } catch (err) {
-    console.error('Error loading dashboard data:', err);
-    error.value = 'Failed to load dashboard data';
+    console.warn('Some dashboard APIs may not be available yet:', err);
+    // Don't set error state, just continue with default values
   } finally {
     loading.value = false;
   }
