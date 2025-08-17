@@ -1,22 +1,32 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { LogoutIcon, SettingsIcon, UserIcon, SearchIcon } from 'vue-tabler-icons'
 import { useUser } from '@clerk/vue'
+import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue'
 
-// wallet modal state from store
-import { isWalletModalOpen } from '@/stores/walletStore'
+// wallet modal state & active wallet
+import { isWalletModalOpen, openWalletModal } from '@/stores/walletStore'
+import { activeAccount } from '@/lib/walletManager'
 
 const swt1 = ref(true)
 const swt2 = ref(false)
 const authStore = useAuthStore()
-
 const { user } = useUser()
 
 // fallback if no name
 const firstName = computed(() => user.value?.firstName || 'Guest')
-function openWalletModal() {
-  isWalletModalOpen.value = true
+
+// computed for connected wallet
+const walletAddress = computed(() => activeAccount.value?.address || 'Connect Wallet')
+
+// debug logs
+watch(activeAccount, val => console.log('ProfileDD sees active wallet change:', val))
+watch(isWalletModalOpen, val => console.log('ProfileDD sees wallet modal change:', val))
+
+function handleOpenWallet() {
+  console.log('Opening wallet modal from ProfileDD')
+  openWalletModal()
 }
 </script>
 
@@ -46,15 +56,11 @@ function openWalletModal() {
       <div class="bg-lightprimary rounded-md px-5 py-3 my-3">
         <div class="d-flex align-center justify-space-between">
           <h5 class="text-h5">Start DND Mode</h5>
-          <div>
-            <v-switch v-model="swt1" color="primary" hide-details></v-switch>
-          </div>
+          <v-switch v-model="swt1" color="primary" hide-details></v-switch>
         </div>
         <div class="d-flex align-center justify-space-between">
           <h5 class="text-h5">Allow Notifications</h5>
-          <div>
-            <v-switch v-model="swt2" color="primary" hide-details></v-switch>
-          </div>
+          <v-switch v-model="swt2" color="primary" hide-details></v-switch>
         </div>
       </div>
 
@@ -62,14 +68,13 @@ function openWalletModal() {
 
       <!-- Wallet Connect button -->
       <div class="my-4">
-        <v-btn
-          color="primary"
-          block
-          class="rounded-lg"
-          @click="openWalletModal"
-        >
-          Connect Wallet
+        <v-btn color="primary" block class="rounded-lg" @click="handleOpenWallet()">
+          {{ walletAddress }}
         </v-btn>
+
+        <!-- Ensure the ConnectWallet component is mounted so its v-dialog (bound to the store ref)
+         can appear when openWalletModal() toggles the store. Import ConnectWallet in your <script setup>. -->
+        <ConnectWallet />
       </div>
 
       <v-divider></v-divider>
@@ -88,13 +93,7 @@ function openWalletModal() {
           </template>
           <v-list-item-title class="text-subtitle-2"> Social Profile </v-list-item-title>
           <template v-slot:append>
-            <v-chip
-              color="warning"
-              class="text-white"
-              text="02"
-              variant="flat"
-              size="small"
-            />
+            <v-chip color="warning" class="text-white" text="02" variant="flat" size="small" />
           </template>
         </v-list-item>
 
