@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useCustomizerStore } from '../../../stores/customizer';
+import { useUser } from '@clerk/vue';
 // Icon Imports
 import { BellIcon, SettingsIcon, SearchIcon, Menu2Icon } from 'vue-tabler-icons';
 
@@ -11,6 +12,23 @@ import Searchbar from './SearchBarPanel.vue';
 
 const customizer = useCustomizerStore();
 const showSearch = ref(false);
+const { user, isLoaded } = useUser();
+
+// Computed properties for user profile
+const userProfileImage = computed(() => {
+  if (isLoaded.value && user.value?.imageUrl) {
+    return user.value.imageUrl;
+  }
+  return '@/assets/images/profile/user-round.svg';
+});
+
+const userDisplayName = computed(() => {
+  if (isLoaded.value && user.value) {
+    return user.value.firstName || user.value.emailAddresses[0]?.emailAddress || 'User';
+  }
+  return 'Guest';
+});
+
 function searchbox() {
   showSearch.value = !showSearch.value;
 }
@@ -18,8 +36,9 @@ function searchbox() {
 
 <template>
   <v-app-bar elevation="0" height="80">
+    <!-- Sidebar toggle button for large screens (mini sidebar) -->
     <v-btn
-      class="hidden-md-and-down text-secondary"
+      class="d-none d-lg-block text-secondary"
       color="lightsecondary"
       icon
       rounded="sm"
@@ -29,8 +48,10 @@ function searchbox() {
     >
       <Menu2Icon size="20" stroke-width="1.5" />
     </v-btn>
+
+    <!-- Sidebar toggle button for small screens (sidebar drawer) -->
     <v-btn
-      class="hidden-lg-and-up text-secondary ms-3"
+      class="d-lg-none text-secondary ms-3"
       color="lightsecondary"
       icon
       rounded="sm"
@@ -43,7 +64,7 @@ function searchbox() {
 
     <!-- search mobile -->
     <v-btn
-      class="hidden-lg-and-up text-secondary ml-3"
+      class="d-lg-none text-secondary ml-3"
       color="lightsecondary"
       icon
       rounded="sm"
@@ -93,7 +114,14 @@ function searchbox() {
       <template v-slot:activator="{ props }">
         <v-btn class="profileBtn text-primary" color="lightprimary" variant="flat" rounded="pill" v-bind="props">
           <v-avatar size="30" class="mr-2 py-2">
-            <img src="@/assets/images/profile/user-round.svg" alt="Julia" />
+            <img 
+              :src="userProfileImage" 
+              :alt="userDisplayName"
+              @error="(event) => {
+                const target = event.target as HTMLImageElement;
+                if (target) target.src = '@/assets/images/profile/user-round.svg';
+              }"
+            />
           </v-avatar>
           <SettingsIcon stroke-width="1.5" />
         </v-btn>

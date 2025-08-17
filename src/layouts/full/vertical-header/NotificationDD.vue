@@ -1,9 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { BuildingStoreIcon, SendIcon, MailboxIcon, PhotoIcon } from 'vue-tabler-icons';
+import { useUser } from '@clerk/vue';
 
 const notificationDD = ref(['All Notifications', 'New', 'Unread', 'Other']);
 const selectNotify = ref<string>('All Notifications');
+const { user, isLoaded } = useUser();
+
+// User profile image from Clerk
+const userProfileImage = computed(() => {
+  if (isLoaded.value && user.value?.imageUrl) {
+    return user.value.imageUrl;
+  }
+  return '@/assets/images/profile/user-round.svg';
+});
 </script>
 
 <template>
@@ -26,11 +36,11 @@ const selectNotify = ref<string>('All Notifications');
       <v-list-item value="" color="secondary" class="no-spacer">
         <template v-slot:prepend>
           <v-avatar size="40" class="mr-3 py-2">
-            <img src="@/assets/images/profile/user-round.svg" width="40" alt="Julia" />
+            <img :src="userProfileImage" width="40" :alt="user?.firstName || 'User'" />
           </v-avatar>
         </template>
         <div class="d-inline-flex align-center justify-space-between w-100">
-          <h6 class="text-subtitle-1 font-weight-regular">John Deo</h6>
+          <h6 class="text-subtitle-1 font-weight-regular">{{ user?.firstName || 'User' }}</h6>
           <span class="text-subtitle-2 text-medium-emphasis">2 mins ago</span>
         </div>
 
@@ -83,11 +93,11 @@ const selectNotify = ref<string>('All Notifications');
       <v-list-item value="" color="secondary" class="no-spacer">
         <template v-slot:prepend>
           <v-avatar size="40" class="mr-3 py-2">
-            <img src="@/assets/images/profile/user-round.svg" width="40" alt="Julia" />
+            <img :src="userProfileImage" width="40" :alt="user?.firstName || 'User'" />
           </v-avatar>
         </template>
         <div class="d-inline-flex align-center justify-space-between w-100">
-          <h6 class="text-subtitle-1">John Deo</h6>
+          <h6 class="text-subtitle-1">{{ user?.firstName || 'User' }}</h6>
           <span class="text-subtitle-2 text-medium-emphasis">2 mins ago</span>
         </div>
 
@@ -104,11 +114,11 @@ const selectNotify = ref<string>('All Notifications');
       <v-list-item value="" color="secondary" class="no-spacer">
         <template v-slot:prepend>
           <v-avatar size="40" class="mr-3 py-2">
-            <img src="@/assets/images/profile/user-round.svg" width="40" alt="Julia" />
+            <img :src="userProfileImage" width="40" :alt="user?.firstName || 'User'" />
           </v-avatar>
         </template>
         <div class="d-inline-flex align-center justify-space-between w-100">
-          <h6 class="text-subtitle-1">John Deo</h6>
+          <h6 class="text-subtitle-1">{{ user?.firstName || 'User' }}</h6>
           <span class="text-subtitle-2 text-medium-emphasis">2 mins ago</span>
         </div>
 

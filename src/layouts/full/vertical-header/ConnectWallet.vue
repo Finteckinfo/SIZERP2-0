@@ -3,6 +3,7 @@ import { ref, watch, type Ref, onMounted } from 'vue';
 import { WalletId } from '@txnlab/use-wallet-vue';
 import { wallets as rawWallets, activeAccount, addManualWallet, removeManualWallet } from '@/lib/walletManager';
 import { isWalletModalOpen as storeWalletModalOpen } from '@/stores/walletStore';
+import { useUser } from '@clerk/vue';
 
 // Wallet SDKs - using dynamic imports to avoid require issues
 let DeflyConnect: any = null;
@@ -15,6 +16,9 @@ const showDisconnectConfirm = ref(false);
 
 // Manual wallet input
 const manualWallet = ref<{ address: string; secret: string }>({ address: '', secret: '' });
+
+// Get Clerk user
+const { user } = useUser();
 
 // Filter wallets for UI iteration
 const wallets = rawWallets.filter(
@@ -46,10 +50,49 @@ onMounted(async () => {
   }
 });
 
+// --- Sync wallet to backend ---
+async function syncWalletToBackend(walletAddress: string) {
+  if (!user.value?.id) {
+    console.error('[ConnectWallet] No user ID available');
+    return false;
+  }
+
+  try {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/wallet`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: user.value.id,
+        walletAddress: walletAddress
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to sync wallet');
+    }
+
+    const data = await response.json();
+    console.log('[ConnectWallet] Wallet synced to backend:', data);
+    return true;
+  } catch (error) {
+    console.error('[ConnectWallet] Failed to sync wallet to backend:', error);
+    alert(`Failed to sync wallet: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    return false;
+  }
+}
+
 // --- Connect Manual Wallet ---
-function connectManualWallet() {
+async function connectManualWallet() {
   console.log('[ConnectWallet] Attempting manual wallet connect', manualWallet.value);
   if (!manualWallet.value.address) return alert('Enter wallet address!');
+  
+  // Sync to backend first
+  const syncSuccess = await syncWalletToBackend(manualWallet.value.address);
+  if (!syncSuccess) return;
+  
   addManualWallet(manualWallet.value.address);
   console.log('[ConnectWallet] Manual wallet connected:', manualWallet.value.address);
   isWalletModalOpen.value = false;
@@ -60,15 +103,15 @@ async function connectProviderWallet(walletId: WalletId) {
   console.log('[ConnectWallet] Attempting provider wallet connect:', walletId);
 
   try {
+    let walletAddress: string | null = null;
+
     if (walletId === WalletId.DEFLY) {
       if (!DeflyConnect) {
         throw new Error('Defly library not loaded');
       }
       const account = await DeflyConnect();
       if (account?.address) {
-        addManualWallet(account.address);
-        console.log('[ConnectWallet] Defly wallet connected:', account.address);
-        isWalletModalOpen.value = false;
+        walletAddress = account.address;
       }
 
     } else if (walletId === WalletId.PERA) {
@@ -78,9 +121,7 @@ async function connectProviderWallet(walletId: WalletId) {
       const pera = new PeraWalletConnect();
       const accounts = await pera.connect();
       if (accounts?.length) {
-        addManualWallet(accounts[0]);
-        console.log('[ConnectWallet] Pera wallet connected:', accounts[0]);
-        isWalletModalOpen.value = false;
+        walletAddress = accounts[0];
       }
 
     } else if (walletId === WalletId.WALLETCONNECT) {
@@ -94,14 +135,23 @@ async function connectProviderWallet(walletId: WalletId) {
       await provider.enable();
       const accounts = provider.accounts;
       if (accounts?.length) {
-        addManualWallet(accounts[0]);
-        console.log('[ConnectWallet] WalletConnect connected:', accounts[0]);
-        isWalletModalOpen.value = false;
+        walletAddress = accounts[0];
       }
 
     } else {
       alert('Unsupported wallet');
       console.warn('[ConnectWallet] Unsupported wallet:', walletId);
+      return;
+    }
+
+    if (walletAddress) {
+      // Sync to backend first
+      const syncSuccess = await syncWalletToBackend(walletAddress);
+      if (!syncSuccess) return;
+      
+      addManualWallet(walletAddress);
+      console.log('[ConnectWallet] Provider wallet connected:', walletAddress);
+      isWalletModalOpen.value = false;
     }
   } catch (e: any) {
     console.error('[ConnectWallet] Provider wallet connect error:', e);
