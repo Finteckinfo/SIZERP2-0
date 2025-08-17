@@ -31,7 +31,13 @@ export default defineConfig({
   base: '/',
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      // Additional polyfills for problematic libraries
+      'crypto': 'crypto-browserify',
+      'stream': 'stream-browserify',
+      'util': 'util',
+      'buffer': 'buffer',
+      'process': 'process/browser',
     }
   },
   define: {
@@ -41,7 +47,7 @@ export default defineConfig({
     'process.platform': '"browser"',
     'process.version': '"v16.0.0"',
     'process.browser': true,
-    'process.node': false
+    'process.node': false,
   },
   css: {
     preprocessorOptions: {
@@ -55,6 +61,10 @@ export default defineConfig({
       output: {
         manualChunks: undefined
       }
+    },
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
     }
   },
   optimizeDeps: {
@@ -64,7 +74,20 @@ export default defineConfig({
       'buffer',
       'events',
       'util',
-      'process'
+      'process',
+      'crypto-browserify',
+      'stream-browserify',
+      '@walletconnect/web3-provider',
+      '@blockshake/defly-connect',
+      '@perawallet/connect',
+      'algosdk'
     ]
+  },
+  esbuild: {
+    target: 'es2020',
+    supported: {
+      'top-level-await': true
+    },
+    legalComments: 'none',
   }
 });

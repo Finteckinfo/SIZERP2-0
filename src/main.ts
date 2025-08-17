@@ -18,6 +18,16 @@ import { EventEmitter } from 'events';
 (window as any).Buffer = Buffer;
 (window as any).EventEmitter = EventEmitter;
 
+// Ensure process is defined globally
+if (typeof (window as any).process === 'undefined') {
+  (window as any).process = { env: {} };
+}
+
+// Ensure global is defined
+if (typeof (window as any).global === 'undefined') {
+  (window as any).global = window;
+}
+
 // ---- Wallet Manager ----
 import { WalletManagerPlugin } from '@txnlab/use-wallet-vue';
 import { networks } from './lib/walletManager';

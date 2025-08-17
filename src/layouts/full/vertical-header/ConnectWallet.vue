@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import { ref, watch, type Ref } from 'vue';
+import { ref, watch, type Ref, onMounted } from 'vue';
 import { WalletId } from '@txnlab/use-wallet-vue';
 import { wallets as rawWallets, activeAccount, addManualWallet, removeManualWallet } from '@/lib/walletManager';
 import { isWalletModalOpen as storeWalletModalOpen } from '@/stores/walletStore';
 
-// Wallet SDKs
-import * as DeflyModule from '@blockshake/defly-connect';
-const DeflyConnect = (DeflyModule as any).connect ?? (DeflyModule as any).default ?? (DeflyModule as any);
-
-import { PeraWalletConnect } from '@perawallet/connect';
-import WalletConnectProvider from '@walletconnect/web3-provider';
+// Wallet SDKs - using dynamic imports to avoid require issues
+let DeflyConnect: any = null;
+let PeraWalletConnect: any = null;
+let WalletConnectProvider: any = null;
 
 // Modal visibility
 const isWalletModalOpen = storeWalletModalOpen as Ref<boolean>;
@@ -29,6 +27,25 @@ watch(isWalletModalOpen, val => console.log('[ConnectWallet] Wallet modal visibi
 watch(activeAccount, val => console.log('[ConnectWallet] Active account changed:', val));
 watch(manualWallet, val => console.log('[ConnectWallet] Manual wallet changed:', val));
 
+// Initialize wallet libraries
+onMounted(async () => {
+  try {
+    // Dynamic imports to avoid require issues
+    const deflyModule = await import('@blockshake/defly-connect');
+    DeflyConnect = deflyModule.connect ?? deflyModule.default ?? deflyModule;
+    
+    const peraModule = await import('@perawallet/connect');
+    PeraWalletConnect = peraModule.PeraWalletConnect;
+    
+    const wcModule = await import('@walletconnect/web3-provider');
+    WalletConnectProvider = wcModule.default;
+    
+    console.log('[ConnectWallet] Wallet libraries loaded successfully');
+  } catch (error) {
+    console.error('[ConnectWallet] Failed to load wallet libraries:', error);
+  }
+});
+
 // --- Connect Manual Wallet ---
 function connectManualWallet() {
   console.log('[ConnectWallet] Attempting manual wallet connect', manualWallet.value);
@@ -44,6 +61,9 @@ async function connectProviderWallet(walletId: WalletId) {
 
   try {
     if (walletId === WalletId.DEFLY) {
+      if (!DeflyConnect) {
+        throw new Error('Defly library not loaded');
+      }
       const account = await DeflyConnect();
       if (account?.address) {
         addManualWallet(account.address);
@@ -52,6 +72,9 @@ async function connectProviderWallet(walletId: WalletId) {
       }
 
     } else if (walletId === WalletId.PERA) {
+      if (!PeraWalletConnect) {
+        throw new Error('Pera library not loaded');
+      }
       const pera = new PeraWalletConnect();
       const accounts = await pera.connect();
       if (accounts?.length) {
@@ -61,6 +84,9 @@ async function connectProviderWallet(walletId: WalletId) {
       }
 
     } else if (walletId === WalletId.WALLETCONNECT) {
+      if (!WalletConnectProvider) {
+        throw new Error('WalletConnect library not loaded');
+      }
       const provider = new WalletConnectProvider({
         rpc: { 416001: 'https://testnet-api.algonode.cloud' },
         qrcode: true,
