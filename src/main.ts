@@ -10,19 +10,39 @@ import print from 'vue3-print-nb';
 import VueApexCharts from 'vue3-apexcharts';
 import { clerkPlugin } from '@clerk/vue';
 
+// ---- Node.js polyfills for browser ----
+import { Buffer } from 'buffer';
+import { EventEmitter } from 'events';
+
+// Polyfill global objects for browser
+(window as any).Buffer = Buffer;
+(window as any).global = window;
+(window as any).process = { env: {} };
+(window as any).EventEmitter = EventEmitter;
+
+// Dynamically import util after process is defined to avoid "process is not defined" errors
+import('util')
+  .then((util) => {
+    (window as any).util = util;
+  })
+  .catch(() => {
+    // ignore if util can't be dynamically loaded in this environment
+  });
+
+// ---- Wallet Manager ----
 import { WalletManagerPlugin } from '@txnlab/use-wallet-vue';
 import { networks } from './lib/walletManager';
 import type { NetworkConfig } from '@txnlab/use-wallet';
 
 const app = createApp(App);
 
-// Clerk authentication
+// ---- Clerk Authentication ----
 console.log('[main.ts] Initializing Clerk plugin');
 app.use(clerkPlugin, {
   publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
 });
 
-// Standard plugins
+// ---- Standard Plugins ----
 console.log('[main.ts] Registering router, pinia, and other plugins');
 app.use(router);
 app.use(createPinia());
@@ -31,10 +51,10 @@ app.use(VueTablerIcons);
 app.use(print);
 app.use(VueApexCharts);
 
-// Vuetify must be registered last before mount
+// ---- Vuetify ----
 app.use(vuetify);
 
-// WalletManagerPlugin — use networks from walletManager.ts
+// ---- WalletManagerPlugin for network management ONLY ----
 console.log('[main.ts] Registering WalletManagerPlugin with networks:', Object.keys(networks));
 app.use(WalletManagerPlugin, {
   networks: networks as Record<string, NetworkConfig>,

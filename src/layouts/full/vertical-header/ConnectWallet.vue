@@ -1,8 +1,15 @@
 <script setup lang="ts">
 import { ref, watch, type Ref } from 'vue';
-import { WalletId, useWallet } from '@txnlab/use-wallet-vue';
+import { WalletId } from '@txnlab/use-wallet-vue';
 import { wallets as rawWallets, activeAccount, addManualWallet, removeManualWallet } from '@/lib/walletManager';
 import { isWalletModalOpen as storeWalletModalOpen } from '@/stores/walletStore';
+
+// Wallet SDKs
+import * as DeflyModule from '@blockshake/defly-connect';
+const DeflyConnect = (DeflyModule as any).connect ?? (DeflyModule as any).default ?? (DeflyModule as any);
+
+import { PeraWalletConnect } from '@perawallet/connect';
+import WalletConnectProvider from '@walletconnect/web3-provider';
 
 // Modal visibility
 const isWalletModalOpen = storeWalletModalOpen as Ref<boolean>;
@@ -10,9 +17,6 @@ const showDisconnectConfirm = ref(false);
 
 // Manual wallet input
 const manualWallet = ref<{ address: string; secret: string }>({ address: '', secret: '' });
-
-// Wallet composable
-const walletComposable = useWallet() as any;
 
 // Filter wallets for UI iteration
 const wallets = rawWallets.filter(
@@ -34,48 +38,44 @@ function connectManualWallet() {
   isWalletModalOpen.value = false;
 }
 
-// --- Connect Provider Wallet (Pera, Defly, WalletConnect) ---
+// --- Connect Provider Wallet ---
 async function connectProviderWallet(walletId: WalletId) {
   console.log('[ConnectWallet] Attempting provider wallet connect:', walletId);
-  const available = walletComposable?.wallets?.value ?? [];
-  console.log('[ConnectWallet] Available wallets:', available.map((w: any) => w?.id));
-
-  const candidate = available.find((w: any) =>
-    w?.id === walletId || String(w?.id).toLowerCase() === String(walletId).toLowerCase()
-  );
-
-  if (!candidate) {
-    console.warn('[ConnectWallet] Wallet provider not available.');
-    return alert('Wallet provider not available.');
-  }
-
-  const connectFn = candidate?.connect ?? candidate?.connectWallet ?? walletComposable?.connect ?? walletComposable?.connectWallet;
-  if (typeof connectFn !== 'function') {
-    console.error('[ConnectWallet] No connect function available for', walletId);
-    return alert('No connect function available.');
-  }
 
   try {
-    console.log('[ConnectWallet] Calling connect function for', walletId);
-    await connectFn(walletId).catch(() => connectFn());
+    if (walletId === WalletId.DEFLY) {
+      const account = await DeflyConnect();
+      if (account?.address) {
+        addManualWallet(account.address);
+        console.log('[ConnectWallet] Defly wallet connected:', account.address);
+        isWalletModalOpen.value = false;
+      }
 
-    const accounts =
-      walletComposable?.activeWalletAccounts?.value ??
-      walletComposable?.activeWallet?.value?.accounts ??
-      walletComposable?.activeWallet?.value ??
-      [];
+    } else if (walletId === WalletId.PERA) {
+      const pera = new PeraWalletConnect();
+      const accounts = await pera.connect();
+      if (accounts?.length) {
+        addManualWallet(accounts[0]);
+        console.log('[ConnectWallet] Pera wallet connected:', accounts[0]);
+        isWalletModalOpen.value = false;
+      }
 
-    console.log('[ConnectWallet] Accounts returned:', accounts);
+    } else if (walletId === WalletId.WALLETCONNECT) {
+      const provider = new WalletConnectProvider({
+        rpc: { 416001: 'https://testnet-api.algonode.cloud' },
+        qrcode: true,
+      });
+      await provider.enable();
+      const accounts = provider.accounts;
+      if (accounts?.length) {
+        addManualWallet(accounts[0]);
+        console.log('[ConnectWallet] WalletConnect connected:', accounts[0]);
+        isWalletModalOpen.value = false;
+      }
 
-    const address = Array.isArray(accounts) ? accounts[0]?.address ?? accounts[0] : accounts?.[0]?.address ?? undefined;
-
-    if (address) {
-      addManualWallet(address);
-      isWalletModalOpen.value = false;
-      console.log('[ConnectWallet] Provider wallet connected:', address);
     } else {
-      console.warn('[ConnectWallet] No accounts returned from wallet');
-      alert('No accounts returned from wallet.');
+      alert('Unsupported wallet');
+      console.warn('[ConnectWallet] Unsupported wallet:', walletId);
     }
   } catch (e: any) {
     console.error('[ConnectWallet] Provider wallet connect error:', e);
