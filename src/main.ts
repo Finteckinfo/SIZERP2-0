@@ -1,4 +1,3 @@
-// src/main.ts
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
@@ -12,44 +11,35 @@ import VueApexCharts from 'vue3-apexcharts';
 import { clerkPlugin } from '@clerk/vue';
 
 import { WalletManagerPlugin } from '@txnlab/use-wallet-vue';
-import { wallets } from './lib/walletManager';
-
-// Define networks with required properties
-const networks = {
-  mainnet: {
-    algod: {
-      server: 'https://mainnet-algorand.api.purestake.io/ps2',
-      port: '',
-      token: 'YOUR_ALGOD_TOKEN',
-      baseServer: 'https://mainnet-algorand.api.purestake.io/ps2'
-    },
-    indexer: {
-      server: 'https://mainnet-algorand.api.purestake.io/idx2',
-      port: '',
-      token: 'YOUR_INDEXER_TOKEN',
-      baseServer: 'https://mainnet-algorand.api.purestake.io/idx2'
-    }
-  }
-  // Add other networks as needed
-};
+import { networks } from './lib/walletManager';
+import type { NetworkConfig } from '@txnlab/use-wallet';
 
 const app = createApp(App);
 
+// Clerk authentication
+console.log('[main.ts] Initializing Clerk plugin');
 app.use(clerkPlugin, {
   publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
 });
+
+// Standard plugins
+console.log('[main.ts] Registering router, pinia, and other plugins');
 app.use(router);
-app.use(PerfectScrollbarPlugin);
 app.use(createPinia());
+app.use(PerfectScrollbarPlugin);
 app.use(VueTablerIcons);
 app.use(print);
 app.use(VueApexCharts);
 
-// ✅ Register Wallet Manager plugin
+// Vuetify must be registered last before mount
+app.use(vuetify);
+
+// WalletManagerPlugin — use networks from walletManager.ts
+console.log('[main.ts] Registering WalletManagerPlugin with networks:', Object.keys(networks));
 app.use(WalletManagerPlugin, {
-  wallets,
-  networks,
-  defaultNetwork: 'mainnet'
+  networks: networks as Record<string, NetworkConfig>,
+  defaultNetwork: 'mainnet',
 });
 
-app.use(vuetify).mount('#app');
+app.mount('#app');
+console.log('[main.ts] App mounted');
