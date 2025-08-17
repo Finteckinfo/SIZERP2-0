@@ -10,80 +10,13 @@ import print from 'vue3-print-nb';
 import VueApexCharts from 'vue3-apexcharts';
 import { clerkPlugin } from '@clerk/vue';
 
-// ---- Node.js polyfills for browser (lightweight shims) ----
+// ---- Node.js polyfills for browser ----
 import { Buffer } from 'buffer';
+import { EventEmitter } from 'events';
 
-// Minimal EventEmitter shim for browser usage (covers on/off/once/emit)
-class BrowserEventEmitter {
-  private listeners: Map<string, Function[]> = new Map();
-
-  on(event: string, listener: Function) {
-    const arr = this.listeners.get(event) || [];
-    arr.push(listener);
-    this.listeners.set(event, arr);
-    return this;
-  }
-
-  addListener(event: string, listener: Function) {
-    return this.on(event, listener);
-  }
-
-  once(event: string, listener: Function) {
-    const onceWrapper = (...args: any[]) => {
-      listener(...args);
-      this.off(event, onceWrapper);
-    };
-    return this.on(event, onceWrapper);
-  }
-
-  off(event: string, listener?: Function) {
-    if (!listener) {
-      this.listeners.delete(event);
-    } else {
-      const arr = this.listeners.get(event) || [];
-      this.listeners.set(event, arr.filter((l) => l !== listener));
-    }
-    return this;
-  }
-
-  removeListener(event: string, listener: Function) {
-    return this.off(event, listener);
-  }
-
-  emit(event: string, ...args: any[]) {
-    const arr = this.listeners.get(event) || [];
-    for (const l of arr.slice()) {
-      try {
-        l(...args);
-      } catch {
-        // swallow individual listener errors to emulate Node behavior more closely
-      }
-    }
-    return arr.length > 0;
-  }
-}
-
-// Polyfill global objects for browser using lightweight shims
+// Polyfill global objects for browser
 (window as any).Buffer = Buffer;
-(window as any).global = window;
-// Expose the Vite environment to libraries expecting process.env
-(window as any).process = { env: import.meta.env };
-
-// Provide the minimal EventEmitter
-(window as any).EventEmitter = BrowserEventEmitter;
-
-// Minimal util shim to avoid runtime require('util') errors for simple uses
-(window as any).util = {
-  isBuffer: (obj: any) => !!(obj && obj instanceof (window as any).Buffer),
-  inspect: (obj: any) => {
-    try {
-      return JSON.stringify(obj);
-    } catch {
-      return String(obj);
-    }
-  },
-  format: (...args: any[]) => args.join(' '),
-};
+(window as any).EventEmitter = EventEmitter;
 
 // ---- Wallet Manager ----
 import { WalletManagerPlugin } from '@txnlab/use-wallet-vue';
