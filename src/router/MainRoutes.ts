@@ -8,6 +8,7 @@ const MainRoutes = {
     { name: 'Default', path: '/dashboard/default', component: () => import('@/views/dashboards/default/DefaultDashboard.vue') },
     { name: 'CreateProject', path: '/projects/create', component: () => import('@/views/projects/CreateProjectProtected.vue') },
     { name: 'ProjectView', path: '/projects', component: () => import('@/views/projects/ProjectView.vue') },
+    { name: 'ProjectWorkspace', path: '/projects/:id/workspace', component: () => import('@/views/projects/ProjectWorkspace.vue') },
     { name: 'Starter', path: '/starter', component: () => import('@/views/StarterPage.vue') },
     { name: 'Tabler Icons', path: '/icons/tabler', component: () => import('@/views/utilities/icons/TablerIcons.vue') },
     { name: 'Material Icons', path: '/icons/material', component: () => import('@/views/utilities/icons/MaterialIcons.vue') },

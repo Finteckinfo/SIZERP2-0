@@ -255,7 +255,7 @@ onMounted(() => {
         <v-row v-if="projectsLoading">
           <v-col v-for="i in 4" :key="i" cols="12" sm="6" lg="6">
             <ProjectCardSkeleton />
-          </v-col>
+    </v-col>
         </v-row>
 
         <!-- No Projects State -->
@@ -276,7 +276,7 @@ onMounted(() => {
         <v-row v-else>
           <v-col v-for="project in projects" :key="project.id" cols="12" sm="6" lg="6">
             <ProjectCard :project="project" />
-          </v-col>
+    </v-col>
         </v-row>
     </v-col>
     </v-row>

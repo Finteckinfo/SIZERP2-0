@@ -1,44 +1,39 @@
 <template>
   <div class="kanban-project-creator">
     <v-container fluid class="pa-0">
-      <!-- Header with Progress Steps -->
-      <v-app-bar elevation="0" color="primary" class="px-6">
+      <!-- Header -->
+      <v-app-bar elevation="0" color="white" class="px-6 border-b">
         <v-btn icon @click="$router.push('/dashboard/default')" class="mr-4">
           <v-icon>mdi-arrow-left</v-icon>
         </v-btn>
         <div class="flex-grow-1">
-          <h1 class="text-h4 font-weight-bold text-white">Create New Project</h1>
-          <p class="text-white text-opacity-80 mb-0">Build your project step by step</p>
+          <h1 class="text-h4 font-weight-bold text-grey-darken-3">New Kanban Board</h1>
         </div>
-        
-        <!-- Progress Steps -->
-        <div class="d-flex align-center">
+      </v-app-bar>
+
+      <!-- Progress Steps Bar -->
+      <div class="progress-container">
+        <div class="progress-line"></div>
+        <div class="progress-steps">
           <div 
             v-for="(step, index) in creationSteps" 
             :key="step.id"
-            class="d-flex align-center"
+            class="progress-step"
+            :class="{
+              'completed': step.completed,
+              'current': step.id === currentStep,
+              'pending': !step.completed && step.id !== currentStep
+            }"
           >
-            <div 
-              class="step-indicator d-flex align-center justify-center"
-              :class="{
-                'completed': step.completed,
-                'current': step.id === currentStep,
-                'pending': !step.completed && step.id !== currentStep
-              }"
-            >
-              <v-icon v-if="step.completed" size="20">mdi-check</v-icon>
+            <div class="step-number">
+              <v-icon v-if="step.completed" size="20" color="white">mdi-check</v-icon>
               <span v-else>{{ index + 1 }}</span>
             </div>
-            <span 
-              class="step-label ml-2 text-white"
-              :class="{ 'text-opacity-80': !step.completed && step.id !== currentStep }"
-            >
-              {{ step.label }}
-            </span>
-            <v-divider v-if="index < creationSteps.length - 1" vertical class="mx-4" color="white" opacity="0.3" />
+            <div class="step-connector" v-if="index < creationSteps.length - 1"></div>
+            <span class="step-label">{{ step.label }}</span>
           </div>
         </div>
-      </v-app-bar>
+      </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="loading-overlay">
@@ -72,7 +67,7 @@
         <!-- Templates Section -->
         <v-row v-if="projectTemplates.length > 0" class="mb-6">
           <v-col cols="12">
-            <v-card elevation="0" class="pa-4">
+            <v-card elevation="0" class="pa-4 border rounded-lg">
               <div class="d-flex align-center justify-space-between mb-4">
                 <h3 class="text-h6 font-weight-medium">Project Templates</h3>
                 <v-btn 
@@ -101,442 +96,364 @@
         </v-row>
 
         <!-- Draft Management -->
-        <v-row v-if="currentDraft" class="mb-6">
+        <v-row v-if="hasDraft" class="mb-6">
           <v-col cols="12">
-            <v-card elevation="0" color="info" class="pa-4">
+            <v-card elevation="0" color="blue-lighten-5" class="pa-4 border rounded-lg">
               <div class="d-flex align-center justify-space-between">
                 <div class="d-flex align-center">
-                  <v-icon color="white" class="mr-3">mdi-content-save</v-icon>
-                  <span class="text-white">Draft saved - {{ new Date(currentDraft.updatedAt).toLocaleString() }}</span>
+                  <v-icon color="blue" class="mr-3">mdi-content-save</v-icon>
+                  <div>
+                    <h4 class="text-subtitle-1 font-weight-medium mb-1">Draft Found</h4>
+                    <p class="text-caption text-medium-emphasis mb-0">You have an unsaved draft from {{ formatDate(draft?.updatedAt) }}</p>
+                  </div>
                 </div>
-                <v-btn 
-                  variant="text" 
-                  color="white"
-                  @click="currentDraft = null"
-                >
-                  Clear Draft
-                </v-btn>
+                <div class="d-flex gap-2">
+                  <v-btn variant="outlined" size="small" @click="loadDraft">Load Draft</v-btn>
+                  <v-btn variant="text" size="small" @click="clearDraft">Clear Draft</v-btn>
+                </div>
               </div>
             </v-card>
           </v-col>
         </v-row>
 
-        <!-- Step 1: Project Foundation -->
-        <div v-if="currentStep === 'foundation'" class="step-content">
-          <v-row>
-            <v-col cols="12" md="8">
-              <v-card elevation="0" class="pa-6">
-                <h3 class="text-h5 font-weight-bold mb-6">Project Foundation</h3>
-                
-                <v-form @submit.prevent="nextStep">
-                  <v-row>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="projectData.name"
-                        label="Project Name"
-                        variant="outlined"
-                        required
-                        :rules="[v => !!v || 'Project name is required']"
-                        @blur="validateProjectName(projectData.name)"
-                      />
-                    </v-col>
-                    
-                    <v-col cols="12" md="6">
-                      <v-select
-                        v-model="projectData.type"
-                        label="Project Type"
-                        variant="outlined"
-                        required
-                        :items="projectTypes"
-                        item-title="title"
-                        item-value="value"
-                        :rules="[v => !!v || 'Project type is required']"
-                      />
-                    </v-col>
-                    
-                    <v-col cols="12">
-                      <v-textarea
-                        v-model="projectData.description"
-                        label="Project Description"
-                        variant="outlined"
-                        required
-                        rows="4"
-                        :rules="[v => !!v || 'Project description is required']"
-                      />
-                    </v-col>
-                  </v-row>
-                </v-form>
-              </v-card>
-            </v-col>
+        <!-- Step Content -->
+        <div class="step-content-container">
+          <!-- Foundation Step -->
+          <div v-if="currentStep === 'foundation'" class="step-content">
+            <div class="step-header">
+              <h2 class="text-h5 font-weight-medium mb-4">Basic Information</h2>
+            </div>
             
-            <v-col cols="12" md="4">
-              <v-card elevation="0" class="pa-4" color="grey-lighten-5">
-                <h4 class="text-h6 font-weight-medium mb-4">Quick Tips</h4>
-                <ul class="text-body-2">
-                  <li class="mb-2">Choose a clear, descriptive name</li>
-                  <li class="mb-2">Select the appropriate project type</li>
-                  <li class="mb-2">Write a comprehensive description</li>
-                </ul>
-              </v-card>
-            </v-col>
-          </v-row>
-        </div>
-
-        <!-- Step 2: Department Structure -->
-        <div v-if="currentStep === 'departments'" class="step-content">
-          <v-row>
-            <v-col cols="12" md="8">
-              <v-card elevation="0" class="pa-6">
-                <div class="d-flex align-center justify-space-between mb-6">
-                  <h3 class="text-h5 font-weight-bold">Department Structure</h3>
-                  <v-btn 
-                    color="primary" 
-                    variant="flat"
-                    @click="addDepartment"
-                    :disabled="projectData.departments.length >= 10"
-                  >
-                    <v-icon class="mr-2">mdi-plus</v-icon>
-                    Add Department
-                  </v-btn>
-                </div>
+            <v-form ref="foundationForm" v-model="foundationValid">
+              <v-row>
+                <v-col cols="12" md="8">
+                  <v-text-field
+                    v-model="projectData.name"
+                    label="Name of board"
+                    placeholder="Name of board"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Project name is required']"
+                    class="mb-4"
+                  />
+                  
+                  <v-select
+                    v-model="projectData.type"
+                    label="Board Type"
+                    placeholder="Board Type"
+                    :items="projectTypes"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Project type is required']"
+                    class="mb-4"
+                  />
+                  
+                  <v-textarea
+                    v-model="projectData.description"
+                    label="Description (Optional)"
+                    placeholder="Description (Optional)"
+                    variant="outlined"
+                    rows="4"
+                    class="mb-6"
+                  />
+                </v-col>
                 
-                <div v-if="projectData.departments.length === 0" class="text-center py-8">
-                  <v-icon size="64" color="grey-lighten-1">mdi-domain</v-icon>
-                  <p class="text-h6 text-grey mt-4">No departments added yet</p>
-                  <p class="text-body-2 text-grey">Start building your project structure by adding departments</p>
-                </div>
-                
-                <div v-else class="departments-grid">
-                  <v-card
-                    v-for="(dept, index) in projectData.departments"
-                    :key="index"
-                    elevation="2"
-                    class="department-card pa-4"
-                    draggable="true"
-                    @dragstart="dragStart(index)"
-                    @drop="drop(index)"
-                    @dragover.prevent
-                  >
-                    <div class="d-flex align-center justify-space-between mb-3">
-                      <v-chip 
-                        :color="dept.type === 'MAJOR' ? 'primary' : 'secondary'"
-                        size="small"
-                      >
-                        {{ dept.type }}
-                      </v-chip>
-                      <v-btn 
-                        icon 
-                        size="small" 
-                        color="error"
-                        variant="text"
-                        @click="removeDepartment(index)"
-                      >
-                        <v-icon>mdi-close</v-icon>
-                      </v-btn>
-                    </div>
+                <v-col cols="12" md="4">
+                  <v-card elevation="0" class="pa-4 border rounded-lg">
+                    <h4 class="text-subtitle-1 font-weight-medium mb-3">Board Visibility</h4>
+                    <v-radio-group v-model="projectData.isPublic" class="mb-4">
+                      <v-radio value="false" label="Private" color="primary" />
+                      <v-radio value="true" label="Public" color="primary" />
+                    </v-radio-group>
                     
+                    <v-checkbox
+                      v-model="projectData.allowGuests"
+                      label="Allow Guest"
+                      color="primary"
+                    />
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-form>
+          </div>
+
+          <!-- Departments Step -->
+          <div v-if="currentStep === 'departments'" class="step-content">
+            <div class="step-header">
+              <h2 class="text-h5 font-weight-medium mb-4">Column/Stages</h2>
+              <p class="text-body-2 text-medium-emphasis">Define the workflow stages for your project</p>
+            </div>
+            
+            <div class="departments-container">
+              <div class="departments-grid">
+                <div 
+                  v-for="(dept, index) in projectData.departments" 
+                  :key="index"
+                  class="department-card"
+                  :class="{ 'dragging': draggedDept === index }"
+                  draggable="true"
+                  @dragstart="startDrag(index)"
+                  @dragover.prevent
+                  @drop="onDrop(index)"
+                >
+                  <div class="department-header">
                     <v-text-field
                       v-model="dept.name"
-                      label="Department Name"
+                      label="Stage Name"
                       variant="outlined"
                       density="compact"
-                      required
-                      :rules="[v => !!v || 'Department name is required']"
+                      class="mb-3"
                     />
-                    
                     <v-select
                       v-model="dept.type"
                       label="Type"
+                      :items="departmentTypes"
                       variant="outlined"
                       density="compact"
-                      required
-                      :items="departmentTypes"
-                      item-title="title"
-                      item-value="value"
-                      class="mt-3"
+                      class="mb-3"
                     />
-                    
                     <v-textarea
                       v-model="dept.description"
                       label="Description"
                       variant="outlined"
                       density="compact"
                       rows="2"
-                      class="mt-3"
+                      class="mb-3"
                     />
-                  </v-card>
-                </div>
-              </v-card>
-            </v-col>
-            
-            <v-col cols="12" md="4">
-              <v-card elevation="0" class="pa-4" color="grey-lighten-5">
-                <h4 class="text-h6 font-weight-medium mb-4">Department Tips</h4>
-                <ul class="text-body-2">
-                  <li class="mb-2">Major departments handle core functions</li>
-                  <li class="mb-2">Minor departments support major ones</li>
-                  <li class="mb-2">Drag and drop to reorder</li>
-                  <li class="mb-2">Keep descriptions concise</li>
-                </ul>
-              </v-card>
-            </v-col>
-          </v-row>
-        </div>
-
-        <!-- Step 3: Team & Roles -->
-        <div v-if="currentStep === 'team'" class="step-content">
-          <v-row>
-            <v-col cols="12" md="8">
-              <v-card elevation="0" class="pa-6">
-                <div class="d-flex align-center justify-space-between mb-6">
-                  <h3 class="text-h5 font-weight-bold">Team & Roles</h3>
-                  <v-btn 
-                    color="primary" 
-                    variant="flat"
-                    @click="addRole"
-                    :disabled="projectData.roles.length >= 20"
-                  >
-                    <v-icon class="mr-2">mdi-plus</v-icon>
-                    Add Team Member
-                  </v-btn>
-                </div>
-                
-                <div v-if="projectData.roles.length === 0" class="text-center py-8">
-                  <v-icon size="64" color="grey-lighten-1">mdi-account-group</v-icon>
-                  <p class="text-h6 text-grey mt-4">No team members added yet</p>
-                  <p class="text-body-2 text-grey">Start building your team by adding members and roles</p>
-                </div>
-                
-                <div v-else class="roles-grid">
-                  <v-card
-                    v-for="(role, index) in projectData.roles"
-                    :key="index"
-                    elevation="2"
-                    class="role-card pa-4"
-                  >
                     <div class="d-flex align-center justify-space-between mb-3">
-                      <v-chip 
-                        :color="role.role === 'PROJECT_OWNER' ? 'error' : role.role === 'PROJECT_MANAGER' ? 'warning' : 'success'"
-                        size="small"
-                      >
-                        {{ role.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) }}
-                      </v-chip>
-                      <v-btn 
-                        icon 
-                        size="small" 
-                        color="error"
-                        variant="text"
-                        @click="removeRole(index)"
-                      >
-                        <v-icon>mdi-close</v-icon>
-                      </v-btn>
+                      <v-text-field
+                        v-model.number="dept.order"
+                        label="Order"
+                        type="number"
+                        variant="outlined"
+                        density="compact"
+                        class="mr-2"
+                        style="max-width: 100px"
+                      />
+                      <v-switch
+                        v-model="dept.isVisible"
+                        label="Visible"
+                        color="primary"
+                        density="compact"
+                        hide-details
+                      />
                     </div>
-                    
+                    <v-btn 
+                      color="error" 
+                      variant="text" 
+                      size="small"
+                      @click="removeDepartment(index)"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                      Remove
+                    </v-btn>
+                  </div>
+                </div>
+              </div>
+              
+              <v-btn 
+                color="primary" 
+                variant="outlined" 
+                class="mt-4"
+                @click="addDepartment"
+              >
+                <v-icon class="mr-2">mdi-plus</v-icon>
+                Add Stage
+              </v-btn>
+            </div>
+          </div>
+
+          <!-- Team & Roles Step -->
+          <div v-if="currentStep === 'team'" class="step-content">
+            <div class="step-header">
+              <h2 class="text-h5 font-weight-medium mb-4">Team & Roles</h2>
+              <p class="text-body-2 text-medium-emphasis">Assign team members and their roles</p>
+            </div>
+            
+            <div class="roles-container">
+              <div class="roles-grid">
+                <div 
+                  v-for="(role, index) in projectData.roles" 
+                  :key="index"
+                  class="role-card"
+                >
+                  <div class="role-header">
                     <v-text-field
                       v-model="role.userEmail"
-                      label="Email Address"
+                      label="User Email"
                       variant="outlined"
                       density="compact"
-                      required
-                      type="email"
-                      :rules="[
-                        v => !!v || 'Email is required',
-                        v => /.+@.+\..+/.test(v) || 'Valid email required'
-                      ]"
+                      class="mb-3"
+                      @input="searchUsers(role.userEmail)"
                     />
                     
                     <v-select
                       v-model="role.role"
                       label="Role"
+                      :items="roleTypes"
                       variant="outlined"
                       density="compact"
-                      required
-                      :items="roleTypes"
-                      item-title="title"
-                      item-value="value"
-                      class="mt-3"
+                      class="mb-3"
                     />
                     
                     <v-select
-                      v-model="role.departmentOrder"
-                      :items="departmentOptions"
-                      item-title="title"
-                      item-value="value"
+                      v-model="role.departmentId"
                       label="Department"
+                      :items="projectData.departments"
+                      item-title="name"
+                      item-value="order"
                       variant="outlined"
                       density="compact"
-                      :rules="[v => v !== null || 'Department is required']"
-                      class="mt-3"
+                      class="mb-3"
+                      :rules="[v => !!v || 'Department is required']"
                     />
-                  </v-card>
+                    
+                    <v-btn 
+                      color="error" 
+                      variant="text" 
+                      size="small"
+                      @click="removeRole(index)"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                      Remove
+                    </v-btn>
+                  </div>
                 </div>
-              </v-card>
-            </v-col>
-            
-            <v-col cols="12" md="4">
-              <v-card elevation="0" class="pa-4" color="grey-lighten-5">
-                <h4 class="text-h6 font-weight-medium mb-4">Team Tips</h4>
-                <ul class="text-body-2">
-                  <li class="mb-2">Project Owner has full control</li>
-                  <li class="mb-2">Project Manager oversees execution</li>
-                  <li class="mb-2">Employees contribute to tasks</li>
-                  <li class="mb-2">Use valid email addresses</li>
-                </ul>
-              </v-card>
-            </v-col>
-          </v-row>
-        </div>
+              </div>
+              
+              <v-btn 
+                color="primary" 
+                variant="outlined" 
+                class="mt-4"
+                @click="addRole"
+              >
+                <v-icon class="mr-2">mdi-plus</v-icon>
+                Add Team Member
+              </v-btn>
+            </div>
+          </div>
 
-        <!-- Step 4: Project Settings -->
-        <div v-if="currentStep === 'settings'" class="step-content">
-          <v-row>
-            <v-col cols="12" md="8">
-              <v-card elevation="0" class="pa-6">
-                <h3 class="text-h5 font-weight-bold mb-6">Project Settings</h3>
-                
-                <v-form @submit.prevent="createProject">
-                  <v-row>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="projectData.startDate"
-                        label="Start Date"
-                        variant="outlined"
-                        required
-                        type="date"
-                        :rules="[v => !!v || 'Start date is required']"
-                      />
-                    </v-col>
-                    
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="projectData.endDate"
-                        label="End Date"
-                        variant="outlined"
-                        required
-                        type="date"
-                        :rules="[
-                          v => !!v || 'End date is required',
-                          v => !projectData.startDate || v >= projectData.startDate || 'End date must be after start date'
-                        ]"
-                      />
-                    </v-col>
-                    
-                    <v-col cols="12" md="6">
-                      <v-select
-                        v-model="projectData.priority"
-                        label="Priority Level"
-                        variant="outlined"
-                        required
-                        :items="priorityLevels"
-                        item-title="title"
-                        item-value="value"
-                        :rules="[v => !!v || 'Priority is required']"
-                      />
-                    </v-col>
-                    
-                    <v-col cols="12" md="6">
-                      <v-select
-                        v-model="projectData.budgetRange"
-                        label="Budget Range"
-                        variant="outlined"
-                        required
-                        :items="budgetRanges"
-                        item-title="title"
-                        item-value="value"
-                        :rules="[v => !!v || 'Budget range is required']"
-                      />
-                    </v-col>
-                    
-                    <v-col cols="12">
-                      <v-combobox
-                        v-model="projectData.tags"
-                        label="Project Tags"
-                        variant="outlined"
-                        multiple
-                        chips
-                        closable-chips
-                        :search-input.sync="searchTags"
-                        :items="[]"
-                        placeholder="Type to add tags..."
-                      />
-                    </v-col>
-                  </v-row>
+          <!-- Settings Step -->
+          <div v-if="currentStep === 'settings'" class="step-content">
+            <div class="step-header">
+              <h2 class="text-h5 font-weight-medium mb-4">Project Settings</h2>
+              <p class="text-body-2 text-medium-emphasis">Configure additional project settings</p>
+            </div>
+            
+            <v-row>
+              <v-col cols="12" md="8">
+                <v-form ref="settingsForm" v-model="settingsValid">
+                  <v-text-field
+                    v-model="projectData.budget"
+                    label="Budget"
+                    placeholder="Enter budget amount"
+                    variant="outlined"
+                    class="mb-4"
+                    type="number"
+                    prefix="$"
+                  />
+                  
+                  <v-select
+                    v-model="projectData.priority"
+                    label="Priority Level"
+                    :items="priorityLevels"
+                    variant="outlined"
+                    class="mb-4"
+                  />
+                  
+                  <v-text-field
+                    v-model="projectData.tags"
+                    label="Tags"
+                    placeholder="Enter tags separated by commas"
+                    variant="outlined"
+                    class="mb-4"
+                  />
+                  
+                  <v-textarea
+                    v-model="projectData.notes"
+                    label="Additional Notes"
+                    placeholder="Any additional notes or requirements"
+                    variant="outlined"
+                    rows="4"
+                    class="mb-6"
+                  />
                 </v-form>
-              </v-card>
-            </v-col>
-            
-            <v-col cols="12" md="4">
-              <v-card elevation="0" class="pa-4" color="grey-lighten-5">
-                <h4 class="text-h6 font-weight-medium mb-4">Settings Tips</h4>
-                <ul class="text-body-2">
-                  <li class="mb-2">Set realistic timelines</li>
-                  <li class="mb-2">Choose appropriate priority</li>
-                  <li class="mb-2">Estimate budget accurately</li>
-                  <li class="mb-2">Add relevant tags for organization</li>
-                </ul>
-                
-                <!-- Project Preview -->
-                <v-divider class="my-4" />
-                <h5 class="text-subtitle-1 font-weight-medium mb-3">Project Preview</h5>
-                <div class="project-summary">
-                  <div class="d-flex align-center mb-2">
-                    <v-icon size="16" color="primary" class="mr-2">mdi-folder</v-icon>
-                    <span class="text-body-2 font-weight-medium">{{ projectData.name || 'Project Name' }}</span>
+              </v-col>
+              
+              <v-col cols="12" md="4">
+                <v-card elevation="0" class="pa-4 border rounded-lg">
+                  <h4 class="text-subtitle-1 font-weight-medium mb-3">Project Preview</h4>
+                  <div class="project-preview">
+                    <h5 class="text-subtitle-2 font-weight-medium mb-2">{{ projectData.name || 'Project Name' }}</h5>
+                    <p class="text-caption text-medium-emphasis mb-3">{{ projectData.description || 'No description' }}</p>
+                    
+                    <div class="preview-stats">
+                      <div class="stat-item">
+                        <span class="stat-label">Stages:</span>
+                        <span class="stat-value">{{ projectData.departments.length }}</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Team:</span>
+                        <span class="stat-value">{{ projectData.roles.length }}</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Type:</span>
+                        <span class="stat-value">{{ projectData.type || 'Not set' }}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div class="d-flex align-center mb-2">
-                    <v-icon size="16" color="info" class="mr-2">mdi-account-group</v-icon>
-                    <span class="text-body-2">{{ projectData.roles.length }} team members</span>
-                  </div>
-                  <div class="d-flex align-center mb-2">
-                    <v-icon size="16" color="success" class="mr-2">mdi-domain</v-icon>
-                    <span class="text-body-2">{{ projectData.departments.length }} departments</span>
-                  </div>
-                  <div class="d-flex align-center">
-                    <v-icon size="16" color="warning" class="mr-2">mdi-calendar</v-icon>
-                    <span class="text-body-2">{{ projectData.startDate && projectData.endDate ? `${projectData.startDate} - ${projectData.endDate}` : 'Dates not set' }}</span>
-                  </div>
-                </div>
-              </v-card>
-            </v-col>
-          </v-row>
-        </div>
-      </div>
-
-      <!-- Navigation Footer -->
-      <v-footer elevation="0" color="grey-lighten-5" class="px-6 py-4">
-        <div class="d-flex align-center justify-space-between w-100">
-          <v-btn 
-            v-if="currentStep !== 'foundation'"
-            variant="outlined" 
-            @click="previousStep"
-          >
-            <v-icon class="mr-2">mdi-arrow-left</v-icon>
-            Previous
-          </v-btn>
-          <div v-else></div>
-
-          <v-btn 
-            v-if="currentStep !== 'settings'"
-            color="primary" 
-            variant="flat"
-            :disabled="!canProceedToNext"
-            @click="nextStep"
-          >
-            Next
-            <v-icon class="ml-2">mdi-arrow-right</v-icon>
-          </v-btn>
-          <div v-else>
-            <v-btn 
-              color="primary" 
-              variant="flat"
-              :disabled="!canCreateProject"
-              @click="createProject"
-            >
-              Create Project
-            </v-btn>
+                </v-card>
+              </v-col>
+            </v-row>
           </div>
         </div>
-      </v-footer>
+
+        <!-- Navigation Footer -->
+        <div class="navigation-footer">
+          <div class="d-flex justify-space-between align-center">
+            <v-btn 
+              v-if="currentStep !== 'foundation'"
+              variant="text" 
+              @click="previousStep"
+              :disabled="saving"
+            >
+              <v-icon class="mr-2">mdi-arrow-left</v-icon>
+              Back
+            </v-btn>
+            <div v-else></div>
+            
+            <div class="d-flex gap-3">
+              <v-btn 
+                v-if="currentStep !== 'settings'"
+                variant="text" 
+                @click="nextStep"
+                :disabled="!canProceedToNext || saving"
+              >
+                Skip
+              </v-btn>
+              
+              <v-btn 
+                v-if="currentStep !== 'settings'"
+                color="primary" 
+                @click="nextStep"
+                :disabled="!canProceedToNext || saving"
+                :loading="saving"
+              >
+                Save & Continue
+              </v-btn>
+              
+              <v-btn 
+                v-if="currentStep === 'settings'"
+                color="primary" 
+                @click="createProject"
+                :disabled="!canCreateProject || saving"
+                :loading="saving"
+                size="large"
+              >
+                Create Project
+              </v-btn>
+            </div>
+          </div>
+        </div>
+      </div>
     </v-container>
   </div>
 </template>
@@ -556,13 +473,14 @@ interface Department {
   type: string;
   description: string;
   order: number;
+  isVisible: boolean;
 }
 
 interface Role {
   userEmail: string;
   role: string;
   userId?: string;
-  departmentOrder: number | null;
+  departmentId: number | null;
 }
 
 interface ProjectTemplate {
@@ -597,14 +515,19 @@ const projectData = reactive({
   name: '',
   description: '',
   type: '',
-  startDate: '',
-  endDate: '',
+  isPublic: false,
+  allowGuests: false,
+  budget: '',
   priority: '',
-  budgetRange: '',
-  tags: [] as string[],
+  tags: '',
+  notes: '',
   departments: [] as Department[],
   roles: [] as Role[]
 });
+
+// Form validation
+const foundationValid = ref(false);
+const settingsValid = ref(false);
 
 // Department select options for roles
 const departmentOptions = computed(() =>
@@ -643,7 +566,7 @@ const canProceedToNext = computed(() => {
     case 'departments':
       return projectData.departments.length > 0;
     case 'team':
-      return projectData.roles.length > 0 && projectData.roles.every(r => r.departmentOrder !== null);
+      return projectData.roles.length > 0 && projectData.roles.every(r => r.departmentId !== null);
     default:
       return true;
   }
@@ -655,12 +578,15 @@ const canCreateProject = computed(() => {
          projectData.description &&
          projectData.departments.length > 0 &&
          projectData.roles.length > 0 &&
-         projectData.roles.every(r => r.departmentOrder !== null) &&
-         projectData.startDate &&
-         projectData.endDate &&
+         projectData.roles.every(r => r.departmentId !== null) &&
+         projectData.budget &&
          projectData.priority &&
-         projectData.budgetRange;
+         projectData.tags &&
+         projectData.notes;
 });
+
+const hasDraft = computed(() => !!currentDraft.value);
+const draft = computed(() => currentDraft.value?.data);
 
 // API Functions
 const fetchConfigData = async () => {
@@ -846,9 +772,11 @@ const saveDraft = async () => {
   }
 };
 
-const loadDraft = async (draftId: string) => {
+const loadDraft = async () => {
+  if (!currentDraft.value) return;
+  
   try {
-    const response = await fetch(`${API_BASE}/api/project-drafts/${draftId}`);
+    const response = await fetch(`${API_BASE}/api/project-drafts/${currentDraft.value.id}`);
     if (response.ok) {
       const data = await response.json();
       Object.assign(projectData, data.draft.data);
@@ -864,6 +792,30 @@ const loadDraft = async (draftId: string) => {
   }
 };
 
+const clearDraft = () => {
+  if (currentDraft.value) {
+    if (confirm('Are you sure you want to clear this draft? This action cannot be undone.')) {
+      fetch(`${API_BASE}/api/project-drafts/${currentDraft.value.id}`, {
+        method: 'DELETE'
+      })
+      .then(response => {
+        if (response.ok) {
+          currentDraft.value = null;
+          success.value = 'Draft cleared successfully!';
+          setTimeout(() => success.value = '', 3000);
+        } else {
+          throw new Error('Failed to clear draft');
+        }
+      })
+      .catch(err => {
+        console.error('Failed to clear draft:', err);
+        error.value = 'Failed to clear draft';
+        setTimeout(() => error.value = '', 5000);
+      });
+    }
+  }
+};
+
 // Template Management
 const applyTemplate = async (template: ProjectTemplate) => {
   try {
@@ -876,7 +828,8 @@ const applyTemplate = async (template: ProjectTemplate) => {
       if (structure.departments) {
         projectData.departments = structure.departments.map((dept: any, index: number) => ({
           ...dept,
-          order: index
+          order: index,
+          isVisible: true // Ensure visibility is true for template departments
         }));
       }
       
@@ -885,7 +838,7 @@ const applyTemplate = async (template: ProjectTemplate) => {
       }
       
       if (structure.tags) {
-        projectData.tags = structure.tags;
+        projectData.tags = structure.tags.join(', ');
       }
       
       selectedTemplate.value = template;
@@ -947,7 +900,8 @@ const addDepartment = () => {
     name: '',
     type: 'MAJOR',
     description: '',
-    order: projectData.departments.length
+    order: projectData.departments.length,
+    isVisible: true
   });
 };
 
@@ -964,7 +918,7 @@ const addRole = () => {
   projectData.roles.push({
     userEmail: '',
     role: 'EMPLOYEE',
-    departmentOrder: projectData.departments.length > 0 ? 0 : null
+    departmentId: projectData.departments.length > 0 ? 0 : null
   });
 };
 
@@ -981,28 +935,44 @@ const ensureOwnerRole = () => {
       userEmail: creatorEmail,
       userId: user.value.id,
       role: 'PROJECT_OWNER',
-      departmentOrder: projectData.departments.length > 0 ? 0 : null
+      departmentId: projectData.departments.length > 0 ? 0 : null
     });
   }
 };
 
 // Drag and drop functionality
-const dragStart = (index: number) => {
-  // Implementation for drag and drop reordering
+const draggedDept = ref<number | null>(null);
+
+const startDrag = (index: number) => {
+  draggedDept.value = index;
 };
 
-const drop = (index: number) => {
-  // Implementation for drop reordering
+const onDrop = (index: number) => {
+  if (draggedDept.value === null) return;
+
+  const draggedDepartment = projectData.departments[draggedDept.value];
+  const targetDepartment = projectData.departments[index];
+
+  // Swap orders
+  const tempOrder = draggedDepartment.order;
+  draggedDepartment.order = targetDepartment.order;
+  targetDepartment.order = tempOrder;
+
+  // Re-order departments based on new order
+  projectData.departments.forEach((dept, idx) => {
+    dept.order = idx;
+  });
+
+  draggedDept.value = null;
 };
 
 // Utility functions
-const getPriorityColor = (priority: string) => {
-  switch (priority) {
-    case 'LOW': return 'success';
-    case 'MEDIUM': return 'warning';
-    case 'HIGH': return 'error';
-    case 'CRITICAL': return 'error';
-    default: return 'grey';
+const formatDate = (timestamp: string) => {
+  if (!timestamp) return 'N/A';
+  try {
+    return new Date(timestamp).toLocaleDateString();
+  } catch (e) {
+    return timestamp;
   }
 };
 
@@ -1043,13 +1013,14 @@ const createProject = async () => {
         name: dept.name,
         type: dept.type,
         description: dept.description,
-        order: index
+        order: dept.order,
+        isVisible: dept.isVisible
       })),
       roles: projectData.roles.map(role => ({
         userId: role.userId,
         userEmail: role.userEmail,
         role: role.role,
-        departmentOrder: role.departmentOrder
+        departmentId: role.departmentId
       }))
     };
     
@@ -1156,36 +1127,120 @@ onMounted(async () => {
   padding: 32px;
 }
 
+.step-content-container {
+  margin-top: 24px;
+}
+
 .step-content {
   animation: fadeIn 0.3s ease-in-out;
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.step-indicator {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  font-weight: bold;
-  transition: all 0.3s ease;
+.step-header {
+  margin-bottom: 24px;
 }
 
-.step-indicator.completed {
-  background: rgb(var(--v-theme-success));
-  color: white;
+.step-header h2 {
+  color: rgb(var(--v-theme-on-surface));
 }
 
-.step-indicator.current {
-  background: rgb(var(--v-theme-primary));
-  color: white;
-}
-
-.step-indicator.pending {
-  background: rgb(var(--v-theme-surface-variant));
+.step-header p {
   color: rgb(var(--v-theme-on-surface-variant));
 }
 
+/* Progress Steps */
+.progress-container {
+  background: white;
+  padding: 24px 32px;
+  border-bottom: 1px solid rgb(var(--v-theme-outline-variant));
+  position: relative;
+}
+
+.progress-line {
+  position: absolute;
+  left: 32px;
+  top: 50%;
+  width: calc(100% - 64px);
+  height: 2px;
+  background: rgb(var(--v-theme-outline-variant));
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.progress-steps {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.progress-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  background: white;
+  color: rgb(var(--v-theme-on-surface-variant));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgb(var(--v-theme-outline-variant));
+  margin-bottom: 8px;
+}
+
+.step-connector {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  width: 100px;
+  height: 2px;
+  background: rgb(var(--v-theme-outline-variant));
+  transform: translateX(-50%);
+}
+
+.step-number.completed {
+  background: rgb(var(--v-theme-primary));
+  color: white;
+  border-color: rgb(var(--v-theme-primary));
+}
+
+.step-number.current {
+  background: rgb(var(--v-theme-primary));
+  color: white;
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 4px rgba(var(--v-theme-primary), 0.2);
+}
+
+.step-number.pending {
+  background: white;
+  color: rgb(var(--v-theme-on-surface-variant));
+  border-color: rgb(var(--v-theme-outline-variant));
+}
+
 .step-label {
+  font-size: 0.875rem;
   font-weight: 500;
+  color: rgb(var(--v-theme-on-surface));
+  text-align: center;
   white-space: nowrap;
+}
+
+.departments-container {
+  margin-top: 24px;
 }
 
 .departments-grid {
@@ -1195,6 +1250,41 @@ onMounted(async () => {
   margin-top: 16px;
 }
 
+.department-card {
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  background: rgb(var(--v-theme-surface));
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.department-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.department-card.dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
+}
+
+.department-header {
+  padding: 16px;
+  border-bottom: 1px solid rgb(var(--v-theme-surface-variant));
+}
+
+.department-header .v-field {
+  margin-bottom: 12px;
+}
+
+.department-header .v-field:last-child {
+  margin-bottom: 0;
+}
+
+.roles-container {
+  margin-top: 24px;
+}
+
 .roles-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1202,24 +1292,30 @@ onMounted(async () => {
   margin-top: 16px;
 }
 
-.department-card,
 .role-card {
   transition: all 0.3s ease;
   border: 2px solid transparent;
+  background: rgb(var(--v-theme-surface));
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.department-card:hover,
 .role-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.department-card {
-  border-left: 4px solid var(--v-primary-base);
+.role-header {
+  padding: 16px;
+  border-bottom: 1px solid rgb(var(--v-theme-surface-variant));
 }
 
-.role-card {
-  border-left: 4px solid var(--v-info-base);
+.role-header .v-field {
+  margin-bottom: 12px;
+}
+
+.role-header .v-field:last-child {
+  margin-bottom: 0;
 }
 
 .dept-type-select {
@@ -1245,6 +1341,57 @@ onMounted(async () => {
 
 .project-preview {
   transition: all 0.3s ease;
+}
+
+.project-preview h5 {
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.project-preview p {
+  color: rgb(var(--v-theme-on-surface-variant));
+}
+
+.preview-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-label {
+  color: rgb(var(--v-theme-on-surface-variant));
+  font-size: 0.875rem;
+}
+
+.stat-value {
+  color: rgb(var(--v-theme-on-surface));
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.navigation-footer {
+  background: white;
+  padding: 24px 32px;
+  border-top: 1px solid rgb(var(--v-theme-outline-variant));
+  margin-top: 32px;
+}
+
+.border {
+  border: 1px solid rgb(var(--v-theme-outline-variant));
+}
+
+.border-b {
+  border-bottom: 1px solid rgb(var(--v-theme-outline-variant));
+}
+
+.border-t {
+  border-top: 1px solid rgb(var(--v-theme-outline-variant));
 }
 
 .space-y-3 > * + * {
