@@ -121,6 +121,8 @@ export const projectApi = {
     startDate: string;
     endDate: string;
     ownerId: string;
+    userId: string; // Required by backend validation
+    walletAddress: string; // Required by backend validation
     departmentIds: string[];
     tagNames: string[];
   }) => {

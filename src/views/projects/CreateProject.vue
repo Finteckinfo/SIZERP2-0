@@ -152,8 +152,31 @@
                     placeholder="Description (Optional)"
                     variant="outlined"
                     rows="4"
-                    class="mb-6"
+                    class="mb-4"
                   />
+                  
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="projectData.startDate"
+                        label="Start Date"
+                        type="date"
+                        variant="outlined"
+                        :rules="[v => !!v || 'Start date is required']"
+                        class="mb-4"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="projectData.endDate"
+                        label="End Date"
+                        type="date"
+                        variant="outlined"
+                        :rules="[v => !!v || 'End date is required']"
+                        class="mb-4"
+                      />
+                    </v-col>
+                  </v-row>
                 </v-col>
                 
                 <v-col cols="12" md="4">
@@ -342,7 +365,7 @@
               <v-col cols="12" md="8">
                 <v-form ref="settingsForm" v-model="settingsValid">
                   <v-text-field
-                    v-model="projectData.budget"
+                    v-model="projectData.budgetRange"
                     label="Budget"
                     placeholder="Enter budget amount"
                     variant="outlined"
@@ -463,6 +486,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUser } from '@clerk/vue';
 import { connectedWallet } from '@/stores/walletStore';
+import { projectApi } from '@/services/projectApi';
 
 const router = useRouter();
 const { user } = useUser();
@@ -514,11 +538,13 @@ const currentStep = ref('foundation');
 const projectData = reactive({
   name: '',
   description: '',
-  type: '',
+  type: '' as 'PROGRESSIVE' | 'PARALLEL',
+  priority: 'MEDIUM' as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL',
+  budgetRange: '',
+  startDate: '',
+  endDate: '',
   isPublic: false,
   allowGuests: false,
-  budget: '',
-  priority: '',
   tags: '',
   notes: '',
   departments: [] as Department[],
@@ -562,7 +588,7 @@ const API_BASE = import.meta.env.VITE_BACKEND_URL;
 const canProceedToNext = computed(() => {
   switch (currentStep.value) {
     case 'foundation':
-      return projectData.name && projectData.type && projectData.description;
+      return projectData.name && projectData.type && projectData.description && projectData.startDate && projectData.endDate;
     case 'departments':
       return projectData.departments.length > 0;
     case 'team':
@@ -576,10 +602,12 @@ const canCreateProject = computed(() => {
   return projectData.name && 
          projectData.type && 
          projectData.description &&
+         projectData.startDate &&
+         projectData.endDate &&
          projectData.departments.length > 0 &&
          projectData.roles.length > 0 &&
          projectData.roles.every(r => r.departmentId !== null) &&
-         projectData.budget &&
+         projectData.budgetRange &&
          projectData.priority &&
          projectData.tags &&
          projectData.notes;
@@ -1004,35 +1032,26 @@ const createProject = async () => {
   error.value = '';
   
   try {
-    // Prepare project data
+    // Prepare project data for API
     const projectPayload = {
-      ...projectData,
+      name: projectData.name,
+      description: projectData.description,
+      type: projectData.type,
+      priority: projectData.priority,
+      budgetRange: projectData.budgetRange,
+      startDate: projectData.startDate,
+      endDate: projectData.endDate,
+      ownerId: user.value.id,
       userId: user.value.id,
       walletAddress: connectedWallet.value,
-      departments: projectData.departments.map((dept, index) => ({
-        name: dept.name,
-        type: dept.type,
-        description: dept.description,
-        order: dept.order,
-        isVisible: dept.isVisible
-      })),
-      roles: projectData.roles.map(role => ({
-        userId: role.userId,
-        userEmail: role.userEmail,
-        role: role.role,
-        departmentId: role.departmentId
-      }))
+      departmentIds: projectData.departments.map((dept, index) => `dept-${index}`), // Temporary IDs for now
+      tagNames: projectData.tags ? projectData.tags.split(',').map(tag => tag.trim()) : []
     };
     
-    const response = await fetch(`${API_BASE}/api/projects`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(projectPayload)
-    });
+    const response = await projectApi.createProject(projectPayload);
     
-    if (response.ok) {
-      const data = await response.json();
-      console.log('Project created:', data);
+    if (response) {
+      console.log('Project created:', response);
       
       // Clear draft if exists
       if (currentDraft.value) {
@@ -1050,8 +1069,7 @@ const createProject = async () => {
         router.push('/projects');
       }, 1500);
     } else {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to create project');
+      throw new Error('Failed to create project');
     }
   } catch (err) {
     console.error('Error creating project:', err);
