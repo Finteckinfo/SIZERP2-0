@@ -231,9 +231,24 @@ onMounted(() => {
       <v-col cols="12">
         <div class="d-flex align-center justify-space-between mb-4">
           <h3 class="text-h4 font-weight-medium">My Projects</h3>
-          <v-btn color="primary" variant="flat" prepend-icon="mdi-plus" @click="$router.push('/projects/create')">
-            Create New Project
-          </v-btn>
+          <div class="d-flex gap-3">
+            <v-btn 
+              color="secondary" 
+              variant="outlined" 
+              prepend-icon="mdi-view-column" 
+              @click="$router.push('/projects')"
+            >
+              View All Projects
+            </v-btn>
+            <v-btn 
+              color="primary" 
+              variant="flat" 
+              prepend-icon="mdi-plus" 
+              @click="$router.push('/projects/create')"
+            >
+              Create New Project
+            </v-btn>
+          </div>
         </div>
 
         <!-- Loading skeleton for projects -->

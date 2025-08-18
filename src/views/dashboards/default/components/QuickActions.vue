@@ -17,7 +17,7 @@ const quickActions = [
     description: 'View all your projects',
     icon: FolderIcon, 
     color: 'success', 
-    action: () => console.log('My Projects clicked') 
+    action: () => router.push('/projects')
   },
   { 
     title: 'Team Members', 

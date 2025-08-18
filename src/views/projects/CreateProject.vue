@@ -462,6 +462,28 @@
                   <li class="mb-2">Estimate budget accurately</li>
                   <li class="mb-2">Add relevant tags for organization</li>
                 </ul>
+                
+                <!-- Project Preview -->
+                <v-divider class="my-4" />
+                <h5 class="text-subtitle-1 font-weight-medium mb-3">Project Preview</h5>
+                <div class="project-summary">
+                  <div class="d-flex align-center mb-2">
+                    <v-icon size="16" color="primary" class="mr-2">mdi-folder</v-icon>
+                    <span class="text-body-2 font-weight-medium">{{ projectData.name || 'Project Name' }}</span>
+                  </div>
+                  <div class="d-flex align-center mb-2">
+                    <v-icon size="16" color="info" class="mr-2">mdi-account-group</v-icon>
+                    <span class="text-body-2">{{ projectData.roles.length }} team members</span>
+                  </div>
+                  <div class="d-flex align-center mb-2">
+                    <v-icon size="16" color="success" class="mr-2">mdi-domain</v-icon>
+                    <span class="text-body-2">{{ projectData.departments.length }} departments</span>
+                  </div>
+                  <div class="d-flex align-center">
+                    <v-icon size="16" color="warning" class="mr-2">mdi-calendar</v-icon>
+                    <span class="text-body-2">{{ projectData.startDate && projectData.endDate ? `${projectData.startDate} - ${projectData.endDate}` : 'Dates not set' }}</span>
+                  </div>
+                </div>
               </v-card>
             </v-col>
           </v-row>
@@ -491,7 +513,16 @@
             Next
             <v-icon class="ml-2">mdi-arrow-right</v-icon>
           </v-btn>
-          <div v-else></div>
+          <div v-else>
+            <v-btn 
+              color="primary" 
+              variant="flat"
+              :disabled="!canCreateProject"
+              @click="createProject"
+            >
+              Create Project
+            </v-btn>
+          </div>
         </div>
       </v-footer>
     </v-container>
