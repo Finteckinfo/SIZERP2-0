@@ -2,14 +2,35 @@ import { ref, watch } from 'vue';
 import { WalletId, NetworkId, type SupportedWallet } from '@txnlab/use-wallet-vue';
 import type { AlgodTokenHeader, BaseHTTPClient, CustomTokenHeader } from 'algosdk';
 
-// Tracks currently active wallet
-export const activeAccount = ref<{ address: string } | null>(null);
+// Initialize wallet connection from localStorage
+function getInitialWalletState() {
+  const saved = localStorage.getItem('wallet_connection');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      console.log('[walletManager] Restored wallet connection from storage:', parsed);
+      return parsed;
+    } catch (e) {
+      console.warn('[walletManager] Failed to parse saved wallet connection:', e);
+      localStorage.removeItem('wallet_connection');
+    }
+  }
+  return null;
+}
 
-// Log changes automatically
+// Tracks currently active wallet with persistence
+export const activeAccount = ref<{ address: string } | null>(getInitialWalletState());
+
+// Log changes automatically and persist to localStorage
 watch(activeAccount, (val) => {
-  if (val) console.log('[walletManager] Wallet connected:', val.address);
-  else console.log('[walletManager] Wallet disconnected');
-});
+  if (val) {
+    console.log('[walletManager] Wallet connected:', val.address);
+    localStorage.setItem('wallet_connection', JSON.stringify(val));
+  } else {
+    console.log('[walletManager] Wallet disconnected');
+    localStorage.removeItem('wallet_connection');
+  }
+}, { immediate: true });
 
 // Wallet providers
 import deflyIcon from '@/assets/images/wallets/defly.png';
@@ -90,4 +111,11 @@ export function isWalletConnected(): boolean {
   const connected = activeAccount.value !== null;
   console.log('[walletManager] isWalletConnected =', connected);
   return connected;
+}
+
+// Function to clear wallet connection (useful for logout)
+export function clearWalletConnection() {
+  console.log('[walletManager] clearWalletConnection called');
+  activeAccount.value = null;
+  localStorage.removeItem('wallet_connection');
 }
