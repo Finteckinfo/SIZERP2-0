@@ -356,6 +356,18 @@
                       item-value="value"
                       class="mt-3"
                     />
+                    
+                    <v-select
+                      v-model="role.departmentOrder"
+                      :items="departmentOptions"
+                      item-title="title"
+                      item-value="value"
+                      label="Department"
+                      variant="outlined"
+                      density="compact"
+                      :rules="[v => v !== null || 'Department is required']"
+                      class="mt-3"
+                    />
                   </v-card>
                 </div>
               </v-card>
@@ -533,6 +545,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUser } from '@clerk/vue';
+import { connectedWallet } from '@/stores/walletStore';
 
 const router = useRouter();
 const { user } = useUser();
@@ -549,6 +562,7 @@ interface Role {
   userEmail: string;
   role: string;
   userId?: string;
+  departmentOrder: number | null;
 }
 
 interface ProjectTemplate {
@@ -592,6 +606,11 @@ const projectData = reactive({
   roles: [] as Role[]
 });
 
+// Department select options for roles
+const departmentOptions = computed(() =>
+  projectData.departments.map((dept, index) => ({ title: dept.name || `Department ${index + 1}`, value: index }))
+);
+
 // API state
 const loading = ref(false);
 const saving = ref(false);
@@ -624,7 +643,7 @@ const canProceedToNext = computed(() => {
     case 'departments':
       return projectData.departments.length > 0;
     case 'team':
-      return projectData.roles.length > 0;
+      return projectData.roles.length > 0 && projectData.roles.every(r => r.departmentOrder !== null);
     default:
       return true;
   }
@@ -636,6 +655,7 @@ const canCreateProject = computed(() => {
          projectData.description &&
          projectData.departments.length > 0 &&
          projectData.roles.length > 0 &&
+         projectData.roles.every(r => r.departmentOrder !== null) &&
          projectData.startDate &&
          projectData.endDate &&
          projectData.priority &&
@@ -943,12 +963,27 @@ const removeDepartment = (index: number) => {
 const addRole = () => {
   projectData.roles.push({
     userEmail: '',
-    role: 'EMPLOYEE'
+    role: 'EMPLOYEE',
+    departmentOrder: projectData.departments.length > 0 ? 0 : null
   });
 };
 
 const removeRole = (index: number) => {
   projectData.roles.splice(index, 1);
+};
+
+// Ensure creator is PROJECT_OWNER
+const ensureOwnerRole = () => {
+  const ownerExists = projectData.roles.some(r => r.role === 'PROJECT_OWNER');
+  if (!ownerExists && user.value?.id) {
+    const creatorEmail = user.value.emailAddresses?.[0]?.emailAddress || '';
+    projectData.roles.unshift({
+      userEmail: creatorEmail,
+      userId: user.value.id,
+      role: 'PROJECT_OWNER',
+      departmentOrder: projectData.departments.length > 0 ? 0 : null
+    });
+  }
 };
 
 // Drag and drop functionality
@@ -977,6 +1012,12 @@ const createProject = async () => {
     error.value = 'User not authenticated';
     return;
   }
+
+  if (!connectedWallet.value) {
+    error.value = 'Wallet address is required. Please connect your wallet.';
+    setTimeout(() => error.value = '', 5000);
+    return;
+  }
   
   // Validate project first
   const validation = await validateProject();
@@ -985,6 +1026,9 @@ const createProject = async () => {
     setTimeout(() => error.value = '', 5000);
     return;
   }
+
+  // Ensure owner role
+  ensureOwnerRole();
   
   submitting.value = true;
   error.value = '';
@@ -993,6 +1037,8 @@ const createProject = async () => {
     // Prepare project data
     const projectPayload = {
       ...projectData,
+      userId: user.value.id,
+      walletAddress: connectedWallet.value,
       departments: projectData.departments.map((dept, index) => ({
         name: dept.name,
         type: dept.type,
@@ -1000,8 +1046,10 @@ const createProject = async () => {
         order: index
       })),
       roles: projectData.roles.map(role => ({
+        userId: role.userId,
         userEmail: role.userEmail,
-        role: role.role
+        role: role.role,
+        departmentOrder: role.departmentOrder
       }))
     };
     
@@ -1028,8 +1076,8 @@ const createProject = async () => {
       
       success.value = 'Project created successfully!';
       setTimeout(() => {
-        router.push('/dashboard/default');
-      }, 2000);
+        router.push('/projects');
+      }, 1500);
     } else {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Failed to create project');
@@ -1050,6 +1098,27 @@ watch(projectData, () => {
     setTimeout(saveDraft, 2000);
   }
 }, { deep: true });
+
+// Watch for step changes to ensure owner role and default department
+watch(currentStep, async (newStep) => {
+  if (newStep === 'team') {
+    await ensureOwnerRole();
+    // Ensure default department for new roles if no departments exist
+    if (projectData.departments.length === 0) {
+      addDepartment();
+    }
+  }
+});
+
+// Watch for department changes to ensure default department for new roles
+watch(projectData.departments, async (newDepartments) => {
+  if (currentStep.value === 'team') {
+    // Ensure default department for new roles if no departments exist
+    if (newDepartments.length === 0) {
+      addDepartment();
+    }
+  }
+});
 
 // Initialize data
 onMounted(async () => {
