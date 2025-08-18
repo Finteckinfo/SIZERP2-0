@@ -7,30 +7,35 @@ const router = useRouter();
 const quickActions = [
   { 
     title: 'Create Project', 
+    description: 'Start a new project',
     icon: PlusIcon, 
     color: 'primary', 
     action: () => router.push('/projects/create')
   },
   { 
     title: 'My Projects', 
+    description: 'View all your projects',
     icon: FolderIcon, 
     color: 'success', 
     action: () => console.log('My Projects clicked') 
   },
   { 
     title: 'Team Members', 
+    description: 'Manage team and roles',
     icon: UsersIcon, 
     color: 'info', 
     action: () => console.log('Team Members clicked') 
   },
   { 
     title: 'Task Calendar', 
+    description: 'View task timeline',
     icon: CalendarIcon, 
     color: 'warning', 
     action: () => console.log('Task Calendar clicked') 
   },
   { 
     title: 'Analytics', 
+    description: 'Project performance',
     icon: ChartBarIcon, 
     color: 'secondary', 
     action: () => console.log('Analytics clicked') 
