@@ -231,7 +231,7 @@ onMounted(() => {
       <v-col cols="12">
         <div class="d-flex align-center justify-space-between mb-4">
           <h3 class="text-h4 font-weight-medium">My Projects</h3>
-          <v-btn color="primary" variant="flat" prepend-icon="mdi-plus">
+          <v-btn color="primary" variant="flat" prepend-icon="mdi-plus" @click="$router.push('/projects/create')">
             Create New Project
           </v-btn>
         </div>
@@ -252,7 +252,7 @@ onMounted(() => {
           <p class="text-body-1 text-medium-emphasis mb-4">
             Start by creating your first project or joining an existing one
           </p>
-          <v-btn color="primary" variant="flat">
+          <v-btn color="primary" variant="flat" @click="$router.push('/projects/create')">
             Create Your First Project
           </v-btn>
         </div>
@@ -263,17 +263,17 @@ onMounted(() => {
             <ProjectCard :project="project" />
           </v-col>
         </v-row>
-      </v-col>
+    </v-col>
     </v-row>
 
     <!-- Recent Activity and Quick Stats - Progressive loading -->
     <v-row>
-      <v-col cols="12" lg="8">
+    <v-col cols="12" lg="8">
         <ActivitySkeleton v-if="activitiesLoading" />
         <RecentActivity v-else :activities="recentActivities" />
-      </v-col>
+    </v-col>
 
-      <v-col cols="12" lg="4">
+    <v-col cols="12" lg="4">
         <!-- Weekly Progress Card - Progressive loading -->
         <v-card elevation="0" class="mb-4">
           <v-card-text class="pa-4">
@@ -353,8 +353,8 @@ onMounted(() => {
             </div>
           </v-card-text>
         </v-card>
-      </v-col>
-    </v-row>
+    </v-col>
+  </v-row>
   </div>
 </template>
 

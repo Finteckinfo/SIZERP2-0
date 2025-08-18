@@ -1,46 +1,39 @@
 <script setup lang="ts">
 import { PlusIcon, FolderIcon, UsersIcon, CalendarIcon, ChartBarIcon } from 'vue-tabler-icons';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const quickActions = [
-  {
-    title: 'Create Project',
-    description: 'Start a new project',
-    icon: PlusIcon,
-    color: 'primary',
-    action: () => console.log('Create Project clicked'),
-    href: '#'
+  { 
+    title: 'Create Project', 
+    icon: PlusIcon, 
+    color: 'primary', 
+    action: () => router.push('/projects/create')
   },
-  {
-    title: 'My Projects',
-    description: 'View all your projects',
-    icon: FolderIcon,
-    color: 'success',
-    action: () => console.log('My Projects clicked'),
-    href: '#'
+  { 
+    title: 'My Projects', 
+    icon: FolderIcon, 
+    color: 'success', 
+    action: () => console.log('My Projects clicked') 
   },
-  {
-    title: 'Team Members',
-    description: 'Manage team and roles',
-    icon: UsersIcon,
-    color: 'info',
-    action: () => console.log('Team Members clicked'),
-    href: '#'
+  { 
+    title: 'Team Members', 
+    icon: UsersIcon, 
+    color: 'info', 
+    action: () => console.log('Team Members clicked') 
   },
-  {
-    title: 'Task Calendar',
-    description: 'View task timeline',
-    icon: CalendarIcon,
-    color: 'warning',
-    action: () => console.log('Task Calendar clicked'),
-    href: '#'
+  { 
+    title: 'Task Calendar', 
+    icon: CalendarIcon, 
+    color: 'warning', 
+    action: () => console.log('Task Calendar clicked') 
   },
-  {
-    title: 'Analytics',
-    description: 'Project performance',
-    icon: ChartBarIcon,
-    color: 'secondary',
-    action: () => console.log('Analytics clicked'),
-    href: '#'
+  { 
+    title: 'Analytics', 
+    icon: ChartBarIcon, 
+    color: 'secondary', 
+    action: () => console.log('Analytics clicked') 
   }
 ];
 </script>
