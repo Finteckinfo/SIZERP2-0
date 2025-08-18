@@ -542,6 +542,18 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
+// Type definitions for better TypeScript support
+interface Department {
+  name: string;
+  type: string;
+  description: string;
+}
+
+interface Role {
+  userEmail: string;
+  role: string;
+}
+
 // Project creation steps
 const creationSteps = ref([
   { id: 'foundation', label: 'Foundation', completed: false },
@@ -561,9 +573,9 @@ const projectData = reactive({
   endDate: '',
   priority: '',
   budgetRange: '',
-  tags: [],
-  departments: [],
-  roles: []
+  tags: [] as string[],
+  departments: [] as Department[],
+  roles: [] as Role[]
 });
 
 // Form options
