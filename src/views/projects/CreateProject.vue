@@ -963,7 +963,7 @@ const ensureOwnerRole = () => {
       userEmail: creatorEmail,
       userId: user.value.id,
       role: 'PROJECT_OWNER',
-      departmentId: projectData.departments.length > 0 ? 0 : null
+      departmentId: null // Project owner has access to ALL departments automatically
     });
   }
 };
@@ -1032,7 +1032,7 @@ const createProject = async () => {
   error.value = '';
   
   try {
-    // Prepare project data for API
+    // Prepare project data for API - FIXED to match backend requirements
     const projectPayload = {
       name: projectData.name,
       description: projectData.description,
@@ -1041,18 +1041,39 @@ const createProject = async () => {
       budgetRange: projectData.budgetRange,
       startDate: projectData.startDate,
       endDate: projectData.endDate,
-      ownerId: user.value.id,
-      userId: user.value.id,
-      walletAddress: connectedWallet.value,
-      departmentIds: projectData.departments.map((dept, index) => `dept-${index}`), // Temporary IDs for now
-      tagNames: projectData.tags ? projectData.tags.split(',').map(tag => tag.trim()) : []
+      ownerId: user.value.id, // Required by backend
+      userId: user.value.id, // Required by backend
+      walletAddress: connectedWallet.value, // Required by backend
+      departments: projectData.departments.map((dept, index) => ({
+        name: dept.name,
+        type: dept.type as 'MAJOR' | 'MINOR',
+        description: dept.description,
+        order: dept.order,
+        isVisible: dept.isVisible
+      })),
+      roles: projectData.roles.map(role => ({
+        userEmail: role.userEmail,
+        role: role.role as 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE',
+        departmentId: role.departmentId // null for PROJECT_OWNER means access to all
+      })),
+      tags: projectData.tags ? projectData.tags.split(',').map(tag => tag.trim()) : []
     };
     
-    const response = await projectApi.createProject(projectPayload);
+    console.log('Sending project payload:', projectPayload); // Debug log
+    
+    // Fix departmentId type conversion - convert number to string
+    const fixedPayload = {
+      ...projectPayload,
+      roles: projectPayload.roles.map(role => ({
+        ...role,
+        departmentId: role.departmentId !== null ? String(role.departmentId) : null
+      }))
+    };
+    
+    const response = await projectApi.createProject(fixedPayload);
     
     if (response) {
       console.log('Project created:', response);
-      
       // Clear draft if exists
       if (currentDraft.value) {
         try {

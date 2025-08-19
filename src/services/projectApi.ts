@@ -123,8 +123,19 @@ export const projectApi = {
     ownerId: string;
     userId: string; // Required by backend validation
     walletAddress: string; // Required by backend validation
-    departmentIds: string[];
-    tagNames: string[];
+    departments: Array<{
+      name: string;
+      type: 'MAJOR' | 'MINOR';
+      description?: string;
+      order: number;
+      isVisible: boolean;
+    }>;
+    roles: Array<{
+      userEmail: string;
+      role: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
+      departmentId?: string | null;
+    }>;
+    tags?: string[];
   }) => {
     const response = await axios.post(`${API_BASE_URL}/projects`, projectData);
     return response.data;
