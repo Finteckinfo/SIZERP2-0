@@ -353,31 +353,7 @@ export const tagApi = {
 };
 
 // Draft APIs
-export const draftApi = {
-  // Get project drafts
-  getProjectDrafts: async (projectId: string) => {
-    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/drafts`);
-    return response.data;
-  },
-
-  // Save draft
-  saveDraft: async (projectId: string, draftData: { data: any }) => {
-    const response = await axios.post(`${API_BASE_URL}/projects/${projectId}/drafts`, draftData);
-    return response.data;
-  },
-
-  // Update draft
-  updateDraft: async (projectId: string, draftId: string, draftData: { data: any }) => {
-    const response = await axios.patch(`${API_BASE_URL}/projects/${projectId}/drafts/${draftId}`, draftData);
-    return response.data;
-  },
-
-  // Delete draft
-  deleteDraft: async (projectId: string, draftId: string) => {
-    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}/drafts/${draftId}`);
-    return response.data;
-  }
-};
+// Draft APIs removed (backend disabled)
 
 // Global User APIs
 export const userApi = {
@@ -414,16 +390,4 @@ export const globalDepartmentApi = {
 };
 
 // Project Template APIs
-export const projectTemplateApi = {
-  // Get all templates
-  getAllTemplates: async () => {
-    const response = await axios.get(`${API_BASE_URL}/project-templates`);
-    return response.data;
-  },
-
-  // Get template structure
-  getTemplate: async (templateId: string) => {
-    const response = await axios.get(`${API_BASE_URL}/project-templates/${templateId}`);
-    return response.data;
-  }
-};
+// Project Template APIs removed (backend disabled)

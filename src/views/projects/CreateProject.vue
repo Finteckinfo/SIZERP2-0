@@ -64,57 +64,7 @@
 
       <!-- Main Content Area -->
       <div v-if="!loading" class="main-content">
-        <!-- Templates Section -->
-        <v-row v-if="projectTemplates.length > 0" class="mb-6">
-          <v-col cols="12">
-            <v-card elevation="0" class="pa-4 border rounded-lg">
-              <div class="d-flex align-center justify-space-between mb-4">
-                <h3 class="text-h6 font-weight-medium">Project Templates</h3>
-                <v-btn 
-                  v-if="selectedTemplate"
-                  variant="text" 
-                  color="secondary"
-                  @click="selectedTemplate = null"
-                >
-                  Clear Template
-                </v-btn>
-              </div>
-              <div class="d-flex flex-wrap gap-3">
-                <v-chip
-                  v-for="template in projectTemplates"
-                  :key="template.id"
-                  :color="selectedTemplate?.id === template.id ? 'primary' : 'default'"
-                  variant="outlined"
-                  class="cursor-pointer"
-                  @click="applyTemplate(template)"
-                >
-                  {{ template.name }}
-                </v-chip>
-              </div>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <!-- Draft Management -->
-        <v-row v-if="hasDraft" class="mb-6">
-          <v-col cols="12">
-            <v-card elevation="0" color="blue-lighten-5" class="pa-4 border rounded-lg">
-              <div class="d-flex align-center justify-space-between">
-                <div class="d-flex align-center">
-                  <v-icon color="blue" class="mr-3">mdi-content-save</v-icon>
-                  <div>
-                    <h4 class="text-subtitle-1 font-weight-medium mb-1">Draft Found</h4>
-                    <p class="text-caption text-medium-emphasis mb-0">You have an unsaved draft from {{ formatDate(draft?.updatedAt) }}</p>
-                  </div>
-                </div>
-                <div class="d-flex gap-2">
-                  <v-btn variant="outlined" size="small" @click="loadDraft">Load Draft</v-btn>
-                  <v-btn variant="text" size="small" @click="clearDraft">Clear Draft</v-btn>
-                </div>
-              </div>
-            </v-card>
-          </v-col>
-        </v-row>
+        
 
         <!-- Step Content -->
         <div class="step-content-container">
@@ -507,22 +457,7 @@ interface Role {
   departmentId: number | null;
 }
 
-interface ProjectTemplate {
-  id: string;
-  name: string;
-  description: string;
-  structure: {
-    departments: Department[];
-    roles: Role[];
-    tags: string[];
-  };
-}
-
-interface ProjectDraft {
-  id: string;
-  data: any;
-  updatedAt: string;
-}
+// Templates/Drafts removed
 
 // Project creation steps
 const creationSteps = ref([
@@ -569,9 +504,7 @@ const success = ref('');
 
 // Data from APIs
 const configData = ref<any>(null);
-const projectTemplates = ref<ProjectTemplate[]>([]);
-const selectedTemplate = ref<ProjectTemplate | null>(null);
-const currentDraft = ref<ProjectDraft | null>(null);
+// Removed template/draft state
 const userPermissions = ref<any>(null);
 
 // Form options (will be populated from API)
@@ -613,8 +546,7 @@ const canCreateProject = computed(() => {
          projectData.notes;
 });
 
-const hasDraft = computed(() => !!currentDraft.value);
-const draft = computed(() => currentDraft.value?.data);
+// Draft state removed
 
 // API Functions
 const fetchConfigData = async () => {
@@ -665,17 +597,7 @@ const fetchBudgetRanges = async () => {
   }
 };
 
-const fetchProjectTemplates = async () => {
-  try {
-    const response = await fetch(`${API_BASE}/api/project-templates`);
-    if (response.ok) {
-      const data = await response.json();
-      projectTemplates.value = data;
-    }
-  } catch (err) {
-    console.error('Failed to fetch project templates:', err);
-  }
-};
+// Templates fetch removed
 
 const fetchUserPermissions = async () => {
   if (!user.value?.id) return;
@@ -754,162 +676,18 @@ const resolveUserEmails = async (emails: string[]) => {
   return [];
 };
 
-// Draft Management
-const saveDraft = async () => {
-  if (!user.value?.id) return;
-  
-  try {
-    saving.value = true;
-    const draftData = {
-      userId: user.value.id,
-      data: projectData,
-      step: currentStep.value
-    };
-    
-    if (currentDraft.value) {
-      // Update existing draft
-      const response = await fetch(`${API_BASE}/api/project-drafts/${currentDraft.value.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(draftData)
-      });
-      if (response.ok) {
-        success.value = 'Draft saved successfully!';
-        setTimeout(() => success.value = '', 3000);
-      }
-    } else {
-      // Create new draft
-      const response = await fetch(`${API_BASE}/api/project-drafts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(draftData)
-      });
-      if (response.ok) {
-        const data = await response.json();
-        currentDraft.value = data.draft;
-        success.value = 'Draft created successfully!';
-        setTimeout(() => success.value = '', 3000);
-      }
-    }
-  } catch (err) {
-    console.error('Failed to save draft:', err);
-    error.value = 'Failed to save draft';
-    setTimeout(() => error.value = '', 5000);
-  } finally {
-    saving.value = false;
-  }
-};
-
-const loadDraft = async () => {
-  if (!currentDraft.value) return;
-  
-  try {
-    const response = await fetch(`${API_BASE}/api/project-drafts/${currentDraft.value.id}`);
-    if (response.ok) {
-      const data = await response.json();
-      Object.assign(projectData, data.draft.data);
-      currentStep.value = data.draft.step || 'foundation';
-      currentDraft.value = data.draft;
-      success.value = 'Draft loaded successfully!';
-      setTimeout(() => success.value = '', 3000);
-    }
-  } catch (err) {
-    console.error('Failed to load draft:', err);
-    error.value = 'Failed to load draft';
-    setTimeout(() => error.value = '', 5000);
-  }
-};
-
-const clearDraft = () => {
-  if (currentDraft.value) {
-    if (confirm('Are you sure you want to clear this draft? This action cannot be undone.')) {
-      fetch(`${API_BASE}/api/project-drafts/${currentDraft.value.id}`, {
-        method: 'DELETE'
-      })
-      .then(response => {
-        if (response.ok) {
-          currentDraft.value = null;
-          success.value = 'Draft cleared successfully!';
-          setTimeout(() => success.value = '', 3000);
-        } else {
-          throw new Error('Failed to clear draft');
-        }
-      })
-      .catch(err => {
-        console.error('Failed to clear draft:', err);
-        error.value = 'Failed to clear draft';
-        setTimeout(() => error.value = '', 5000);
-      });
-    }
-  }
-};
+// Draft management removed
 
 // Template Management
-const applyTemplate = async (template: ProjectTemplate) => {
-  try {
-    const response = await fetch(`${API_BASE}/api/project-templates/${template.id}`);
-    if (response.ok) {
-      const data = await response.json();
-      const structure = data.template.structure;
-      
-      // Apply template data
-      if (structure.departments) {
-        projectData.departments = structure.departments.map((dept: any, index: number) => ({
-          ...dept,
-          order: index,
-          isVisible: true // Ensure visibility is true for template departments
-        }));
-      }
-      
-      if (structure.roles) {
-        projectData.roles = structure.roles;
-      }
-      
-      if (structure.tags) {
-        projectData.tags = structure.tags.join(', ');
-      }
-      
-      selectedTemplate.value = template;
-      success.value = `Template "${template.name}" applied successfully!`;
-      setTimeout(() => success.value = '', 3000);
-    }
-  } catch (err) {
-    console.error('Failed to apply template:', err);
-    error.value = 'Failed to apply template';
-    setTimeout(() => error.value = '', 5000);
-  }
-};
+// Template application removed
 
 // Project Validation
-const validateProject = async () => {
-  try {
-    const response = await fetch(`${API_BASE}/api/projects/precheck`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(projectData)
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.valid) {
-        return { valid: true, warnings: data.warnings || [] };
-      } else {
-        return { valid: false, errors: data.errors || [] };
-      }
-    }
-  } catch (err) {
-    console.error('Failed to validate project:', err);
-  }
-  return { valid: false, errors: ['Validation failed'] };
-};
+// Precheck/validation removed (backend disabled)
 
 // Navigation functions
 const nextStep = async () => {
   const currentIndex = creationSteps.value.findIndex(step => step.id === currentStep.value);
   if (currentIndex < creationSteps.value.length - 1) {
-    // Save draft before proceeding
-    await saveDraft();
-    
     creationSteps.value[currentIndex].completed = true;
     currentStep.value = creationSteps.value[currentIndex + 1].id;
   }
@@ -1017,13 +795,7 @@ const createProject = async () => {
     return;
   }
   
-  // Validate project first
-  const validation = await validateProject();
-  if (!validation.valid) {
-    error.value = `Validation failed: ${validation.errors.join(', ')}`;
-    setTimeout(() => error.value = '', 5000);
-    return;
-  }
+  // Backend precheck removed; rely on client-side gating
 
   // Ensure owner role
   ensureOwnerRole();
@@ -1096,16 +868,7 @@ const createProject = async () => {
     
     if (response) {
       console.log('Project created:', response);
-      // Clear draft if exists
-      if (currentDraft.value) {
-        try {
-          await fetch(`${API_BASE}/api/project-drafts/${currentDraft.value.id}`, {
-            method: 'DELETE'
-          });
-        } catch (err) {
-          console.warn('Failed to delete draft:', err);
-        }
-      }
+      // Draft cleanup removed
       
       success.value = 'Project created successfully!';
       setTimeout(() => {
@@ -1126,12 +889,7 @@ const createProject = async () => {
 };
 
 // Auto-save draft when data changes
-watch(projectData, () => {
-  if (Object.keys(projectData).some(key => projectData[key as keyof typeof projectData])) {
-    // Debounce auto-save
-    setTimeout(saveDraft, 2000);
-  }
-}, { deep: true });
+// Draft autosave removed
 
 // Watch for step changes to ensure owner role and default department
 watch(currentStep, async (newStep) => {
@@ -1163,7 +921,6 @@ onMounted(async () => {
     await Promise.all([
       fetchConfigData(),
       fetchBudgetRanges(),
-      fetchProjectTemplates(),
       fetchUserPermissions()
     ]);
     
