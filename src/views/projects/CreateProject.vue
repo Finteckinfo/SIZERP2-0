@@ -603,7 +603,8 @@ const fetchUserPermissions = async () => {
   if (!user.value?.id) return;
   
   try {
-    const response = await fetch(`${API_BASE}/api/permissions?resource=project&action=create`);
+    const url = `${API_BASE}/api/permissions?resource=project&action=create&userId=${encodeURIComponent(user.value.id)}`;
+    const response = await fetch(url);
     if (response.ok) {
       const data = await response.json();
       userPermissions.value = data;
