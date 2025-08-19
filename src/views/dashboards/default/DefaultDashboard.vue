@@ -6,17 +6,24 @@ import ProjectCard from './components/ProjectCard.vue';
 import RecentActivity from './components/RecentActivity.vue';
 import { ref, onMounted, computed, watch } from 'vue';
 import { useUser } from '@clerk/vue';
+import { useRouter } from 'vue-router';
 
 // Import components
 import StatsSkeleton from './components/StatsSkeleton.vue';
 import ProjectCardSkeleton from './components/ProjectCardSkeleton.vue';
 import ActivitySkeleton from './components/ActivitySkeleton.vue';
 
-// Get Clerk user
+// Import centralized API services
+import { projectApi, taskApi, userRoleApi, type Project, type Task, type UserRole } from '@/services/projectApi';
+
+// Get Clerk user and router
 const { user } = useUser();
+const router = useRouter();
 
 // Reactive data with individual loading states
-const projects = ref<any[]>([]);
+const projects = ref<Project[]>([]);
+const tasks = ref<Task[]>([]);
+const teamMembers = ref<UserRole[]>([]);
 const projectStats = ref({
   totalProjects: 0,
   activeProjects: 0,
@@ -41,8 +48,10 @@ const activitiesLoading = ref(true);
 const weeklyProgressLoading = ref(true);
 const deadlinesLoading = ref(true);
 
-// API base URL
-const API_BASE = import.meta.env.VITE_BACKEND_URL;
+// Error states
+const projectsError = ref<string | null>(null);
+const tasksError = ref<string | null>(null);
+const teamError = ref<string | null>(null);
 
 // Computed properties
 const userDisplayName = computed(() => {
@@ -54,27 +63,85 @@ const userDisplayName = computed(() => {
 
 const hasProjects = computed(() => projects.value.length > 0);
 
-// Individual fetch functions with their own loading states
+// Helper functions for project status and progress calculation
+const getProjectStatus = (project: Project) => {
+  const now = new Date();
+  const start = new Date(project.startDate);
+  const end = new Date(project.endDate);
+  
+  if (now < start) return 'PENDING';
+  if (now >= start && now <= end) return 'ACTIVE';
+  return 'COMPLETED';
+};
+
+const getProjectProgress = (projectId: string) => {
+  const projectTasks = tasks.value.filter(task => task.departmentId === projectId);
+  if (projectTasks.length === 0) return 0;
+  
+  const completedTasks = projectTasks.filter(task => task.status === 'COMPLETED' || task.status === 'APPROVED');
+  return Math.round((completedTasks.length / projectTasks.length) * 100);
+};
+
+const getProjectTeamSize = (projectId: string) => {
+  return teamMembers.value.filter(member => member.projectId === projectId).length;
+};
+
+const getUserRoleInProject = (projectId: string) => {
+  if (!user.value?.id) return 'CLIENT';
+  
+  const userRole = teamMembers.value.find(member => 
+    member.projectId === projectId && member.userId === user.value.id
+  );
+  return userRole?.role || 'CLIENT';
+};
+
+// Navigation functions
+const navigateToProject = (projectId: string) => {
+  router.push(`/projects/${projectId}`);
+};
+
+const navigateToProjectWorkspace = (projectId: string) => {
+  router.push(`/projects/${projectId}/workspace`);
+};
+
+const navigateToProjectsList = () => {
+  router.push('/projects');
+};
+
+const navigateToCreateProject = () => {
+  router.push('/projects/create');
+};
+
+// Individual fetch functions using centralized API services
 const fetchDashboardStats = async () => {
   if (!user.value?.id) return;
   
   try {
-    const response = await fetch(`${API_BASE}/api/dashboard/stats?userId=${user.value.id}`);
-    if (response.ok) {
-      const data = await response.json();
-      projectStats.value = {
-        totalProjects: data.totalProjects || 0,
-        activeProjects: data.activeProjects || 0,
-        completedProjects: (data.totalProjects || 0) - (data.activeProjects || 0),
-        totalTasks: data.totalTasks || 0,
-        completedTasks: data.completedTasks || 0,
-        pendingTasks: (data.totalTasks || 0) - (data.completedTasks || 0),
-        teamMembers: data.totalTeamMembers || 0,
-        totalDepartments: data.totalProjects || 0
-      };
-    }
+    // Calculate stats from loaded data
+    const total = projects.value.length;
+    const active = projects.value.filter(p => getProjectStatus(p) === 'ACTIVE').length;
+    const completed = projects.value.filter(p => getProjectStatus(p) === 'COMPLETED').length;
+    const pending = projects.value.filter(p => getProjectStatus(p) === 'PENDING').length;
+    
+    const totalTasks = tasks.value.length;
+    const completedTasks = tasks.value.filter(t => t.status === 'COMPLETED' || t.status === 'APPROVED').length;
+    const pendingTasks = totalTasks - completedTasks;
+    
+    const teamMembersCount = teamMembers.value.length;
+    const totalDepartments = projects.value.length; // Simplified for now
+    
+    projectStats.value = {
+      totalProjects: total,
+      activeProjects: active,
+      completedProjects: completed,
+      totalTasks: totalTasks,
+      completedTasks: completedTasks,
+      pendingTasks: pendingTasks,
+      teamMembers: teamMembersCount,
+      totalDepartments: totalDepartments
+    };
   } catch (err) {
-    console.warn('Dashboard stats API error:', err);
+    console.warn('Dashboard stats calculation error:', err);
   } finally {
     statsLoading.value = false;
   }
@@ -84,23 +151,131 @@ const fetchUserProjects = async () => {
   if (!user.value?.id) return;
   
   try {
-    const response = await fetch(`${API_BASE}/api/user/projects?userId=${user.value.id}`);
-    if (response.ok) {
-      const data = await response.json();
-      projects.value = data.map((project: any) => ({
-        id: project.id,
-        name: project.name,
-        description: project.description,
-        type: project.type,
-        userRole: project.userRole,
-        createdAt: new Date(project.createdAt),
-        departmentCount: project.departmentCount,
-        taskCount: project.totalTasks,
-        completedTasks: project.completedTasks
-      }));
+    // Load projects using centralized API
+    const projectsResponse = await projectApi.getProjects();
+    projects.value = projectsResponse.projects || [];
+    
+    // If no projects from API, add sample data for demonstration
+    if (projects.value.length === 0) {
+      projects.value = [
+        {
+          id: 'sample-1',
+          name: 'Website Redesign',
+          description: 'Modernize the company website with improved UX and mobile responsiveness. This project will enhance user engagement and conversion rates.',
+          type: 'PROGRESSIVE',
+          priority: 'HIGH',
+          startDate: '2024-01-15',
+          endDate: '2024-06-30',
+          ownerId: user.value?.id || 'sample-owner',
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01'
+        },
+        {
+          id: 'sample-2',
+          name: 'Mobile App Development',
+          description: 'Create a cross-platform mobile application for customer engagement and service delivery. Will support both iOS and Android platforms.',
+          type: 'PARALLEL',
+          priority: 'CRITICAL',
+          startDate: '2024-02-01',
+          endDate: '2024-08-31',
+          ownerId: user.value?.id || 'sample-owner',
+          createdAt: '2024-01-15',
+          updatedAt: '2024-01-15'
+        },
+        {
+          id: 'sample-3',
+          name: 'Database Migration',
+          description: 'Migrate legacy database systems to modern cloud infrastructure. This will improve performance, scalability, and maintainability.',
+          type: 'PROGRESSIVE',
+          priority: 'MEDIUM',
+          startDate: '2024-03-01',
+          endDate: '2024-05-31',
+          ownerId: user.value?.id || 'sample-owner',
+          createdAt: '2024-02-01',
+          updatedAt: '2024-02-01'
+        }
+      ];
     }
+    
+    // Load tasks for all projects
+    const allTasks: Task[] = [];
+    for (const project of projects.value) {
+      try {
+        const tasksResponse = await taskApi.getProjectTasks(project.id);
+        allTasks.push(...(tasksResponse.tasks || []));
+      } catch (err) {
+        // If API fails, add sample tasks for demonstration
+        if (project.id.startsWith('sample-')) {
+          allTasks.push(
+            {
+              id: `task-${project.id}-1`,
+              title: 'Project Planning',
+              description: 'Initial project setup and planning phase',
+              status: 'COMPLETED',
+              departmentId: project.id,
+              createdAt: '2024-01-01',
+              updatedAt: '2024-01-15'
+            },
+            {
+              id: `task-${project.id}-2`,
+              title: 'Development Phase',
+              description: 'Core development and implementation',
+              status: 'IN_PROGRESS',
+              departmentId: project.id,
+              createdAt: '2024-01-15',
+              updatedAt: '2024-01-15'
+            },
+            {
+              id: `task-${project.id}-3`,
+              title: 'Testing & QA',
+              description: 'Quality assurance and testing procedures',
+              status: 'PENDING',
+              departmentId: project.id,
+              createdAt: '2024-01-01',
+              updatedAt: '2024-01-01'
+            }
+          );
+        }
+      }
+    }
+    tasks.value = allTasks;
+    
+    // Load team members for all projects
+    const allTeamMembers: UserRole[] = [];
+    for (const project of projects.value) {
+      try {
+        const teamResponse = await userRoleApi.getProjectUsers(project.id);
+        allTeamMembers.push(...(teamResponse.userRoles || []));
+      } catch (err) {
+        // If API fails, add sample team members for demonstration
+        if (project.id.startsWith('sample-')) {
+          allTeamMembers.push(
+            {
+              id: `role-${project.id}-1`,
+              userId: user.value?.id || 'sample-user',
+              projectId: project.id,
+              role: 'PROJECT_MANAGER',
+              departmentOrder: [],
+              departmentScope: [],
+              createdAt: '2024-01-01',
+              user: {
+                id: user.value?.id || 'sample-user',
+                email: user.value?.emailAddresses?.[0]?.emailAddress || 'user@example.com',
+                firstName: user.value?.firstName || 'Sample',
+                lastName: user.value?.lastName || 'User',
+                createdAt: '2024-01-01',
+                updatedAt: '2024-01-01'
+              }
+            }
+          );
+        }
+      }
+    }
+    teamMembers.value = allTeamMembers;
+    
   } catch (err) {
     console.warn('User projects API error:', err);
+    projectsError.value = 'Failed to load projects. Please try again.';
   } finally {
     projectsLoading.value = false;
   }
@@ -110,21 +285,46 @@ const fetchRecentActivities = async () => {
   if (!user.value?.id) return;
   
   try {
-    const response = await fetch(`${API_BASE}/api/user/activities?userId=${user.value.id}&limit=10`);
-    if (response.ok) {
-      const data = await response.json();
-      recentActivities.value = data.map((activity: any) => ({
-        id: activity.id,
-        type: activity.type === 'task_updated' ? 'task_completed' : activity.type,
-        title: activity.type === 'task_updated' ? 'Task Updated' : 'Payment Released',
-        description: activity.description,
-        projectName: activity.projectName,
-        timestamp: new Date(activity.timestamp),
-        user: activity.userName
-      }));
-    }
+    // Generate recent activities from project and task data
+    const activities: any[] = [];
+    
+    // Add project creation activities
+    projects.value.slice(0, 3).forEach(project => {
+      activities.push({
+        id: `activity-${project.id}`,
+        type: 'project_created',
+        title: 'Project Created',
+        description: `New project "${project.name}" has been created`,
+        projectName: project.name,
+        timestamp: new Date(project.createdAt),
+        user: userDisplayName.value
+      });
+    });
+    
+    // Add task completion activities
+    const completedTasks = tasks.value.filter(t => t.status === 'COMPLETED' || t.status === 'APPROVED');
+    completedTasks.slice(0, 2).forEach(task => {
+      const project = projects.value.find(p => p.id === task.departmentId);
+      if (project) {
+        activities.push({
+          id: `activity-${task.id}`,
+          type: 'task_completed',
+          title: 'Task Completed',
+          description: `Task "${task.title}" has been completed`,
+          projectName: project.name,
+          timestamp: new Date(task.updatedAt),
+          user: userDisplayName.value
+        });
+      }
+    });
+    
+    // Sort by timestamp and take latest 5
+    recentActivities.value = activities
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 5);
+      
   } catch (err) {
-    console.warn('Recent activities API error:', err);
+    console.warn('Recent activities generation error:', err);
   } finally {
     activitiesLoading.value = false;
   }
@@ -134,16 +334,24 @@ const fetchWeeklyProgress = async () => {
   if (!user.value?.id) return;
   
   try {
-    const response = await fetch(`${API_BASE}/api/dashboard/weekly-progress?userId=${user.value.id}`);
-    if (response.ok) {
-      const data = await response.json();
-      weeklyProgress.value = {
-        tasksCompletedThisWeek: data.tasksCompletedThisWeek || 0,
-        activeProjects: data.activeProjects || 0
-      };
-    }
+    // Calculate weekly progress from task data
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    const tasksCompletedThisWeek = tasks.value.filter(task => {
+      const updatedAt = new Date(task.updatedAt);
+      return (task.status === 'COMPLETED' || task.status === 'APPROVED') && 
+             updatedAt >= weekAgo && updatedAt <= now;
+    }).length;
+    
+    const activeProjects = projects.value.filter(p => getProjectStatus(p) === 'ACTIVE').length;
+    
+    weeklyProgress.value = {
+      tasksCompletedThisWeek,
+      activeProjects
+    };
   } catch (err) {
-    console.warn('Weekly progress API error:', err);
+    console.warn('Weekly progress calculation error:', err);
   } finally {
     weeklyProgressLoading.value = false;
   }
@@ -153,20 +361,28 @@ const fetchDeadlines = async () => {
   if (!user.value?.id) return;
   
   try {
-    const response = await fetch(`${API_BASE}/api/user/deadlines?userId=${user.value.id}`);
-    if (response.ok) {
-      const data = await response.json();
-      deadlines.value = data.map((deadline: any) => ({
-        id: deadline.id,
-        title: deadline.title,
-        projectName: deadline.projectName,
-        priority: deadline.priority,
-        assignedTo: deadline.assignedTo,
-        createdAt: new Date(deadline.createdAt)
-      }));
-    }
+    // Generate deadlines from project end dates
+    const now = new Date();
+    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    
+    const upcomingDeadlines = projects.value
+      .filter(project => {
+        const endDate = new Date(project.endDate);
+        return endDate > now && endDate <= thirtyDaysFromNow;
+      })
+      .map(project => ({
+        id: `deadline-${project.id}`,
+        title: `Complete ${project.name}`,
+        projectName: project.name,
+        priority: new Date(project.endDate) <= new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) ? 'urgent' : 'due_soon',
+        assignedTo: userDisplayName.value,
+        createdAt: new Date(project.createdAt)
+      }))
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    
+    deadlines.value = upcomingDeadlines.slice(0, 5);
   } catch (err) {
-    console.warn('Deadlines API error:', err);
+    console.warn('Deadlines generation error:', err);
   } finally {
     deadlinesLoading.value = false;
   }
@@ -176,18 +392,43 @@ const fetchDeadlines = async () => {
 const loadAllData = () => {
   if (!user.value?.id) return;
   
+  // Reset errors
+  projectsError.value = null;
+  tasksError.value = null;
+  teamError.value = null;
+  
   // Start all API calls simultaneously
-  fetchDashboardStats();
-  fetchUserProjects();
+  fetchUserProjects(); // Load projects first, then calculate other stats
   fetchRecentActivities();
   fetchWeeklyProgress();
   fetchDeadlines();
+};
+
+// Refresh function for manual data reload
+const refreshData = () => {
+  if (!user.value?.id) return;
+  
+  // Reset loading states
+  statsLoading.value = true;
+  projectsLoading.value = true;
+  activitiesLoading.value = true;
+  weeklyProgressLoading.value = true;
+  deadlinesLoading.value = true;
+  
+  loadAllData();
 };
 
 // Watch for user availability
 watch(() => user.value?.id, (newUserId) => {
   if (newUserId) {
     loadAllData();
+  }
+}, { immediate: true });
+
+// Watch for projects data to calculate stats
+watch(projects, () => {
+  if (projects.value.length > 0) {
+    fetchDashboardStats();
   }
 }, { immediate: true });
 
@@ -235,8 +476,17 @@ onMounted(() => {
             <v-btn 
               color="secondary" 
               variant="outlined" 
+              prepend-icon="mdi-refresh" 
+              :loading="projectsLoading"
+              @click="refreshData"
+            >
+              Refresh
+            </v-btn>
+            <v-btn 
+              color="secondary" 
+              variant="outlined" 
               prepend-icon="mdi-view-column" 
-              @click="$router.push('/projects')"
+              @click="navigateToProjectsList"
             >
               View All Projects
             </v-btn>
@@ -244,11 +494,23 @@ onMounted(() => {
               color="primary" 
               variant="flat" 
               prepend-icon="mdi-plus" 
-              @click="$router.push('/projects/create')"
+              @click="navigateToCreateProject"
             >
               Create New Project
             </v-btn>
           </div>
+        </div>
+
+        <!-- Error State for Projects -->
+        <div v-if="projectsError" class="mb-4">
+          <v-alert type="error" class="mb-4">
+            {{ projectsError }}
+            <template v-slot:append>
+              <v-btn color="error" variant="text" @click="refreshData">
+                Retry
+              </v-btn>
+            </template>
+          </v-alert>
         </div>
 
         <!-- Loading skeleton for projects -->
@@ -267,16 +529,35 @@ onMounted(() => {
           <p class="text-body-1 text-medium-emphasis mb-4">
             Start by creating your first project or joining an existing one
           </p>
-          <v-btn color="primary" variant="flat" @click="$router.push('/projects/create')">
+          <v-btn color="primary" variant="flat" @click="navigateToCreateProject">
             Create Your First Project
           </v-btn>
+        </div>
+
+        <!-- Sample Data Notice -->
+        <div v-if="projects.some(p => p.id.startsWith('sample-'))" class="mb-4">
+          <v-alert type="info" variant="tonal" class="mb-4">
+            <template v-slot:prepend>
+              <v-icon>mdi-information</v-icon>
+            </template>
+            <strong>Demo Mode:</strong> You're currently viewing sample project data. 
+            <v-btn color="info" variant="text" @click="navigateToCreateProject" class="ml-2">
+              Create your own project
+            </v-btn>
+            to get started with real data.
+          </v-alert>
         </div>
 
         <!-- Projects Grid -->
         <v-row v-else>
           <v-col v-for="project in projects" :key="project.id" cols="12" sm="6" lg="6">
-            <ProjectCard :project="project" />
-    </v-col>
+            <ProjectCard 
+              :project="project" 
+              :tasks="tasks" 
+              :team-members="teamMembers" 
+              :user-role="getUserRoleInProject(project.id)"
+            />
+          </v-col>
         </v-row>
     </v-col>
     </v-row>

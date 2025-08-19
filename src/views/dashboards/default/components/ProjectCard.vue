@@ -1,21 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { CalendarIcon, UsersIcon, FolderIcon } from 'vue-tabler-icons';
+import { type Project, type Task, type UserRole } from '@/services/projectApi';
 
-interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  type: 'PROGRESSIVE' | 'PARALLEL';
-  userRole: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
-  createdAt: Date;
-  departmentCount: number;
-  taskCount: number;
-  completedTasks: number;
+interface ProjectCardData {
+  project: Project;
+  tasks: Task[];
+  teamMembers: UserRole[];
 }
 
 interface Props {
   project: Project;
+  tasks: Task[];
+  teamMembers: UserRole[];
+  userRole: string;
 }
 
 const props = defineProps<Props>();
@@ -26,12 +24,14 @@ const projectTypeColor = computed(() => {
 });
 
 const roleColor = computed(() => {
-  switch (props.project.userRole) {
+  switch (props.userRole) {
     case 'PROJECT_OWNER':
       return 'primary';
     case 'PROJECT_MANAGER':
       return 'info';
     case 'EMPLOYEE':
+      return 'secondary';
+    case 'CLIENT':
       return 'secondary';
     default:
       return 'grey';
@@ -39,16 +39,35 @@ const roleColor = computed(() => {
 });
 
 const progressPercentage = computed(() => {
-  if (props.project.taskCount === 0) return 0;
-  return Math.round((props.project.completedTasks / props.project.taskCount) * 100);
+  const projectTasks = props.tasks.filter(task => task.departmentId === props.project.id);
+  if (projectTasks.length === 0) return 0;
+  
+  const completedTasks = projectTasks.filter(task => task.status === 'COMPLETED' || task.status === 'APPROVED');
+  return Math.round((completedTasks.length / projectTasks.length) * 100);
 });
 
-const formatDate = (date: Date) => {
+const taskCount = computed(() => {
+  return props.tasks.filter(task => task.departmentId === props.project.id).length;
+});
+
+const completedTasks = computed(() => {
+  const projectTasks = props.tasks.filter(task => task.departmentId === props.project.id);
+  return projectTasks.filter(task => task.status === 'COMPLETED' || task.status === 'APPROVED').length;
+});
+
+const departmentCount = computed(() => {
+  // For now, return 1 as a default since departments are not directly linked in the current schema
+  // In a real implementation, this would come from the project's departments
+  return 1;
+});
+
+const formatDate = (date: string | Date) => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
-  }).format(date);
+  }).format(dateObj);
 };
 </script>
 
@@ -89,7 +108,7 @@ const formatDate = (date: Date) => {
           variant="flat"
           class="text-caption font-weight-medium"
         >
-          {{ project.userRole.replace('_', ' ') }}
+          {{ props.userRole.replace('_', ' ') }}
         </v-chip>
       </div>
 
@@ -102,7 +121,7 @@ const formatDate = (date: Date) => {
       <div class="d-flex align-center justify-space-between mb-4">
         <div class="d-flex align-center">
           <UsersIcon size="16" class="mr-2 text-medium-emphasis" />
-          <span class="text-caption text-medium-emphasis">{{ project.departmentCount }} depts</span>
+          <span class="text-caption text-medium-emphasis">{{ departmentCount }} depts</span>
         </div>
         <div class="d-flex align-center">
           <CalendarIcon size="16" class="mr-2 text-medium-emphasis" />
@@ -127,7 +146,7 @@ const formatDate = (date: Date) => {
       <!-- Task Count -->
       <div class="d-flex align-center justify-space-between">
         <span class="text-caption text-medium-emphasis">
-          {{ project.completedTasks }} of {{ project.taskCount }} tasks completed
+          {{ completedTasks }} of {{ taskCount }} tasks completed
         </span>
         <v-btn 
           size="small" 
