@@ -1,6 +1,12 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.VUE_APP_API_URL || '/api';
+// Prefer Vite env if present; fallback to relative '/api'
+// This ensures production calls hit your Railway backend when VITE_BACKEND_URL is set
+// Example: VITE_BACKEND_URL=https://sizerpbackend2-0-production.up.railway.app
+// Resulting base: https://.../api
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const VITE_BASE: any = (import.meta as any)?.env?.VITE_BACKEND_URL;
+const API_BASE_URL = VITE_BASE ? `${VITE_BASE}/api` : '/api';
 
 // Types based on your Prisma schema
 export interface Project {
@@ -137,8 +143,38 @@ export const projectApi = {
     }>;
     tags?: string[];
   }) => {
-    const response = await axios.post(`${API_BASE_URL}/projects`, projectData);
-    return response.data;
+    try {
+      // Debug logs for tracing payload and endpoint
+      // Do not log sensitive fields, but userId/walletAddress are okay here for debugging
+      // Strip roles emails in console for privacy if needed
+      // eslint-disable-next-line no-console
+      console.log('[projectApi.createProject] URL:', `${API_BASE_URL}/projects`);
+      // eslint-disable-next-line no-console
+      console.log('[projectApi.createProject] userId:', projectData.userId, 'walletAddress:', projectData.walletAddress);
+      // eslint-disable-next-line no-console
+      console.log('[projectApi.createProject] payload snapshot:', {
+        name: projectData.name,
+        type: projectData.type,
+        startDate: projectData.startDate,
+        endDate: projectData.endDate,
+        departmentsCount: projectData.departments?.length,
+        rolesCount: projectData.roles?.length,
+        tagsCount: projectData.tags?.length || 0
+      });
+
+      const response = await axios.post(`${API_BASE_URL}/projects`, projectData);
+      // eslint-disable-next-line no-console
+      console.log('[projectApi.createProject] response OK:', response.status);
+      return response.data;
+    } catch (err: any) {
+      // eslint-disable-next-line no-console
+      console.error('[projectApi.createProject] error:', err?.message || err);
+      // eslint-disable-next-line no-console
+      console.error('[projectApi.createProject] error.response?.status:', err?.response?.status);
+      // eslint-disable-next-line no-console
+      console.error('[projectApi.createProject] error.response?.data:', err?.response?.data);
+      throw err;
+    }
   },
 
   // Update project

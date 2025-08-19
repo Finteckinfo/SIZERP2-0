@@ -592,7 +592,7 @@ const canProceedToNext = computed(() => {
     case 'departments':
       return projectData.departments.length > 0;
     case 'team':
-      return projectData.roles.length > 0 && projectData.roles.every(r => r.departmentId !== null);
+      return projectData.roles.length > 0 && projectData.roles.every(r => r.role === 'PROJECT_OWNER' ? true : r.departmentId !== null);
     default:
       return true;
   }
@@ -606,7 +606,7 @@ const canCreateProject = computed(() => {
          projectData.endDate &&
          projectData.departments.length > 0 &&
          projectData.roles.length > 0 &&
-         projectData.roles.every(r => r.departmentId !== null) &&
+         projectData.roles.every(r => r.role === 'PROJECT_OWNER' ? true : r.departmentId !== null) &&
          projectData.budgetRange &&
          projectData.priority &&
          projectData.tags &&
@@ -1059,7 +1059,25 @@ const createProject = async () => {
       tags: projectData.tags ? projectData.tags.split(',').map(tag => tag.trim()) : []
     };
     
-    console.log('Sending project payload:', projectPayload); // Debug log
+    // Log key fields to ensure userId and wallet are present at send-time
+    console.log('[CreateProject] Sending project payload meta:', {
+      userId: projectPayload.userId,
+      walletAddress: projectPayload.walletAddress,
+      name: projectPayload.name,
+      departmentsCount: projectPayload.departments.length,
+      rolesCount: projectPayload.roles.length
+    });
+    // Optional: log first role and first department shapes for debugging
+    if (projectPayload.roles[0]) {
+      console.log('[CreateProject] first role:', {
+        userEmail: projectPayload.roles[0].userEmail,
+        role: projectPayload.roles[0].role,
+        departmentId: projectPayload.roles[0].departmentId
+      });
+    }
+    if (projectPayload.departments[0]) {
+      console.log('[CreateProject] first department:', projectPayload.departments[0]);
+    }
     
     // Fix departmentId type conversion - convert number to string
     const fixedPayload = {
@@ -1070,6 +1088,10 @@ const createProject = async () => {
       }))
     };
     
+    console.log('[CreateProject] fixedPayload meta:', {
+      rolesCount: fixedPayload.roles.length,
+      firstRoleDeptIdType: typeof fixedPayload.roles[0]?.departmentId
+    });
     const response = await projectApi.createProject(fixedPayload);
     
     if (response) {
@@ -1093,8 +1115,10 @@ const createProject = async () => {
       throw new Error('Failed to create project');
     }
   } catch (err) {
-    console.error('Error creating project:', err);
-    error.value = err instanceof Error ? err.message : 'Failed to create project';
+    console.error('[CreateProject] Error creating project:', err);
+    // If we have server details, surface them
+    const serverMsg = (err as any)?.response?.data?.error || (err as any)?.response?.data?.message;
+    error.value = serverMsg || (err instanceof Error ? err.message : 'Failed to create project');
     setTimeout(() => error.value = '', 5000);
   } finally {
     submitting.value = false;
