@@ -189,18 +189,20 @@ export const projectApi = {
   }) => {
     const headers = await getAuthHeaders();
     const response = await axios.post(`${API_BASE_URL}/projects`, projectData, { headers });
-    return response.data;
+      return response.data;
   },
 
   // Update project
   updateProject: async (projectId: string, updates: Partial<Project>) => {
-    const response = await axios.patch(`${API_BASE_URL}/projects/${projectId}`, updates);
+    const headers = await getAuthHeaders();
+    const response = await axios.patch(`${API_BASE_URL}/projects/${projectId}`, updates, { headers });
     return response.data;
   },
 
   // Delete project
   deleteProject: async (projectId: string) => {
-    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}`);
+    const headers = await getAuthHeaders();
+    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}`, { headers });
     return response.data;
   }
 };
@@ -217,16 +219,18 @@ export const projectInviteApi = {
   
   // Get all invites for a project (for project owner to see)
   getProjectInvites: async (projectId: string): Promise<ProjectInvite[]> => {
-    const response = await fetch(`${API_BASE_URL}/invites/project/${projectId}`);
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/invites/project/${projectId}`, { headers });
     if (!response.ok) throw new Error('Failed to fetch project invites');
     return response.json();
   },
   
   // Accept/decline an invite
   respondToInvite: async (inviteId: string, status: 'ACCEPTED' | 'DECLINED'): Promise<ProjectInvite> => {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/invites/${inviteId}/respond`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ status })
     });
     if (!response.ok) throw new Error('Failed to respond to invite');
@@ -235,9 +239,10 @@ export const projectInviteApi = {
   
   // Create invite (for project owner)
   createInvite: async (data: CreateInviteData): Promise<ProjectInvite> => {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/invites`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(data)
     });
     if (!response.ok) throw new Error('Failed to create invite');
@@ -246,9 +251,10 @@ export const projectInviteApi = {
   
   // Resend/update invite
   updateInvite: async (inviteId: string, data: Partial<ProjectInvite>): Promise<ProjectInvite> => {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/invites/${inviteId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(data)
     });
     if (!response.ok) throw new Error('Failed to update invite');
@@ -257,6 +263,7 @@ export const projectInviteApi = {
   
   // Delete invite
   deleteInvite: async (inviteId: string): Promise<void> => {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/invites/${inviteId}`, {
       method: 'DELETE'
     });
@@ -268,7 +275,8 @@ export const projectInviteApi = {
 export const userRoleApi = {
   // Get project users
   getProjectUsers: async (projectId: string) => {
-    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/users`);
+    const headers = await getAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/users`, { headers });
     return response.data;
   },
 
@@ -278,19 +286,22 @@ export const userRoleApi = {
     role: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
     departmentScope?: string[];
   }) => {
-    const response = await axios.post(`${API_BASE_URL}/projects/${projectId}/users`, userData);
+    const headers = await getAuthHeaders();
+    const response = await axios.post(`${API_BASE_URL}/projects/${projectId}/users`, userData, { headers });
     return response.data;
   },
 
   // Update user role
   updateUserRole: async (projectId: string, userId: string, updates: Partial<UserRole>) => {
-    const response = await axios.patch(`${API_BASE_URL}/projects/${projectId}/users/${userId}`, updates);
+    const headers = await getAuthHeaders();
+    const response = await axios.patch(`${API_BASE_URL}/projects/${projectId}/users/${userId}`, updates, { headers });
     return response.data;
   },
 
   // Remove user from project
   removeUserFromProject: async (projectId: string, userId: string) => {
-    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}/users/${userId}`);
+    const headers = await getAuthHeaders();
+    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}/users/${userId}`, { headers });
     return response.data;
   },
   
@@ -304,25 +315,29 @@ export const userRoleApi = {
   
   // Update user role (for project owner)
   updateUserRoleById: async (roleId: string, data: Partial<UserRole>) => {
-    const response = await axios.patch(`${API_BASE_URL}/user-roles/${roleId}`, data);
+    const headers = await getAuthHeaders();
+    const response = await axios.patch(`${API_BASE_URL}/user-roles/${roleId}`, data, { headers });
     return response.data;
   },
   
   // Remove user from project (for project owner)
   removeUserFromProjectById: async (roleId: string) => {
-    const response = await axios.delete(`${API_BASE_URL}/user-roles/${roleId}`);
+    const headers = await getAuthHeaders();
+    const response = await axios.delete(`${API_BASE_URL}/user-roles/${roleId}`, { headers });
     return response.data;
   },
   
   // Get all users in a project with their roles
   getProjectTeam: async (projectId: string): Promise<UserRole[]> => {
-    const response = await axios.get(`${API_BASE_URL}/user-roles/project/${projectId}`);
+    const headers = await getAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/user-roles/project/${projectId}`, { headers });
     return response.data;
   },
   
   // Assign user to department
   assignUserToDepartment: async (roleId: string, departmentId: string) => {
-    const response = await axios.post(`${API_BASE_URL}/user-roles/${roleId}/departments/${departmentId}`);
+    const headers = await getAuthHeaders();
+    const response = await axios.post(`${API_BASE_URL}/user-roles/${roleId}/departments/${departmentId}`, undefined, { headers });
     return response.data;
   }
 };
@@ -331,33 +346,38 @@ export const userRoleApi = {
 export const departmentApi = {
   // Get project departments
   getProjectDepartments: async (projectId: string) => {
-    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/departments`);
+    const headers = await getAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/departments`, { headers });
     return response.data;
   },
 
   // Create department (for project owner/manager)
   createDepartment: async (data: CreateDepartmentData): Promise<Department> => {
-    const response = await axios.post(`${API_BASE_URL}/departments`, data);
+    const headers = await getAuthHeaders();
+    const response = await axios.post(`${API_BASE_URL}/departments`, data, { headers });
     return response.data;
   },
-  
+
   // Update department
   updateDepartment: async (departmentId: string, data: Partial<Department>): Promise<Department> => {
-    const response = await axios.patch(`${API_BASE_URL}/departments/${departmentId}`, data);
+    const headers = await getAuthHeaders();
+    const response = await axios.patch(`${API_BASE_URL}/departments/${departmentId}`, data, { headers });
     return response.data;
   },
-  
+
   // Delete department
   deleteDepartment: async (departmentId: string): Promise<void> => {
-    const response = await axios.delete(`${API_BASE_URL}/departments/${departmentId}`);
+    const headers = await getAuthHeaders();
+    const response = await axios.delete(`${API_BASE_URL}/departments/${departmentId}`, { headers });
     return response.data;
   },
-  
+
   // Reorder departments
   reorderDepartments: async (projectId: string, departmentIds: string[]): Promise<Department[]> => {
+    const headers = await getAuthHeaders();
     const response = await axios.patch(`${API_BASE_URL}/departments/project/${projectId}/reorder`, {
       departmentIds
-    });
+    }, { headers });
     return response.data;
   }
 };
@@ -371,37 +391,43 @@ export const taskApi = {
     employeeId?: string;
     search?: string;
   }) => {
-    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/tasks`, { params });
+    const headers = await getAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/tasks`, { params, headers });
     return response.data;
   },
 
   // Create task (for project owner/manager)
   createTask: async (data: CreateTaskData): Promise<Task> => {
-    const response = await axios.post(`${API_BASE_URL}/tasks`, data);
+    const headers = await getAuthHeaders();
+    const response = await axios.post(`${API_BASE_URL}/tasks`, data, { headers });
     return response.data;
   },
-  
+
   // Update task
   updateTask: async (taskId: string, data: Partial<Task>): Promise<Task> => {
-    const response = await axios.patch(`${API_BASE_URL}/tasks/${taskId}`, data);
+    const headers = await getAuthHeaders();
+    const response = await axios.patch(`${API_BASE_URL}/tasks/${taskId}`, data, { headers });
     return response.data;
   },
-  
+
   // Delete task
   deleteTask: async (taskId: string): Promise<void> => {
-    const response = await axios.delete(`${API_BASE_URL}/tasks/${taskId}`);
+    const headers = await getAuthHeaders();
+    const response = await axios.delete(`${API_BASE_URL}/tasks/${taskId}`, { headers });
     return response.data;
   },
-  
+
   // Assign task to user role
   assignTaskToRole: async (taskId: string, roleId: string): Promise<Task> => {
-    const response = await axios.post(`${API_BASE_URL}/tasks/${taskId}/assign/${roleId}`);
+    const headers = await getAuthHeaders();
+    const response = await axios.post(`${API_BASE_URL}/tasks/${taskId}/assign/${roleId}`, undefined, { headers });
     return response.data;
   },
-  
+
   // Get tasks by department
   getTasksByDepartment: async (departmentId: string): Promise<Task[]> => {
-    const response = await axios.get(`${API_BASE_URL}/tasks/department/${departmentId}`);
+    const headers = await getAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/tasks/department/${departmentId}`, { headers });
     return response.data;
   }
 };
@@ -410,19 +436,22 @@ export const taskApi = {
 export const tagApi = {
   // Get project tags
   getProjectTags: async (projectId: string) => {
-    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/tags`);
+    const headers = await getAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/tags`, { headers });
     return response.data;
   },
 
   // Add tag
   addTag: async (projectId: string, tagData: { name: string }) => {
-    const response = await axios.post(`${API_BASE_URL}/projects/${projectId}/tags`, tagData);
+    const headers = await getAuthHeaders();
+    const response = await axios.post(`${API_BASE_URL}/projects/${projectId}/tags`, tagData, { headers });
     return response.data;
   },
 
   // Remove tag
   removeTag: async (projectId: string, tagId: string) => {
-    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}/tags/${tagId}`);
+    const headers = await getAuthHeaders();
+    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}/tags/${tagId}`, { headers });
     return response.data;
   }
 };
@@ -435,13 +464,15 @@ export const userApi = {
     page?: number;
     pageSize?: number;
   }) => {
-    const response = await axios.get(`${API_BASE_URL}/users`, { params });
+    const headers = await getAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/users`, { params, headers });
     return response.data;
   },
 
   // Get user details
   getUser: async (userId: string) => {
-    const response = await axios.get(`${API_BASE_URL}/users/${userId}`);
+    const headers = await getAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/users/${userId}`, { headers });
     return response.data;
   }
 };
