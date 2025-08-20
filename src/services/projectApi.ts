@@ -7,14 +7,33 @@ const API_BASE_URL = 'https://sizerpbackend2-0-production.up.railway.app/api';
 // Helper function to get authentication headers
 const getAuthHeaders = async (): Promise<Record<string, string>> => {
   try {
-    // Get the token from Clerk
+    // Get the session token from Clerk (this is what the backend expects)
     const token = await window.Clerk?.session?.getToken();
+    
+    // Alternative method if the above doesn't work
+    if (!token && window.Clerk?.session) {
+      const session = window.Clerk.session;
+      if (session) {
+        const sessionToken = await session.getToken();
+        if (sessionToken) {
+          console.log('Got token via alternative method:', sessionToken.substring(0, 20) + '...');
+          return {
+            'Authorization': `Bearer ${sessionToken}`,
+            'Content-Type': 'application/json'
+          };
+        }
+      }
+    }
+    
     if (token) {
+      console.log('Got token via primary method:', token.substring(0, 20) + '...');
       return {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       };
     }
+    
+    console.warn('No Clerk token available');
     return {
       'Content-Type': 'application/json'
     };
