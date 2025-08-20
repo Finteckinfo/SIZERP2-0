@@ -103,8 +103,8 @@ export class AuthService {
       this.clearTokenCache();
       
       // Redirect to login if we're not already there
-      if (window.location.pathname !== '/auth/login') {
-        window.location.href = '/auth/login';
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
       }
     }
   }
