@@ -311,7 +311,7 @@ const loadProjectData = async () => {
     tasks.value = tasksResponse.tasks || [];
     
     // Load team members
-    const teamResponse = await userRoleApi.getProjectUsers(projectId);
+          const teamResponse = await userRoleApi.getProjectUserRoles(projectId);
     teamMembers.value = teamResponse.userRoles || [];
   } catch (err) {
     error.value = 'Failed to load project data';

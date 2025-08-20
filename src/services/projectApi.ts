@@ -1,65 +1,54 @@
 import axios from 'axios';
+import { authService } from './authService';
 
 // Production backend URL - hardcoded for Vercel deployment
 // Vercel environment variables are not available at runtime in the browser
 const API_BASE_URL = 'https://sizerpbackend2-0-production.up.railway.app/api';
 
-// Helper function to get authentication headers
-const getAuthHeaders = async (): Promise<Record<string, string>> => {
-  try {
-    // Get JWT token from your "API" template
-    const token = await window.Clerk?.session?.getToken({ 
-      template: "API" 
-    });
-    
-    if (token) {
-      console.log('Got JWT token from API template:', token.substring(0, 20) + '...');
-      return {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      };
-    }
-    
-    // Fallback to session token if JWT template fails
-    const sessionToken = await window.Clerk?.session?.getToken();
-    if (sessionToken) {
-      console.log('Fallback to session token:', sessionToken.substring(0, 20) + '...');
-      return {
-        'Authorization': `Bearer ${sessionToken}`,
-        'Content-Type': 'application/json'
-      };
-    }
-    
-    console.warn('No Clerk token available');
-    return {
-      'Content-Type': 'application/json'
-    };
-  } catch (error) {
-    console.error('Failed to get JWT token:', error);
-    return {
-      'Content-Type': 'application/json'
-    };
-  }
-};
+// Centralized axios instance with proper JWT authentication interceptor
+const api = axios.create({ 
+  baseURL: API_BASE_URL,
+  timeout: 30000 // 30 second timeout
+});
 
-// Centralized axios instance with auth interceptor
-const api = axios.create({ baseURL: API_BASE_URL });
-
+// Request interceptor - automatically adds JWT token to every request
 api.interceptors.request.use(async (config) => {
   try {
-    const jwt = await window.Clerk?.session?.getToken({ template: 'API' });
-    const token = jwt || (await window.Clerk?.session?.getToken());
-    if (token) {
-      config.headers = {
-        ...(config.headers || {}),
-        Authorization: `Bearer ${token}`,
-      } as any;
-    }
-  } catch (e) {
-    // Non-fatal: proceed without header
+    const headers = await authService.getAuthHeaders();
+    config.headers = {
+      ...(config.headers || {}),
+      ...headers
+    } as any;
+    
+    console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`, {
+      hasAuth: !!config.headers.Authorization,
+      tokenPreview: (config.headers.Authorization as string)?.substring(0, 30) + '...'
+    });
+  } catch (error) {
+    console.error('❌ Failed to get auth headers:', error);
+    // Don't proceed without authentication
+    throw new Error('Authentication required');
   }
   return config;
 });
+
+// Response interceptor - handles authentication errors globally
+api.interceptors.response.use(
+  (response) => {
+    console.log(`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`);
+    return response;
+  },
+  (error) => {
+    console.error(`❌ API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${error.response?.status}`, error.response?.data);
+    
+    // Handle authentication errors globally
+    if (error.response?.status === 401) {
+      authService.handleAuthError(error);
+    }
+    
+    return Promise.reject(error);
+  }
+);
 
 // Types based on your Prisma schema
 export interface Project {
@@ -98,7 +87,10 @@ export interface Task {
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED';
   departmentId: string;
   assignedRoleId?: string;
-  employeeId?: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  estimatedHours?: number;
+  actualHours?: number;
+  dueDate?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -108,13 +100,13 @@ export interface UserRole {
   userId: string;
   projectId: string;
   role: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
-  departmentOrder: string[];
-  departmentScope: string[];
+  departmentOrder: number[];
+  departmentScope: number[];
   managedDepartments: Department[];
   accessibleDepartments: Department[];
   assignedTasks: Task[];
   createdAt: string;
-  user?: User;
+  user: User;
 }
 
 export interface User {
@@ -122,56 +114,52 @@ export interface User {
   email: string;
   firstName?: string;
   lastName?: string;
-  avatarUrl?: string;
-  walletAddress?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ProjectInvite {
   id: string;
-  email: string;
-  role: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
-  status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED';
-  project: Project;
   projectId: string;
-  user?: User;
-  userId?: string;
+  email: string;
+  role: 'PROJECT_MANAGER' | 'EMPLOYEE';
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED';
   expiresAt: string;
   createdAt: string;
-  updatedAt: string;
+  project: Project;
 }
 
 export interface ProjectTag {
   id: string;
   name: string;
+  color: string;
   projectId: string;
   createdAt: string;
 }
 
-// New interfaces for the enhanced APIs
+// API request data types
 export interface CreateInviteData {
-  email: string;
-  role: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
   projectId: string;
-  expiresAt: string;
+  email: string;
+  role: 'PROJECT_MANAGER' | 'EMPLOYEE';
+  departmentId?: string;
 }
 
 export interface CreateDepartmentData {
   name: string;
   type: 'MAJOR' | 'MINOR';
   description?: string;
+  projectId?: string; // Optional for creation, will be set by backend
   order: number;
-  projectId: string;
-  isVisible?: boolean;
 }
 
 export interface CreateTaskData {
   title: string;
   description?: string;
   departmentId: string;
-  assignedRoleId?: string;
-  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  estimatedHours?: number;
+  dueDate?: string;
 }
 
 // Project Management APIs
@@ -184,26 +172,23 @@ export const projectApi = {
     page?: number;
     pageSize?: number;
   }) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/projects/my-projects`, { params, headers });
+    const response = await api.get(`/projects/my-projects`, { params });
     return response.data;
   },
 
   // Get user's projects (simple, no pagination - perfect for dashboards)
   getUserProjectsSimple: async () => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/projects/my-projects/simple`, { headers });
+    const response = await api.get(`/projects/my-projects/simple`);
     return response.data;
   },
 
-  // Get single project
+  // Get project by ID
   getProject: async (projectId: string) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}`, { headers });
+    const response = await api.get(`/projects/${projectId}`);
     return response.data;
   },
 
-  // Create project
+  // Create new project
   createProject: async (projectData: {
     name: string;
     description?: string;
@@ -212,248 +197,170 @@ export const projectApi = {
     budgetRange?: string;
     startDate: string;
     endDate: string;
+    departments: CreateDepartmentData[];
+    roles: {
+      userEmail: string; // Match the frontend usage
+      role: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
+      departmentId?: string | null; // Allow null for PROJECT_OWNER
+    }[];
   }) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/projects`, projectData, { headers });
-      return response.data;
+    const response = await api.post('/projects', projectData);
+    return response.data;
   },
 
   // Update project
-  updateProject: async (projectId: string, updates: Partial<Project>) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.patch(`${API_BASE_URL}/projects/${projectId}`, updates, { headers });
+  updateProject: async (projectId: string, projectData: Partial<Project>) => {
+    const response = await api.put(`/projects/${projectId}`, projectData);
     return response.data;
   },
 
   // Delete project
   deleteProject: async (projectId: string) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}`, { headers });
+    const response = await api.delete(`/projects/${projectId}`);
     return response.data;
   }
 };
 
 // Project Invite APIs
 export const projectInviteApi = {
-  // Get all invites for a user (when they log in)
-  getUserInvites: async (userId: string): Promise<ProjectInvite[]> => {
-    const headers = await getAuthHeaders();
-    const response = await fetch(`${API_BASE_URL}/invites/user/${userId}`, { headers });
-    if (!response.ok) throw new Error('Failed to fetch user invites');
-    return response.json();
+  // Get user's invites
+  getUserInvites: async (userId: string) => {
+    const response = await api.get(`/invites/user/${userId}`);
+    return response.data;
   },
-  
-  // Get all invites for a project (for project owner to see)
-  getProjectInvites: async (projectId: string): Promise<ProjectInvite[]> => {
-    const headers = await getAuthHeaders();
-    const response = await fetch(`${API_BASE_URL}/invites/project/${projectId}`, { headers });
-    if (!response.ok) throw new Error('Failed to fetch project invites');
-    return response.json();
+
+  // Get project invites
+  getProjectInvites: async (projectId: string) => {
+    const response = await api.get(`/invites/project/${projectId}`);
+    return response.data;
   },
-  
-  // Accept/decline an invite
-  respondToInvite: async (inviteId: string, status: 'ACCEPTED' | 'DECLINED'): Promise<ProjectInvite> => {
-    const headers = await getAuthHeaders();
-    const response = await fetch(`${API_BASE_URL}/invites/${inviteId}/respond`, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({ status })
-    });
-    if (!response.ok) throw new Error('Failed to respond to invite');
-    return response.json();
+
+  // Create invite
+  createInvite: async (inviteData: CreateInviteData) => {
+    const response = await api.post('/invites', inviteData);
+    return response.data;
   },
-  
-  // Create invite (for project owner)
-  createInvite: async (data: CreateInviteData): Promise<ProjectInvite> => {
-    const headers = await getAuthHeaders();
-    const response = await fetch(`${API_BASE_URL}/invites`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error('Failed to create invite');
-    return response.json();
+
+  // Respond to invite
+  respondToInvite: async (inviteId: string, status: 'ACCEPTED' | 'DECLINED') => {
+    const response = await api.put(`/invites/${inviteId}/respond`, { status });
+    return response.data;
   },
-  
-  // Resend/update invite
-  updateInvite: async (inviteId: string, data: Partial<ProjectInvite>): Promise<ProjectInvite> => {
-    const headers = await getAuthHeaders();
-    const response = await fetch(`${API_BASE_URL}/invites/${inviteId}`, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error('Failed to update invite');
-    return response.json();
+
+  // Update invite
+  updateInvite: async (inviteId: string, inviteData: Partial<ProjectInvite>) => {
+    const response = await api.put(`/invites/${inviteId}`, inviteData);
+    return response.data;
   },
-  
+
   // Delete invite
-  deleteInvite: async (inviteId: string): Promise<void> => {
-    const headers = await getAuthHeaders();
-    const response = await fetch(`${API_BASE_URL}/invites/${inviteId}`, {
-      method: 'DELETE'
-    });
-    if (!response.ok) throw new Error('Failed to delete invite');
+  deleteInvite: async (inviteId: string) => {
+    const response = await api.delete(`/invites/${inviteId}`);
+    return response.data;
   }
 };
 
 // User Role APIs
 export const userRoleApi = {
-  // Get project users
-  getProjectUsers: async (projectId: string) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/users`, { headers });
-    return response.data;
-  },
-
-  // Add user to project
-  addUserToProject: async (projectId: string, userData: {
-    email: string;
-    role: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
-    departmentScope?: string[];
-  }) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/projects/${projectId}/users`, userData, { headers });
+  // Get user role in project
+  getUserRoleInProject: async (projectId: string, userId: string) => {
+    const response = await api.get(`/user-roles/project/${projectId}/user/${userId}`);
     return response.data;
   },
 
   // Update user role
-  updateUserRole: async (projectId: string, userId: string, updates: Partial<UserRole>) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.patch(`${API_BASE_URL}/projects/${projectId}/users/${userId}`, updates, { headers });
+  updateUserRole: async (roleId: string, roleData: Partial<UserRole>) => {
+    const response = await api.put(`/user-roles/${roleId}`, roleData);
     return response.data;
   },
 
-  // Remove user from project
-  removeUserFromProject: async (projectId: string, userId: string) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}/users/${userId}`, { headers });
+  // Delete user role
+  deleteUserRole: async (roleId: string) => {
+    const response = await api.delete(`/user-roles/${roleId}`);
     return response.data;
   },
-  
-  // Get user's role in a specific project
-  getUserRoleInProject: async (userId: string, projectId: string): Promise<UserRole | null> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/user-roles/project/${projectId}/user/${userId}`, { headers });
-    if (response.status === 404) return null;
+
+  // Get project user roles
+  getProjectUserRoles: async (projectId: string) => {
+    const response = await api.get(`/user-roles/project/${projectId}`);
     return response.data;
   },
-  
-  // Update user role (for project owner)
-  updateUserRoleById: async (roleId: string, data: Partial<UserRole>) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.patch(`${API_BASE_URL}/user-roles/${roleId}`, data, { headers });
-    return response.data;
-  },
-  
-  // Remove user from project (for project owner)
-  removeUserFromProjectById: async (roleId: string) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.delete(`${API_BASE_URL}/user-roles/${roleId}`, { headers });
-    return response.data;
-  },
-  
-  // Get all users in a project with their roles
-  getProjectTeam: async (projectId: string): Promise<UserRole[]> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/user-roles/project/${projectId}`, { headers });
-    return response.data;
-  },
-  
-  // Assign user to department
-  assignUserToDepartment: async (roleId: string, departmentId: string) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/user-roles/${roleId}/departments/${departmentId}`, undefined, { headers });
+
+  // Assign department to user role
+  assignDepartmentToRole: async (roleId: string, departmentId: string) => {
+    const response = await api.post(`/user-roles/${roleId}/departments/${departmentId}`);
     return response.data;
   }
 };
 
 // Department APIs
 export const departmentApi = {
-  // Get project departments
-  getProjectDepartments: async (projectId: string) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/departments`, { headers });
-    return response.data;
-  },
-
-  // Create department (for project owner/manager)
-  createDepartment: async (data: CreateDepartmentData): Promise<Department> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/departments`, data, { headers });
+  // Create department
+  createDepartment: async (departmentData: CreateDepartmentData) => {
+    const response = await api.post('/departments', departmentData);
     return response.data;
   },
 
   // Update department
-  updateDepartment: async (departmentId: string, data: Partial<Department>): Promise<Department> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.patch(`${API_BASE_URL}/departments/${departmentId}`, data, { headers });
+  updateDepartment: async (departmentId: string, departmentData: Partial<Department>) => {
+    const response = await api.put(`/departments/${departmentId}`, departmentData);
     return response.data;
   },
 
   // Delete department
-  deleteDepartment: async (departmentId: string): Promise<void> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.delete(`${API_BASE_URL}/departments/${departmentId}`, { headers });
+  deleteDepartment: async (departmentId: string) => {
+    const response = await api.delete(`/departments/${departmentId}`);
     return response.data;
   },
 
-  // Reorder departments
-  reorderDepartments: async (projectId: string, departmentIds: string[]): Promise<Department[]> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.patch(`${API_BASE_URL}/departments/project/${projectId}/reorder`, {
-      departmentIds
-    }, { headers });
+  // Get project departments
+  getProjectDepartments: async (projectId: string) => {
+    const response = await api.get(`/departments/project/${projectId}`);
+    return response.data;
+  },
+
+  // Reorder project departments
+  reorderProjectDepartments: async (projectId: string, departmentOrder: { id: string; order: number }[]) => {
+    const response = await api.put(`/departments/project/${projectId}/reorder`, { departmentOrder });
     return response.data;
   }
 };
 
 // Task APIs
 export const taskApi = {
-  // Get project tasks
-  getProjectTasks: async (projectId: string, params?: {
-    departmentId?: string;
-    status?: string;
-    employeeId?: string;
-    search?: string;
-  }) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/tasks`, { params, headers });
-    return response.data;
-  },
-
-  // Create task (for project owner/manager)
-  createTask: async (data: CreateTaskData): Promise<Task> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/tasks`, data, { headers });
+  // Create task
+  createTask: async (taskData: CreateTaskData) => {
+    const response = await api.post('/tasks', taskData);
     return response.data;
   },
 
   // Update task
-  updateTask: async (taskId: string, data: Partial<Task>): Promise<Task> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.patch(`${API_BASE_URL}/tasks/${taskId}`, data, { headers });
+  updateTask: async (taskId: string, taskData: Partial<Task>) => {
+    const response = await api.put(`/tasks/${taskId}`, taskData);
     return response.data;
   },
 
   // Delete task
-  deleteTask: async (taskId: string): Promise<void> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.delete(`${API_BASE_URL}/tasks/${taskId}`, { headers });
+  deleteTask: async (taskId: string) => {
+    const response = await api.delete(`/tasks/${taskId}`);
     return response.data;
   },
 
-  // Assign task to user role
-  assignTaskToRole: async (taskId: string, roleId: string): Promise<Task> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/tasks/${taskId}/assign/${roleId}`, undefined, { headers });
+  // Assign task to role
+  assignTaskToRole: async (taskId: string, roleId: string) => {
+    const response = await api.post(`/tasks/${taskId}/assign/${roleId}`);
     return response.data;
   },
 
-  // Get tasks by department
-  getTasksByDepartment: async (departmentId: string): Promise<Task[]> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/tasks/department/${departmentId}`, { headers });
+  // Get department tasks
+  getDepartmentTasks: async (departmentId: string) => {
+    const response = await api.get(`/tasks/department/${departmentId}`);
+    return response.data;
+  },
+
+  // Get project tasks (legacy support)
+  getProjectTasks: async (projectId: string) => {
+    const response = await api.get(`/tasks/project/${projectId}`);
     return response.data;
   }
 };
@@ -462,43 +369,40 @@ export const taskApi = {
 export const tagApi = {
   // Get project tags
   getProjectTags: async (projectId: string) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/tags`, { headers });
+    const response = await api.get(`/tags/project/${projectId}`);
     return response.data;
   },
 
-  // Add tag
-  addTag: async (projectId: string, tagData: { name: string }) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/projects/${projectId}/tags`, tagData, { headers });
+  // Create tag
+  createTag: async (tagData: Omit<ProjectTag, 'id' | 'createdAt'>) => {
+    const response = await api.post('/tags', tagData);
     return response.data;
   },
 
-  // Remove tag
-  removeTag: async (projectId: string, tagId: string) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}/tags/${tagId}`, { headers });
+  // Update tag
+  updateTag: async (tagId: string, tagData: Partial<ProjectTag>) => {
+    const response = await api.put(`/tags/${tagId}`, tagData);
+    return response.data;
+  },
+
+  // Delete tag
+  deleteTag: async (tagId: string) => {
+    const response = await api.delete(`/tags/${tagId}`);
     return response.data;
   }
 };
 
-// Global User APIs
+// User APIs
 export const userApi = {
-  // Search users
-  searchUsers: async (params?: {
-    search?: string;
-    page?: number;
-    pageSize?: number;
-  }) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/users`, { params, headers });
+  // Get user profile
+  getUserProfile: async (userId: string) => {
+    const response = await api.get(`/users/${userId}`);
     return response.data;
   },
 
-  // Get user details
-  getUser: async (userId: string) => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/users/${userId}`, { headers });
+  // Update user profile
+  updateUserProfile: async (userId: string, userData: Partial<User>) => {
+    const response = await api.put(`/users/${userId}`, userData);
     return response.data;
   }
 };

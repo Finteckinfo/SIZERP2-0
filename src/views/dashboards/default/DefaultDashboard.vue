@@ -268,6 +268,7 @@ const fetchUserProjects = async () => {
               description: 'Initial project setup and planning phase',
               status: 'COMPLETED',
               departmentId: project.id,
+              priority: 'MEDIUM',
               createdAt: '2024-01-01',
               updatedAt: '2024-01-15'
             },
@@ -277,6 +278,7 @@ const fetchUserProjects = async () => {
               description: 'Core development and implementation',
               status: 'IN_PROGRESS',
               departmentId: project.id,
+              priority: 'HIGH',
               createdAt: '2024-01-15',
               updatedAt: '2024-01-15'
             },
@@ -286,6 +288,7 @@ const fetchUserProjects = async () => {
               description: 'Quality assurance and testing procedures',
               status: 'PENDING',
               departmentId: project.id,
+              priority: 'MEDIUM',
               createdAt: '2024-01-01',
               updatedAt: '2024-01-01'
             }
@@ -299,7 +302,7 @@ const fetchUserProjects = async () => {
     const allTeamMembers: UserRole[] = [];
     for (const project of projects.value) {
       try {
-        const teamResponse = await userRoleApi.getProjectUsers(project.id);
+        const teamResponse = await userRoleApi.getProjectUserRoles(project.id);
         allTeamMembers.push(...(teamResponse.userRoles || []));
       } catch (err) {
         // If API fails, add sample team members for demonstration
@@ -470,7 +473,7 @@ const checkUserInvites = async () => {
   
   try {
     const invites = await projectInviteApi.getUserInvites(user.value.id);
-    const pendingInvites = invites.filter(invite => invite.status === 'PENDING');
+    const pendingInvites = invites.filter((invite: any) => invite.status === 'PENDING');
     
     if (pendingInvites.length > 0) {
       showOnboardingModal.value = true;
@@ -515,7 +518,7 @@ const loadPendingInvites = async () => {
   invitesLoading.value = true;
   try {
     const invites = await projectInviteApi.getUserInvites(user.value.id);
-    pendingInvites.value = invites.filter(invite => invite.status === 'PENDING');
+    pendingInvites.value = invites.filter((invite: any) => invite.status === 'PENDING');
   } catch (error) {
     console.error('Failed to load invites:', error);
   } finally {

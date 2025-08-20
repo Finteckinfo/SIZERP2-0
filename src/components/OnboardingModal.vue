@@ -170,7 +170,7 @@ const loadUserInvites = async () => {
   loading.value = true;
   try {
     const invites = await projectInviteApi.getUserInvites(user.value.id);
-    pendingInvites.value = invites.filter(invite => invite.status === 'PENDING');
+    pendingInvites.value = invites.filter((invite: any) => invite.status === 'PENDING');
   } catch (error) {
     console.error('Failed to load user invites:', error);
     // You could show a toast notification here

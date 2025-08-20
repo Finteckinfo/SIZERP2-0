@@ -344,6 +344,7 @@ const loadProjectData = async () => {
               description: 'Initial project setup and planning phase',
               status: 'COMPLETED',
               departmentId: project.id,
+              priority: 'MEDIUM',
               createdAt: '2024-01-01',
               updatedAt: '2024-01-15'
             },
@@ -353,6 +354,7 @@ const loadProjectData = async () => {
               description: 'Core development and implementation',
               status: 'IN_PROGRESS',
               departmentId: project.id,
+              priority: 'HIGH',
               createdAt: '2024-01-15',
               updatedAt: '2024-01-15'
             },
@@ -362,6 +364,7 @@ const loadProjectData = async () => {
               description: 'Quality assurance and testing procedures',
               status: 'PENDING',
               departmentId: project.id,
+              priority: 'MEDIUM',
               createdAt: '2024-01-01',
               updatedAt: '2024-01-01'
             }
@@ -375,7 +378,7 @@ const loadProjectData = async () => {
     const allTeamMembers: UserRole[] = [];
     for (const project of projects.value) {
       try {
-        const teamResponse = await userRoleApi.getProjectUsers(project.id);
+        const teamResponse = await userRoleApi.getProjectUserRoles(project.id);
         allTeamMembers.push(...(teamResponse.userRoles || []));
       } catch (err) {
         // If API fails, add sample team members for demonstration
