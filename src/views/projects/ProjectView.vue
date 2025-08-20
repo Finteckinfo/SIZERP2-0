@@ -282,9 +282,9 @@ const loadProjectData = async () => {
     loading.value = true;
     error.value = null;
     
-    // Load projects
-    const projectsResponse = await projectApi.getProjects();
-    projects.value = projectsResponse.projects || [];
+    // Load user's projects using new filtered backend endpoint
+    const projectsResponse = await projectApi.getUserProjectsSimple();
+    projects.value = projectsResponse.projects || projectsResponse || [];
     
     // If no projects from API, add sample data for demonstration
     if (projects.value.length === 0) {
