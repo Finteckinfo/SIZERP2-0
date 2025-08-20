@@ -42,6 +42,25 @@ const getAuthHeaders = async (): Promise<Record<string, string>> => {
   }
 };
 
+// Centralized axios instance with auth interceptor
+const api = axios.create({ baseURL: API_BASE_URL });
+
+api.interceptors.request.use(async (config) => {
+  try {
+    const jwt = await window.Clerk?.session?.getToken({ template: 'API' });
+    const token = jwt || (await window.Clerk?.session?.getToken());
+    if (token) {
+      config.headers = {
+        ...(config.headers || {}),
+        Authorization: `Bearer ${token}`,
+      } as any;
+    }
+  } catch (e) {
+    // Non-fatal: proceed without header
+  }
+  return config;
+});
+
 // Types based on your Prisma schema
 export interface Project {
   id: string;
