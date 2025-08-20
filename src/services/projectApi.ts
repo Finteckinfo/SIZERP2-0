@@ -4,6 +4,28 @@ import axios from 'axios';
 // Vercel environment variables are not available at runtime in the browser
 const API_BASE_URL = 'https://sizerpbackend2-0-production.up.railway.app/api';
 
+// Helper function to get authentication headers
+const getAuthHeaders = async (): Promise<Record<string, string>> => {
+  try {
+    // Get the token from Clerk
+    const token = await window.Clerk?.session?.getToken();
+    if (token) {
+      return {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+    }
+    return {
+      'Content-Type': 'application/json'
+    };
+  } catch (error) {
+    console.error('Failed to get auth token:', error);
+    return {
+      'Content-Type': 'application/json'
+    };
+  }
+};
+
 // Types based on your Prisma schema
 export interface Project {
   id: string;
@@ -127,13 +149,15 @@ export const projectApi = {
     page?: number;
     pageSize?: number;
   }) => {
-    const response = await axios.get(`${API_BASE_URL}/projects`, { params });
+    const headers = await getAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/projects`, { params, headers });
     return response.data;
   },
 
   // Get single project
   getProject: async (projectId: string) => {
-    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}`);
+    const headers = await getAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}`, { headers });
     return response.data;
   },
 
@@ -147,7 +171,8 @@ export const projectApi = {
     startDate: string;
     endDate: string;
   }) => {
-    const response = await axios.post(`${API_BASE_URL}/projects`, projectData);
+    const headers = await getAuthHeaders();
+    const response = await axios.post(`${API_BASE_URL}/projects`, projectData, { headers });
     return response.data;
   },
 
@@ -168,7 +193,8 @@ export const projectApi = {
 export const projectInviteApi = {
   // Get all invites for a user (when they log in)
   getUserInvites: async (userId: string): Promise<ProjectInvite[]> => {
-    const response = await fetch(`${API_BASE_URL}/invites/user/${userId}`);
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/invites/user/${userId}`, { headers });
     if (!response.ok) throw new Error('Failed to fetch user invites');
     return response.json();
   },
@@ -254,7 +280,8 @@ export const userRoleApi = {
   
   // Get user's role in a specific project
   getUserRoleInProject: async (userId: string, projectId: string): Promise<UserRole | null> => {
-    const response = await axios.get(`${API_BASE_URL}/user-roles/project/${projectId}/user/${userId}`);
+    const headers = await getAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/user-roles/project/${projectId}/user/${userId}`, { headers });
     if (response.status === 404) return null;
     return response.data;
   },
