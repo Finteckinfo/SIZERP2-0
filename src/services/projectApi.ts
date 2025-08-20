@@ -7,28 +7,25 @@ const API_BASE_URL = 'https://sizerpbackend2-0-production.up.railway.app/api';
 // Helper function to get authentication headers
 const getAuthHeaders = async (): Promise<Record<string, string>> => {
   try {
-    // Get the session token from Clerk (this is what the backend expects)
-    const token = await window.Clerk?.session?.getToken();
-    
-    // Alternative method if the above doesn't work
-    if (!token && window.Clerk?.session) {
-      const session = window.Clerk.session;
-      if (session) {
-        const sessionToken = await session.getToken();
-        if (sessionToken) {
-          console.log('Got token via alternative method:', sessionToken.substring(0, 20) + '...');
-          return {
-            'Authorization': `Bearer ${sessionToken}`,
-            'Content-Type': 'application/json'
-          };
-        }
-      }
-    }
+    // Get JWT token from your "API" template
+    const token = await window.Clerk?.session?.getToken({ 
+      template: "API" 
+    });
     
     if (token) {
-      console.log('Got token via primary method:', token.substring(0, 20) + '...');
+      console.log('Got JWT token from API template:', token.substring(0, 20) + '...');
       return {
         'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+    }
+    
+    // Fallback to session token if JWT template fails
+    const sessionToken = await window.Clerk?.session?.getToken();
+    if (sessionToken) {
+      console.log('Fallback to session token:', sessionToken.substring(0, 20) + '...');
+      return {
+        'Authorization': `Bearer ${sessionToken}`,
         'Content-Type': 'application/json'
       };
     }
@@ -38,7 +35,7 @@ const getAuthHeaders = async (): Promise<Record<string, string>> => {
       'Content-Type': 'application/json'
     };
   } catch (error) {
-    console.error('Failed to get auth token:', error);
+    console.error('Failed to get JWT token:', error);
     return {
       'Content-Type': 'application/json'
     };
