@@ -22,7 +22,7 @@ const footerLink = shallowRef([
     <v-row justify="center" align="center" no-gutters>
       <v-col cols="12" sm="6">
         <p class="text-body-1 mb-0 text-sm-left text-center">
-          Berry ♥ crafted by Team
+          SIZLAND ♥ crafted by Team
           <a href="https://themeforest.net/user/codedthemes" class="text-darkText text-decoration-none" target="_blank">Codedthemes |</a>
           <span class="text-body-1 mb-0 text-sm-left text-center">
             distributed by

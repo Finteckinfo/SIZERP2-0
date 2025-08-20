@@ -1,18 +1,18 @@
-# Berry Free Vue Material Admin Template 
+# SIZLAND Free Vue Material Admin Template 
 #### Preview
 
-- [Demo](https://themewagon.github.io/berry-vue/)
+- [Demo](https://themewagon.github.io/SIZLAND-vue/)
 
 #### Download
 
-- [Download from ThemeWagon](https://themewagon.com/themes/berry-vue/)
+- [Download from ThemeWagon](https://themewagon.com/themes/SIZLAND-vue/)
 
 ## Getting Started
 
 1. Clone Repository
 
 ```
-git clone https://github.com/themewagon/berry-vue.git
+git clone https://github.com/themewagon/SIZLAND-vue.git
 ```
 
 2. Install Dependencies
@@ -36,7 +36,7 @@ bun start
 ## Author
 
 ```
-Berry is developed by Team CodedThemes.
+SIZLAND is developed by Team CodedThemes.
 ```
 
 ## License

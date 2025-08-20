@@ -39,6 +39,6 @@ jobs:
           # ARGS: "-rltgoDzvO --delete"
           SOURCE: 'dist/'
           REMOTE_HOST: 192.34.62.123
-          REMOTE_USER: berry
+          REMOTE_USER: SIZLAND
           TARGET: public_html/vue/free/stage
           EXCLUDE: '/node_modules/'
