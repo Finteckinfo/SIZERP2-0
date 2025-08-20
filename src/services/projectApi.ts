@@ -1,12 +1,8 @@
 import axios from 'axios';
 
-// Prefer Vite env if present; fallback to relative '/api'
-// This ensures production calls hit your Railway backend when VITE_BACKEND_URL is set
-// Example: VITE_BACKEND_URL=https://sizerpbackend2-0-production.up.railway.app
-// Resulting base: https://.../api
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const VITE_BASE: any = (import.meta as any)?.env?.VITE_BACKEND_URL;
-const API_BASE_URL = VITE_BASE ? `${VITE_BASE}/api` : '/api';
+// Production backend URL - hardcoded for Vercel deployment
+// Vercel environment variables are not available at runtime in the browser
+const API_BASE_URL = 'https://sizerpbackend2-0-production.up.railway.app/api';
 
 // Types based on your Prisma schema
 export interface Project {
