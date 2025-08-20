@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useAuthStore } from '@/stores/auth'
 import { LogoutIcon, SettingsIcon, UserIcon, SearchIcon } from 'vue-tabler-icons'
-import { useUser } from '@clerk/vue'
+import { useUser, useClerk } from '@clerk/vue'
 import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue'
 
 // wallet modal state & active wallet
@@ -11,8 +10,8 @@ import { activeAccount } from '@/lib/walletManager'
 
 const swt1 = ref(true)
 const swt2 = ref(false)
-const authStore = useAuthStore()
 const { user } = useUser()
+const clerk = useClerk()
 
 // fallback if no name
 const firstName = computed(() => user.value?.firstName || 'Guest')
@@ -27,6 +26,18 @@ watch(isWalletModalOpen, val => console.log('ProfileDD sees wallet modal change:
 function handleOpenWallet() {
   console.log('Opening wallet modal from ProfileDD')
   openWalletModal()
+}
+
+// Handle Clerk logout
+async function handleLogout() {
+  try {
+    if (clerk.value) {
+      await clerk.value.signOut()
+      console.log('User logged out successfully')
+    }
+  } catch (error) {
+    console.error('Logout failed:', error)
+  }
 }
 </script>
 
@@ -97,7 +108,7 @@ function handleOpenWallet() {
           </template>
         </v-list-item>
 
-        <v-list-item @click="authStore.logout()" color="secondary" rounded="md">
+        <v-list-item @click="handleLogout()" color="secondary" rounded="md">
           <template v-slot:prepend>
             <LogoutIcon size="20" class="mr-2" />
           </template>
