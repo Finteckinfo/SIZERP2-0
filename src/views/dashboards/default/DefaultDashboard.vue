@@ -58,6 +58,10 @@ const teamError = ref<string | null>(null);
 const showOnboardingModal = ref(false);
 const hasCheckedInvites = ref(false);
 
+// Invites state
+const pendingInvites = ref<any[]>([]);
+const invitesLoading = ref(false);
+
 // Computed properties
 const userDisplayName = computed(() => {
   if (user.value) {
@@ -98,6 +102,50 @@ const getUserRoleInProject = (projectId: string) => {
     member.projectId === projectId && member.userId === user.value.id
   );
   return userRole?.role || 'CLIENT';
+};
+
+// Helper functions for invites
+const getRoleColor = (role: string) => {
+  switch (role) {
+    case 'PROJECT_OWNER': return 'primary';
+    case 'PROJECT_MANAGER': return 'success';
+    case 'EMPLOYEE': return 'info';
+    default: return 'grey';
+  }
+};
+
+const getRoleLabel = (role: string) => {
+  switch (role) {
+    case 'PROJECT_OWNER': return 'Owner';
+    case 'PROJECT_MANAGER': return 'Manager';
+    case 'EMPLOYEE': return 'Employee';
+    default: return role;
+  }
+};
+
+const getPriorityColor = (priority: string) => {
+  switch (priority) {
+    case 'LOW': return 'success';
+    case 'MEDIUM': return 'warning';
+    case 'HIGH': return 'error';
+    case 'CRITICAL': return 'error';
+    default: return 'grey';
+  }
+};
+
+const getPriorityLabel = (priority: string) => {
+  switch (priority) {
+    case 'LOW': return 'Low';
+    case 'MEDIUM': return 'Medium';
+    case 'HIGH': return 'High';
+    case 'CRITICAL': return 'Critical';
+    default: return priority;
+  }
+};
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return 'N/A';
+  return new Date(dateString).toLocaleDateString();
 };
 
 // Navigation functions
@@ -458,6 +506,59 @@ const refreshData = () => {
   loadAllData();
 };
 
+// Invite management functions
+const loadPendingInvites = async () => {
+  if (!user.value?.id) return;
+  
+  invitesLoading.value = true;
+  try {
+    const invites = await projectInviteApi.getUserInvites(user.value.id);
+    pendingInvites.value = invites.filter(invite => invite.status === 'PENDING');
+  } catch (error) {
+    console.error('Failed to load invites:', error);
+  } finally {
+    invitesLoading.value = false;
+  }
+};
+
+const refreshInvites = () => {
+  loadPendingInvites();
+};
+
+const acceptInvite = async (inviteId: string) => {
+  const invite = pendingInvites.value.find(i => i.id === inviteId);
+  if (!invite) return;
+  
+  invite.loading = true;
+  try {
+    await projectInviteApi.respondToInvite(inviteId, 'ACCEPTED');
+    // Remove from pending list
+    pendingInvites.value = pendingInvites.value.filter(i => i.id !== inviteId);
+    // Refresh project data
+    refreshData();
+  } catch (error) {
+    console.error('Failed to accept invite:', error);
+  } finally {
+    invite.loading = false;
+  }
+};
+
+const declineInvite = async (inviteId: string) => {
+  const invite = pendingInvites.value.find(i => i.id === inviteId);
+  if (!invite) return;
+  
+  invite.loading = true;
+  try {
+    await projectInviteApi.respondToInvite(inviteId, 'DECLINED');
+    // Remove from pending list
+    pendingInvites.value = pendingInvites.value.filter(i => i.id !== inviteId);
+  } catch (error) {
+    console.error('Failed to decline invite:', error);
+  } finally {
+    invite.loading = false;
+  }
+};
+
 // Watch for user availability
 watch(() => user.value?.id, (newUserId) => {
   if (newUserId) {
@@ -476,6 +577,7 @@ watch(projects, () => {
 onMounted(() => {
   if (user.value?.id) {
     loadAllData();
+    loadPendingInvites();
   }
 });
 </script>
@@ -600,6 +702,131 @@ onMounted(() => {
           </v-col>
         </v-row>
     </v-col>
+    </v-row>
+
+    <!-- Project Invites Section -->
+    <v-row class="mb-6">
+      <v-col cols="12">
+        <v-card elevation="0" class="invites-section">
+          <v-card-title class="d-flex align-center pa-4 pb-2">
+            <v-icon class="mr-3" color="primary" size="24">mdi-email-outline</v-icon>
+            <span class="text-h5 font-weight-medium">Project Invitations</span>
+            <v-chip 
+              v-if="pendingInvites.length > 0" 
+              color="warning" 
+              size="small" 
+              class="ml-3"
+            >
+              {{ pendingInvites.length }} Pending
+            </v-chip>
+            <v-spacer></v-spacer>
+            <v-btn 
+              v-if="pendingInvites.length > 0"
+              color="primary" 
+              variant="tonal" 
+              size="small"
+              @click="refreshInvites"
+              :loading="invitesLoading"
+            >
+              <v-icon>mdi-refresh</v-icon>
+              Refresh
+            </v-btn>
+          </v-card-title>
+
+          <v-card-text class="pa-4 pt-0">
+            <!-- Loading State -->
+            <div v-if="invitesLoading" class="text-center pa-6">
+              <v-progress-circular indeterminate color="primary" size="32"></v-progress-circular>
+              <p class="text-body-2 text-medium-emphasis mt-3">Loading invitations...</p>
+            </div>
+
+            <!-- No Invites State -->
+            <div v-else-if="pendingInvites.length === 0" class="text-center pa-6">
+              <v-avatar size="60" color="grey-lighten-3" class="mb-3">
+                <span class="text-h3">📧</span>
+              </v-avatar>
+              <h6 class="text-h6 text-medium-emphasis mb-2">No Pending Invitations</h6>
+              <p class="text-body-2 text-medium-emphasis">
+                You're all caught up! No project invitations waiting for your response.
+              </p>
+            </div>
+
+            <!-- Invites List -->
+            <div v-else class="invites-list">
+              <div 
+                v-for="invite in pendingInvites" 
+                :key="invite.id"
+                class="invite-card mb-4"
+              >
+                <v-card variant="outlined" class="invite-item">
+                  <v-card-text class="pa-4">
+                    <div class="d-flex align-start justify-space-between">
+                      <div class="invite-info flex-grow-1">
+                        <div class="d-flex align-center mb-3">
+                          <v-chip 
+                            :color="getRoleColor(invite.role)" 
+                            size="small" 
+                            class="mr-3"
+                          >
+                            {{ getRoleLabel(invite.role) }}
+                          </v-chip>
+                          <v-chip 
+                            :color="getPriorityColor(invite.project?.priority || 'MEDIUM')" 
+                            size="small" 
+                            variant="tonal"
+                          >
+                            {{ getPriorityLabel(invite.project?.priority || 'MEDIUM') }}
+                          </v-chip>
+                        </div>
+                        
+                        <h6 class="text-h6 font-weight-medium mb-2">
+                          {{ invite.project?.name || 'Project' }}
+                        </h6>
+                        
+                        <p v-if="invite.project?.description" class="text-body-2 text-medium-emphasis mb-3">
+                          {{ invite.project.description }}
+                        </p>
+                        
+                        <div class="invite-details d-flex align-center text-caption text-medium-emphasis">
+                          <v-icon size="16" class="mr-1">mdi-calendar</v-icon>
+                          <span class="mr-4">
+                            {{ formatDate(invite.project?.startDate) }} - {{ formatDate(invite.project?.endDate) }}
+                          </span>
+                          <v-icon size="16" class="mr-1">mdi-email</v-icon>
+                          <span>{{ invite.email }}</span>
+                        </div>
+                      </div>
+                      
+                      <div class="invite-actions d-flex flex-column gap-2">
+                        <v-btn 
+                          color="success" 
+                          variant="flat" 
+                          size="small"
+                          :loading="invite.loading"
+                          @click="acceptInvite(invite.id)"
+                        >
+                          <v-icon size="16" class="mr-1">mdi-check</v-icon>
+                          Accept
+                        </v-btn>
+                        <v-btn 
+                          color="error" 
+                          variant="outlined" 
+                          size="small"
+                          :loading="invite.loading"
+                          @click="declineInvite(invite.id)"
+                        >
+                          <v-icon size="16" class="mr-1">mdi-close</v-icon>
+                          Decline
+                        </v-btn>
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
     </v-row>
 
     <!-- Recent Activity and Quick Stats - Progressive loading -->
@@ -727,5 +954,42 @@ onMounted(() => {
   100% {
     background-position: 200% 0;
   }
+}
+
+/* Invites Section Styles */
+.invites-section {
+  border: 1px solid rgb(var(--v-theme-outline));
+  border-radius: 12px;
+}
+
+.invite-card {
+  transition: all 0.3s ease;
+}
+
+.invite-item {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.invite-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.invite-info {
+  min-width: 0;
+}
+
+.invite-details {
+  opacity: 0.8;
+}
+
+.invite-actions {
+  min-width: 120px;
+}
+
+.invites-list {
+  max-height: 400px;
+  overflow-y: auto;
 }
 </style>
