@@ -56,6 +56,14 @@ export const permissionService = {
     canManage: Department[];
     canAccess: Department[];
   } => {
+    // PROJECT_OWNER has access to all departments
+    if (userRole.role === 'PROJECT_OWNER') {
+      return {
+        canManage: [], // Will be populated with all departments from the project
+        canAccess: []  // Will be populated with all departments from the project
+      };
+    }
+    
     return {
       canManage: userRole.managedDepartments || [],
       canAccess: userRole.accessibleDepartments || []

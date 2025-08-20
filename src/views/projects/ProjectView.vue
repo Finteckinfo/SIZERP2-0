@@ -332,8 +332,8 @@ const loadProjectData = async () => {
     const allTasks: Task[] = [];
     for (const project of projects.value) {
       try {
-        const tasksResponse = await taskApi.getProjectTasks(project.id);
-        allTasks.push(...(tasksResponse.tasks || []));
+      const tasksResponse = await taskApi.getProjectTasks(project.id);
+      allTasks.push(...(tasksResponse.tasks || []));
       } catch (err) {
         // If API fails, add sample tasks for demonstration
         if (project.id.startsWith('sample-')) {
@@ -417,7 +417,7 @@ const loadProjectData = async () => {
 // Load data on component mount
 onMounted(() => {
   if (user.value?.id) {
-    loadProjectData();
+  loadProjectData();
   }
 });
 
@@ -759,28 +759,28 @@ const openProjectWorkspace = (project: Project) => {
   grid-column: 1 / -1;
 }
 
-.customize-btn {
-  position: fixed;
-  right: 24px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 100;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
+  .customize-btn {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
 
-.loading-state,
-.error-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 64px 24px;
-  text-align: center;
-}
+  .loading-state,
+  .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 24px;
+    text-align: center;
+  }
 
-.loading-state .v-progress-circular {
-  margin-bottom: 16px;
+  .loading-state .v-progress-circular {
+    margin-bottom: 16px;
 }
 
 @media (max-width: 768px) {

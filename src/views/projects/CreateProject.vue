@@ -265,7 +265,18 @@
                       variant="outlined"
                       density="compact"
                       class="mb-3"
+                      @update:model-value="handleRoleChange(index, $event)"
                     />
+                    
+                    <!-- Role-specific information -->
+                    <div v-if="role.role === 'PROJECT_OWNER'" class="role-info mb-3">
+                      <v-alert type="info" variant="tonal" density="compact" class="mb-0">
+                        <template v-slot:prepend>
+                          <v-icon size="small">mdi-crown</v-icon>
+                        </template>
+                        <span class="text-caption">Project Owner has full access to all departments and can manage the entire project.</span>
+                      </v-alert>
+                    </div>
                     
                     <v-select
                       v-model="role.departmentId"
@@ -276,7 +287,10 @@
                       variant="outlined"
                       density="compact"
                       class="mb-3"
-                      :rules="[v => !!v || 'Department is required']"
+                      :rules="role.role === 'PROJECT_OWNER' ? [] : [v => !!v || 'Department is required']"
+                      :disabled="role.role === 'PROJECT_OWNER'"
+                      :hint="role.role === 'PROJECT_OWNER' ? 'Project Owner has access to all departments' : 'Select department for this role'"
+                      persistent-hint
                     />
                     
                     <v-btn 
@@ -733,7 +747,19 @@ const removeRole = (index: number) => {
   projectData.roles.splice(index, 1);
 };
 
-// Ensure creator is PROJECT_OWNER
+// Handle role changes to automatically adjust department access
+const handleRoleChange = (index: number, newRole: string) => {
+  const role = projectData.roles[index];
+  if (newRole === 'PROJECT_OWNER') {
+    // PROJECT_OWNER gets access to all departments automatically
+    role.departmentId = null;
+  } else if (role.departmentId === null) {
+    // If changing from PROJECT_OWNER to another role, require department selection
+    role.departmentId = projectData.departments.length > 0 ? 0 : null;
+  }
+};
+
+// Ensure creator is PROJECT_OWNER with full project access
 const ensureOwnerRole = () => {
   const ownerExists = projectData.roles.some(r => r.role === 'PROJECT_OWNER');
   if (!ownerExists && user.value?.id) {
@@ -827,7 +853,7 @@ const createProject = async () => {
       roles: projectData.roles.map(role => ({
         userEmail: role.userEmail,
         role: role.role as 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE',
-        departmentId: role.departmentId // null for PROJECT_OWNER means access to all
+        departmentId: role.role === 'PROJECT_OWNER' ? null : role.departmentId // PROJECT_OWNER gets access to all departments
       })),
       tags: projectData.tags ? projectData.tags.split(',').map(tag => tag.trim()) : []
     };
