@@ -1,6 +1,11 @@
 <template>
-  <div class="project-workspace">
-    <v-container fluid class="pa-0">
+  <ProjectAccessGate 
+    :project-id="projectId"
+    @access-granted="handleAccessGranted"
+    @access-denied="handleAccessDenied"
+  >
+    <div class="project-workspace">
+      <v-container fluid class="pa-0">
       <!-- Header -->
       <v-app-bar elevation="0" color="white" class="px-6 border-b">
         <div class="d-flex align-center">
@@ -266,17 +271,18 @@
       </div>
     </v-container>
   </div>
+  </ProjectAccessGate>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { projectApi, taskApi, departmentApi, userRoleApi, type Project, type Task, type Department, type UserRole } from '@/services/projectApi';
+import ProjectAccessGate from '@/components/ProjectAccessGate.vue';
 
 const route = useRoute();
-
 const router = useRouter();
-const projectId = route.params.projectId as string;
+const projectId = route.params.id as string;
 
 // Real project data from API
 const project = ref<Project | null>(null);
@@ -315,12 +321,7 @@ const loadProjectData = async () => {
   }
 };
 
-// Load data on component mount
-onMounted(() => {
-  if (projectId) {
-    loadProjectData();
-  }
-});
+// Note: Project data loading is now handled by the access gate
 
 // Computed properties for template
 const projectStats = computed(() => ({
@@ -413,7 +414,23 @@ const addTaskToSection = (sectionId: string) => {
   // TODO: Implement add task functionality
 };
 
+// Access gate handlers
+const handleAccessGranted = (userRole: UserRole) => {
+  console.log('Access granted with role:', userRole.role);
+  // Load project data once access is confirmed
+  if (projectId) {
+    loadProjectData();
+  }
+};
+
+const handleAccessDenied = () => {
+  console.log('Access denied to project:', projectId);
+  // Redirect to projects list or dashboard
+  router.push('/projects');
+};
+
 onMounted(() => {
+  // Don't load project data here - wait for access gate to confirm access
   if (project.value) {
     console.log('ProjectWorkspace mounted for project:', project.value.name);
   }

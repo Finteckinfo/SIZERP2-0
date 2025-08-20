@@ -31,8 +31,11 @@ export interface Department {
   order: number;
   isVisible: boolean;
   projectId: string;
-  managerId?: string;
+  managers: UserRole[];
+  accessibleRoles: UserRole[];
+  tasks: Task[];
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface Task {
@@ -41,6 +44,7 @@ export interface Task {
   description?: string;
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED';
   departmentId: string;
+  assignedRoleId?: string;
   employeeId?: string;
   createdAt: string;
   updatedAt: string;
@@ -53,6 +57,9 @@ export interface UserRole {
   role: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
   departmentOrder: string[];
   departmentScope: string[];
+  managedDepartments: Department[];
+  accessibleDepartments: Department[];
+  assignedTasks: Task[];
   createdAt: string;
   user?: User;
 }
@@ -73,7 +80,9 @@ export interface ProjectInvite {
   email: string;
   role: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
   status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED';
+  project: Project;
   projectId: string;
+  user?: User;
   userId?: string;
   expiresAt: string;
   createdAt: string;
@@ -87,12 +96,29 @@ export interface ProjectTag {
   createdAt: string;
 }
 
-export interface ProjectDraft {
-  id: string;
+// New interfaces for the enhanced APIs
+export interface CreateInviteData {
+  email: string;
+  role: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
   projectId: string;
-  data: any;
-  createdAt: string;
-  updatedAt: string;
+  expiresAt: string;
+}
+
+export interface CreateDepartmentData {
+  name: string;
+  type: 'MAJOR' | 'MINOR';
+  description?: string;
+  order: number;
+  projectId: string;
+  isVisible?: boolean;
+}
+
+export interface CreateTaskData {
+  title: string;
+  description?: string;
+  departmentId: string;
+  assignedRoleId?: string;
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 }
 
 // Project Management APIs
@@ -100,10 +126,8 @@ export const projectApi = {
   // Get all projects with filtering
   getProjects: async (params?: {
     search?: string;
-    type?: string;
+    status?: string;
     priority?: string;
-    startDate?: string;
-    endDate?: string;
     page?: number;
     pageSize?: number;
   }) => {
@@ -126,55 +150,9 @@ export const projectApi = {
     budgetRange?: string;
     startDate: string;
     endDate: string;
-    ownerId: string;
-    userId: string; // Required by backend validation
-    walletAddress: string; // Required by backend validation
-    departments: Array<{
-      name: string;
-      type: 'MAJOR' | 'MINOR';
-      description?: string;
-      order: number;
-      isVisible: boolean;
-    }>;
-    roles: Array<{
-      userEmail: string;
-      role: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
-      departmentId?: string | null;
-    }>;
-    tags?: string[];
   }) => {
-    try {
-      // Debug logs for tracing payload and endpoint
-      // Do not log sensitive fields, but userId/walletAddress are okay here for debugging
-      // Strip roles emails in console for privacy if needed
-      // eslint-disable-next-line no-console
-      console.log('[projectApi.createProject] URL:', `${API_BASE_URL}/projects`);
-      // eslint-disable-next-line no-console
-      console.log('[projectApi.createProject] userId:', projectData.userId, 'walletAddress:', projectData.walletAddress);
-      // eslint-disable-next-line no-console
-      console.log('[projectApi.createProject] payload snapshot:', {
-        name: projectData.name,
-        type: projectData.type,
-        startDate: projectData.startDate,
-        endDate: projectData.endDate,
-        departmentsCount: projectData.departments?.length,
-        rolesCount: projectData.roles?.length,
-        tagsCount: projectData.tags?.length || 0
-      });
-
-      const response = await axios.post(`${API_BASE_URL}/projects`, projectData);
-      // eslint-disable-next-line no-console
-      console.log('[projectApi.createProject] response OK:', response.status);
-      return response.data;
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error('[projectApi.createProject] error:', err?.message || err);
-      // eslint-disable-next-line no-console
-      console.error('[projectApi.createProject] error.response?.status:', err?.response?.status);
-      // eslint-disable-next-line no-console
-      console.error('[projectApi.createProject] error.response?.data:', err?.response?.data);
-      throw err;
-    }
+    const response = await axios.post(`${API_BASE_URL}/projects`, projectData);
+    return response.data;
   },
 
   // Update project
@@ -190,6 +168,126 @@ export const projectApi = {
   }
 };
 
+// Project Invite APIs
+export const projectInviteApi = {
+  // Get all invites for a user (when they log in)
+  getUserInvites: async (userId: string): Promise<ProjectInvite[]> => {
+    const response = await fetch(`${API_BASE_URL}/invites/user/${userId}`);
+    if (!response.ok) throw new Error('Failed to fetch user invites');
+    return response.json();
+  },
+  
+  // Get all invites for a project (for project owner to see)
+  getProjectInvites: async (projectId: string): Promise<ProjectInvite[]> => {
+    const response = await fetch(`${API_BASE_URL}/invites/project/${projectId}`);
+    if (!response.ok) throw new Error('Failed to fetch project invites');
+    return response.json();
+  },
+  
+  // Accept/decline an invite
+  respondToInvite: async (inviteId: string, status: 'ACCEPTED' | 'DECLINED'): Promise<ProjectInvite> => {
+    const response = await fetch(`${API_BASE_URL}/invites/${inviteId}/respond`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    if (!response.ok) throw new Error('Failed to respond to invite');
+    return response.json();
+  },
+  
+  // Create invite (for project owner)
+  createInvite: async (data: CreateInviteData): Promise<ProjectInvite> => {
+    const response = await fetch(`${API_BASE_URL}/invites`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Failed to create invite');
+    return response.json();
+  },
+  
+  // Resend/update invite
+  updateInvite: async (inviteId: string, data: Partial<ProjectInvite>): Promise<ProjectInvite> => {
+    const response = await fetch(`${API_BASE_URL}/invites/${inviteId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Failed to update invite');
+    return response.json();
+  },
+  
+  // Delete invite
+  deleteInvite: async (inviteId: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/invites/${inviteId}`, {
+      method: 'DELETE'
+    });
+    if (!response.ok) throw new Error('Failed to delete invite');
+  }
+};
+
+// User Role APIs
+export const userRoleApi = {
+  // Get project users
+  getProjectUsers: async (projectId: string) => {
+    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/users`);
+    return response.data;
+  },
+
+  // Add user to project
+  addUserToProject: async (projectId: string, userData: {
+    email: string;
+    role: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
+    departmentScope?: string[];
+  }) => {
+    const response = await axios.post(`${API_BASE_URL}/projects/${projectId}/users`, userData);
+    return response.data;
+  },
+
+  // Update user role
+  updateUserRole: async (projectId: string, userId: string, updates: Partial<UserRole>) => {
+    const response = await axios.patch(`${API_BASE_URL}/projects/${projectId}/users/${userId}`, updates);
+    return response.data;
+  },
+
+  // Remove user from project
+  removeUserFromProject: async (projectId: string, userId: string) => {
+    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}/users/${userId}`);
+    return response.data;
+  },
+  
+  // Get user's role in a specific project
+  getUserRoleInProject: async (userId: string, projectId: string): Promise<UserRole | null> => {
+    const response = await axios.get(`${API_BASE_URL}/user-roles/project/${projectId}/user/${userId}`);
+    if (response.status === 404) return null;
+    return response.data;
+  },
+  
+  // Update user role (for project owner)
+  updateUserRoleById: async (roleId: string, data: Partial<UserRole>) => {
+    const response = await axios.patch(`${API_BASE_URL}/user-roles/${roleId}`, data);
+    return response.data;
+  },
+  
+  // Remove user from project (for project owner)
+  removeUserFromProjectById: async (roleId: string) => {
+    const response = await axios.delete(`${API_BASE_URL}/user-roles/${roleId}`);
+    return response.data;
+  },
+  
+  // Get all users in a project with their roles
+  getProjectTeam: async (projectId: string): Promise<UserRole[]> => {
+    const response = await axios.get(`${API_BASE_URL}/user-roles/project/${projectId}`);
+    return response.data;
+  },
+  
+  // Assign user to department
+  assignUserToDepartment: async (roleId: string, departmentId: string) => {
+    const response = await axios.post(`${API_BASE_URL}/user-roles/${roleId}/departments/${departmentId}`);
+    return response.data;
+  }
+};
+
 // Department APIs
 export const departmentApi = {
   // Get project departments
@@ -198,34 +296,28 @@ export const departmentApi = {
     return response.data;
   },
 
-  // Create department
-  createDepartment: async (projectId: string, departmentData: {
-    name: string;
-    type: 'MAJOR' | 'MINOR';
-    description?: string;
-    order: number;
-    managerId?: string;
-  }) => {
-    const response = await axios.post(`${API_BASE_URL}/projects/${projectId}/departments`, departmentData);
+  // Create department (for project owner/manager)
+  createDepartment: async (data: CreateDepartmentData): Promise<Department> => {
+    const response = await axios.post(`${API_BASE_URL}/departments`, data);
     return response.data;
   },
-
+  
   // Update department
-  updateDepartment: async (projectId: string, departmentId: string, updates: Partial<Department>) => {
-    const response = await axios.patch(`${API_BASE_URL}/projects/${projectId}/departments/${departmentId}`, updates);
+  updateDepartment: async (departmentId: string, data: Partial<Department>): Promise<Department> => {
+    const response = await axios.patch(`${API_BASE_URL}/departments/${departmentId}`, data);
     return response.data;
   },
-
+  
   // Delete department
-  deleteDepartment: async (projectId: string, departmentId: string) => {
-    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}/departments/${departmentId}`);
+  deleteDepartment: async (departmentId: string): Promise<void> => {
+    const response = await axios.delete(`${API_BASE_URL}/departments/${departmentId}`);
     return response.data;
   },
-
+  
   // Reorder departments
-  reorderDepartments: async (projectId: string, departmentIdsInOrder: string[]) => {
-    const response = await axios.patch(`${API_BASE_URL}/projects/${projectId}/departments/reorder`, {
-      departmentIdsInOrder
+  reorderDepartments: async (projectId: string, departmentIds: string[]): Promise<Department[]> => {
+    const response = await axios.patch(`${API_BASE_URL}/departments/project/${projectId}/reorder`, {
+      departmentIds
     });
     return response.data;
   }
@@ -244,89 +336,33 @@ export const taskApi = {
     return response.data;
   },
 
-  // Create task
-  createTask: async (projectId: string, taskData: {
-    title: string;
-    description?: string;
-    departmentId: string;
-    employeeId?: string;
-  }) => {
-    const response = await axios.post(`${API_BASE_URL}/projects/${projectId}/tasks`, taskData);
+  // Create task (for project owner/manager)
+  createTask: async (data: CreateTaskData): Promise<Task> => {
+    const response = await axios.post(`${API_BASE_URL}/tasks`, data);
     return response.data;
   },
-
+  
   // Update task
-  updateTask: async (projectId: string, taskId: string, updates: Partial<Task>) => {
-    const response = await axios.patch(`${API_BASE_URL}/projects/${projectId}/tasks/${taskId}`, updates);
+  updateTask: async (taskId: string, data: Partial<Task>): Promise<Task> => {
+    const response = await axios.patch(`${API_BASE_URL}/tasks/${taskId}`, data);
     return response.data;
   },
-
+  
   // Delete task
-  deleteTask: async (projectId: string, taskId: string) => {
-    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}/tasks/${taskId}`);
+  deleteTask: async (taskId: string): Promise<void> => {
+    const response = await axios.delete(`${API_BASE_URL}/tasks/${taskId}`);
     return response.data;
   },
-
-  // Change task status
-  updateTaskStatus: async (projectId: string, taskId: string, status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED') => {
-    const response = await axios.patch(`${API_BASE_URL}/projects/${projectId}/tasks/${taskId}/status`, { status });
-    return response.data;
-  }
-};
-
-// User Role APIs
-export const userRoleApi = {
-  // Get project users
-  getProjectUsers: async (projectId: string) => {
-    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/users`);
+  
+  // Assign task to user role
+  assignTaskToRole: async (taskId: string, roleId: string): Promise<Task> => {
+    const response = await axios.post(`${API_BASE_URL}/tasks/${taskId}/assign/${roleId}`);
     return response.data;
   },
-
-  // Add user to project
-  addUserToProject: async (projectId: string, userData: {
-    userId: string;
-    role: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
-    departmentOrder?: string[];
-    departmentScope?: string[];
-  }) => {
-    const response = await axios.post(`${API_BASE_URL}/projects/${projectId}/users`, userData);
-    return response.data;
-  },
-
-  // Update user role
-  updateUserRole: async (projectId: string, userId: string, updates: Partial<UserRole>) => {
-    const response = await axios.patch(`${API_BASE_URL}/projects/${projectId}/users/${userId}`, updates);
-    return response.data;
-  },
-
-  // Remove user from project
-  removeUserFromProject: async (projectId: string, userId: string) => {
-    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}/users/${userId}`);
-    return response.data;
-  }
-};
-
-// Invite APIs
-export const inviteApi = {
-  // Get project invites
-  getProjectInvites: async (projectId: string) => {
-    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}/invites`);
-    return response.data;
-  },
-
-  // Send invite
-  sendInvite: async (projectId: string, inviteData: {
-    email: string;
-    role: 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE';
-    expiresAt: string;
-  }) => {
-    const response = await axios.post(`${API_BASE_URL}/projects/${projectId}/invites`, inviteData);
-    return response.data;
-  },
-
-  // Update invite status
-  updateInviteStatus: async (projectId: string, inviteId: string, status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED') => {
-    const response = await axios.patch(`${API_BASE_URL}/projects/${projectId}/invites/${inviteId}`, { status });
+  
+  // Get tasks by department
+  getTasksByDepartment: async (departmentId: string): Promise<Task[]> => {
+    const response = await axios.get(`${API_BASE_URL}/tasks/department/${departmentId}`);
     return response.data;
   }
 };
@@ -352,9 +388,6 @@ export const tagApi = {
   }
 };
 
-// Draft APIs
-// Draft APIs removed (backend disabled)
-
 // Global User APIs
 export const userApi = {
   // Search users
@@ -373,21 +406,3 @@ export const userApi = {
     return response.data;
   }
 };
-
-// Global Department APIs
-export const globalDepartmentApi = {
-  // Get all departments
-  getAllDepartments: async () => {
-    const response = await axios.get(`${API_BASE_URL}/departments`);
-    return response.data;
-  },
-
-  // Get department templates
-  getDepartmentTemplates: async () => {
-    const response = await axios.get(`${API_BASE_URL}/departments/templates`);
-    return response.data;
-  }
-};
-
-// Project Template APIs
-// Project Template APIs removed (backend disabled)

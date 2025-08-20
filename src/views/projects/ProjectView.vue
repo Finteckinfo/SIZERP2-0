@@ -388,6 +388,9 @@ const loadProjectData = async () => {
               role: 'PROJECT_MANAGER',
               departmentOrder: [],
               departmentScope: [],
+              managedDepartments: [],
+              accessibleDepartments: [],
+              assignedTasks: [],
               createdAt: '2024-01-01',
               user: {
                 id: user.value?.id || 'sample-user',

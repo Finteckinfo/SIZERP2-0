@@ -12,9 +12,10 @@ import { useRouter } from 'vue-router';
 import StatsSkeleton from './components/StatsSkeleton.vue';
 import ProjectCardSkeleton from './components/ProjectCardSkeleton.vue';
 import ActivitySkeleton from './components/ActivitySkeleton.vue';
+import OnboardingModal from '@/components/OnboardingModal.vue';
 
 // Import centralized API services
-import { projectApi, taskApi, userRoleApi, type Project, type Task, type UserRole } from '@/services/projectApi';
+import { projectApi, taskApi, userRoleApi, projectInviteApi, type Project, type Task, type UserRole } from '@/services/projectApi';
 
 // Get Clerk user and router
 const { user } = useUser();
@@ -52,6 +53,10 @@ const deadlinesLoading = ref(true);
 const projectsError = ref<string | null>(null);
 const tasksError = ref<string | null>(null);
 const teamError = ref<string | null>(null);
+
+// Onboarding state
+const showOnboardingModal = ref(false);
+const hasCheckedInvites = ref(false);
 
 // Computed properties
 const userDisplayName = computed(() => {
@@ -257,6 +262,9 @@ const fetchUserProjects = async () => {
               role: 'PROJECT_MANAGER',
               departmentOrder: [],
               departmentScope: [],
+              managedDepartments: [],
+              accessibleDepartments: [],
+              assignedTasks: [],
               createdAt: '2024-01-01',
               user: {
                 id: user.value?.id || 'sample-user',
@@ -402,6 +410,38 @@ const loadAllData = () => {
   fetchRecentActivities();
   fetchWeeklyProgress();
   fetchDeadlines();
+  
+  // Check for pending invites
+  checkUserInvites();
+};
+
+const checkUserInvites = async () => {
+  if (!user.value?.id || hasCheckedInvites.value) return;
+  
+  try {
+    const invites = await projectInviteApi.getUserInvites(user.value.id);
+    const pendingInvites = invites.filter(invite => invite.status === 'PENDING');
+    
+    if (pendingInvites.length > 0) {
+      showOnboardingModal.value = true;
+    }
+    
+    hasCheckedInvites.value = true;
+  } catch (error) {
+    console.error('Failed to check user invites:', error);
+    // Don't block the dashboard if invite check fails
+  }
+};
+
+const handleInviteResponse = (inviteId: string, status: 'ACCEPTED' | 'DECLINED') => {
+  console.log(`Invite ${inviteId} ${status.toLowerCase()}`);
+  
+  if (status === 'ACCEPTED') {
+    // Refresh data to show the newly accepted project
+    refreshData();
+  }
+  
+  // You could show a toast notification here
 };
 
 // Refresh function for manual data reload
@@ -651,6 +691,12 @@ onMounted(() => {
         </v-card>
     </v-col>
   </v-row>
+  
+  <!-- Onboarding Modal for Project Invitations -->
+  <OnboardingModal
+    v-model="showOnboardingModal"
+    @invite-responded="handleInviteResponse"
+  />
   </div>
 </template>
 
