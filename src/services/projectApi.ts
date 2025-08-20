@@ -176,7 +176,7 @@ export interface CreateTaskData {
 
 // Project Management APIs
 export const projectApi = {
-  // Get all projects with filtering
+  // Get user's projects (filtered by backend)
   getProjects: async (params?: {
     search?: string;
     status?: string;
@@ -185,7 +185,14 @@ export const projectApi = {
     pageSize?: number;
   }) => {
     const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/projects`, { params, headers });
+    const response = await axios.get(`${API_BASE_URL}/projects/my-projects`, { params, headers });
+    return response.data;
+  },
+
+  // Get user's projects (simple, no pagination - perfect for dashboards)
+  getUserProjectsSimple: async () => {
+    const headers = await getAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/projects/my-projects/simple`, { headers });
     return response.data;
   },
 

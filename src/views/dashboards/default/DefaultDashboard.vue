@@ -70,17 +70,8 @@ const userDisplayName = computed(() => {
   return 'Guest';
 });
 
-const myProjects = computed(() => {
-  if (!user.value?.id) return [] as Project[];
-  const currentUserId = user.value.id;
-  return projects.value.filter(p => {
-    const isOwner = p.ownerId === currentUserId;
-    const isTeamMember = teamMembers.value.some(m => m.projectId === p.id && m.userId === currentUserId);
-    return isOwner || isTeamMember;
-  });
-});
-
-const hasProjects = computed(() => myProjects.value.length > 0);
+// No more frontend filtering needed - backend handles it
+const hasProjects = computed(() => projects.value.length > 0);
 
 // Helper functions for project status and progress calculation
 const getProjectStatus = (project: Project) => {
@@ -181,18 +172,18 @@ const fetchDashboardStats = async () => {
   
   try {
     // Calculate stats from loaded data
-    const total = myProjects.value.length;
-    const active = myProjects.value.filter(p => getProjectStatus(p) === 'ACTIVE').length;
-    const completed = myProjects.value.filter(p => getProjectStatus(p) === 'COMPLETED').length;
-    const pending = myProjects.value.filter(p => getProjectStatus(p) === 'PENDING').length;
+    const total = projects.value.length;
+    const active = projects.value.filter(p => getProjectStatus(p) === 'ACTIVE').length;
+    const completed = projects.value.filter(p => getProjectStatus(p) === 'COMPLETED').length;
+    const pending = projects.value.filter(p => getProjectStatus(p) === 'PENDING').length;
     
     const totalTasks = tasks.value.length;
     const completedTasks = tasks.value.filter(t => t.status === 'COMPLETED' || t.status === 'APPROVED').length;
     const pendingTasks = totalTasks - completedTasks;
     
-    const myProjectIds = new Set(myProjects.value.map(p => p.id));
-    const teamMembersCount = teamMembers.value.filter(m => myProjectIds.has(m.projectId)).length;
-    const totalDepartments = myProjects.value.length; // Simplified for now
+    const projectIds = new Set(projects.value.map(p => p.id));
+    const teamMembersCount = teamMembers.value.filter(m => projectIds.has(m.projectId)).length;
+    const totalDepartments = projects.value.length; // Simplified for now
     
     projectStats.value = {
       totalProjects: total,
@@ -215,9 +206,9 @@ const fetchUserProjects = async () => {
   if (!user.value?.id) return;
   
   try {
-    // Load projects using centralized API
-    const projectsResponse = await projectApi.getProjects();
-    projects.value = projectsResponse.projects || [];
+    // Load user's projects using new filtered backend endpoint
+    const projectsResponse = await projectApi.getUserProjectsSimple();
+    projects.value = projectsResponse.projects || projectsResponse || [];
     
     // If no projects from API, add sample data for demonstration
     if (projects.value.length === 0) {
@@ -356,7 +347,7 @@ const fetchRecentActivities = async () => {
     const activities: any[] = [];
     
     // Add project creation activities
-    myProjects.value.slice(0, 3).forEach(project => {
+    projects.value.slice(0, 3).forEach(project => {
       activities.push({
         id: `activity-${project.id}`,
         type: 'project_created',
@@ -371,7 +362,7 @@ const fetchRecentActivities = async () => {
     // Add task completion activities
     const completedTasks = tasks.value.filter(t => t.status === 'COMPLETED' || t.status === 'APPROVED');
     completedTasks.slice(0, 2).forEach(task => {
-      const project = myProjects.value.find(p => p.id === task.departmentId);
+      const project = projects.value.find(p => p.id === task.departmentId);
       if (project) {
         activities.push({
           id: `activity-${task.id}`,
@@ -411,7 +402,7 @@ const fetchWeeklyProgress = async () => {
              updatedAt >= weekAgo && updatedAt <= now;
     }).length;
     
-    const activeProjects = myProjects.value.filter(p => getProjectStatus(p) === 'ACTIVE').length;
+    const activeProjects = projects.value.filter(p => getProjectStatus(p) === 'ACTIVE').length;
     
     weeklyProgress.value = {
       tasksCompletedThisWeek,
@@ -432,7 +423,7 @@ const fetchDeadlines = async () => {
     const now = new Date();
     const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     
-    const upcomingDeadlines = myProjects.value
+    const upcomingDeadlines = projects.value
       .filter(project => {
         const endDate = new Date(project.endDate);
         return endDate > now && endDate <= thirtyDaysFromNow;
@@ -688,7 +679,7 @@ onMounted(() => {
         </div>
 
         <!-- Sample Data Notice -->
-        <div v-if="myProjects.some(p => p.id && p.id.startsWith('sample-'))" class="mb-4">
+        <div v-if="projects.some(p => p.id && p.id.startsWith('sample-'))" class="mb-4">
           <v-alert type="info" variant="tonal" class="mb-4">
             <template v-slot:prepend>
               <v-icon>mdi-information</v-icon>
@@ -703,7 +694,7 @@ onMounted(() => {
 
         <!-- Projects Grid -->
         <v-row v-else>
-          <v-col v-for="project in myProjects" :key="project.id" cols="12" sm="6" lg="6">
+          <v-col v-for="project in projects" :key="project.id" cols="12" sm="6" lg="6">
             <ProjectCard 
               :project="project" 
               :tasks="tasks" 
