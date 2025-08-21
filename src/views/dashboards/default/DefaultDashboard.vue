@@ -124,6 +124,15 @@ const getRoleLabel = (role: string) => {
   }
 };
 
+const getRoleIcon = (role: string) => {
+  switch (role) {
+    case 'PROJECT_OWNER': return 'mdi-crown';
+    case 'PROJECT_MANAGER': return 'mdi-account-tie';
+    case 'EMPLOYEE': return 'mdi-account';
+    default: return 'mdi-account';
+  }
+};
+
 const getPriorityColor = (priority: string) => {
   switch (priority) {
     case 'LOW': return 'success';
@@ -144,9 +153,30 @@ const getPriorityLabel = (priority: string) => {
   }
 };
 
+const getProjectTypeLabel = (type: string) => {
+  switch (type) {
+    case 'PROGRESSIVE': return 'Progressive';
+    case 'PARALLEL': return 'Parallel';
+    case 'SEQUENTIAL': return 'Sequential';
+    default: return type;
+  }
+};
+
 const formatDate = (dateString: string) => {
   if (!dateString) return 'N/A';
   return new Date(dateString).toLocaleDateString();
+};
+
+const formatRelativeDate = (dateString: string) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffInDays === 0) return 'today';
+  if (diffInDays === 1) return 'tomorrow';
+  if (diffInDays < 7) return `${diffInDays} days from now`;
+  return date.toLocaleDateString();
 };
 
 // Navigation functions
@@ -164,6 +194,24 @@ const navigateToProjectsList = () => {
 
 const navigateToCreateProject = () => {
   router.push('/projects/create');
+};
+
+const viewProjectDetails = (projectId: string) => {
+  router.push(`/projects/${projectId}`);
+};
+
+const copyInviteLink = (inviteId: string) => {
+  const invite = pendingInvites.value.find(i => i.id === inviteId);
+  if (invite) {
+    const inviteUrl = `${window.location.origin}/invite/${invite.token}`;
+    navigator.clipboard.writeText(inviteUrl).then(() => {
+      console.log('Invite link copied to clipboard:', inviteUrl);
+      // toast.success('Invite link copied to clipboard!');
+    }).catch(err => {
+      console.error('Failed to copy invite link:', err);
+      // toast.error('Failed to copy invite link.');
+    });
+  }
 };
 
 // Individual fetch functions using centralized API services
@@ -485,7 +533,18 @@ const checkUserInvites = async () => {
   if (!user.value?.id || hasCheckedInvites.value) return;
   
   try {
-    const invites = await projectInviteApi.getUserInvites(user.value.id);
+    const response = await projectInviteApi.getUserInvites();
+    
+    // Handle different response structures
+    let invites = [];
+    if (response && Array.isArray(response)) {
+      invites = response;
+    } else if (response && Array.isArray(response.invites)) {
+      invites = response.invites;
+    } else if (response && Array.isArray(response.data)) {
+      invites = response.data;
+    }
+    
     const pendingInvites = invites.filter((invite: any) => invite.status === 'PENDING');
     
     if (pendingInvites.length > 0) {
@@ -530,10 +589,37 @@ const loadPendingInvites = async () => {
   
   invitesLoading.value = true;
   try {
-    const invites = await projectInviteApi.getUserInvites(user.value.id);
-    pendingInvites.value = invites.filter((invite: any) => invite.status === 'PENDING');
-  } catch (error) {
+    // Use the new backend API endpoint
+    const response = await projectInviteApi.getUserInvites();
+    console.log('Invites API response:', response);
+    
+    // Handle different response structures
+    let invites = [];
+    if (response && Array.isArray(response)) {
+      invites = response;
+    } else if (response && Array.isArray(response.invites)) {
+      invites = response.invites;
+    } else if (response && Array.isArray(response.data)) {
+      invites = response.data;
+    }
+    
+    // Filter for pending invites and add loading state
+    pendingInvites.value = invites
+      .filter((invite: any) => invite.status === 'PENDING')
+      .map((invite: any) => ({
+        ...invite,
+        loading: false
+      }));
+    
+    console.log('Filtered pending invites:', pendingInvites.value);
+  } catch (error: any) {
     console.error('Failed to load invites:', error);
+    // Show error but don't clear existing invites
+    if (error.response?.status === 401) {
+      console.warn('Authentication failed - user may need to re-login');
+    } else if (error.response?.status === 404) {
+      console.warn('Invites endpoint not found - backend may not be fully implemented');
+    }
   } finally {
     invitesLoading.value = false;
   }
@@ -549,13 +635,42 @@ const acceptInvite = async (inviteId: string) => {
   
   invite.loading = true;
   try {
-    await projectInviteApi.respondToInvite(inviteId, 'ACCEPTED');
+    console.log('Accepting invite:', inviteId);
+    
+    // Use the new backend API endpoint
+    await projectInviteApi.acceptInvite(inviteId);
+    
+    // Show success feedback
+    console.log('Invite accepted successfully');
+    
     // Remove from pending list
     pendingInvites.value = pendingInvites.value.filter(i => i.id !== inviteId);
-    // Refresh project data
+    
+    // Refresh project data since user now has access to new project
     refreshData();
-  } catch (error) {
+    
+    // Show success notification (you can add a toast system here)
+    // toast.success('Project invitation accepted successfully!');
+    
+  } catch (error: any) {
     console.error('Failed to accept invite:', error);
+    
+    // Handle specific error cases
+    if (error.response?.status === 404) {
+      console.error('Invite not found - may have been deleted or expired');
+      // Remove from list if invite no longer exists
+      pendingInvites.value = pendingInvites.value.filter(i => i.id !== inviteId);
+    } else if (error.response?.status === 403) {
+      console.error('Access denied - user may not have permission to accept this invite');
+    } else if (error.response?.status === 409) {
+      console.error('Conflict - invite may have already been accepted or declined');
+      // Remove from list if invite is no longer valid
+      pendingInvites.value = pendingInvites.value.filter(i => i.id !== inviteId);
+    }
+    
+    // Show error notification
+    // toast.error('Failed to accept invitation. Please try again.');
+    
   } finally {
     invite.loading = false;
   }
@@ -567,11 +682,39 @@ const declineInvite = async (inviteId: string) => {
   
   invite.loading = true;
   try {
-    await projectInviteApi.respondToInvite(inviteId, 'DECLINED');
+    console.log('Declining invite:', inviteId);
+    
+    // Use the new backend API endpoint
+    await projectInviteApi.declineInvite(inviteId);
+    
+    // Show success feedback
+    console.log('Invite declined successfully');
+    
     // Remove from pending list
     pendingInvites.value = pendingInvites.value.filter(i => i.id !== inviteId);
-  } catch (error) {
+    
+    // Show success notification
+    // toast.success('Project invitation declined.');
+    
+  } catch (error: any) {
     console.error('Failed to decline invite:', error);
+    
+    // Handle specific error cases
+    if (error.response?.status === 404) {
+      console.error('Invite not found - may have been deleted or expired');
+      // Remove from list if invite no longer exists
+      pendingInvites.value = pendingInvites.value.filter(i => i.id !== inviteId);
+    } else if (error.response?.status === 403) {
+      console.error('Access denied - user may not have permission to decline this invite');
+    } else if (error.response?.status === 409) {
+      console.error('Conflict - invite may have already been accepted or declined');
+      // Remove from list if invite is no longer valid
+      pendingInvites.value = pendingInvites.value.filter(i => i.id !== inviteId);
+    }
+    
+    // Show error notification
+    // toast.error('Failed to decline invitation. Please try again.');
+    
   } finally {
     invite.loading = false;
   }
@@ -768,13 +911,23 @@ onMounted(() => {
 
             <!-- No Invites State -->
             <div v-else-if="pendingInvites.length === 0" class="text-center pa-6">
-              <v-avatar size="60" color="grey-lighten-3" class="mb-3">
-                <span class="text-h3">📧</span>
+              <v-avatar size="80" color="grey-lighten-4" class="mb-4">
+                <v-icon size="40" color="grey-lighten-1">mdi-email-check</v-icon>
               </v-avatar>
               <h6 class="text-h6 text-medium-emphasis mb-2">No Pending Invitations</h6>
-              <p class="text-body-2 text-medium-emphasis">
+              <p class="text-body-2 text-medium-emphasis mb-4">
                 You're all caught up! No project invitations waiting for your response.
               </p>
+              <v-btn 
+                color="primary" 
+                variant="outlined" 
+                size="small"
+                @click="refreshInvites"
+                :loading="invitesLoading"
+              >
+                <v-icon size="16" class="mr-1">mdi-refresh</v-icon>
+                Check for New Invites
+              </v-btn>
             </div>
 
             <!-- Invites List -->
@@ -784,16 +937,19 @@ onMounted(() => {
                 :key="invite.id"
                 class="invite-card mb-4"
               >
-                <v-card variant="outlined" class="invite-item">
+                <v-card variant="outlined" class="invite-item" elevation="1">
                   <v-card-text class="pa-4">
                     <div class="d-flex align-start justify-space-between">
                       <div class="invite-info flex-grow-1">
+                        <!-- Role and Priority Chips -->
                         <div class="d-flex align-center mb-3">
                           <v-chip 
                             :color="getRoleColor(invite.role)" 
                             size="small" 
                             class="mr-3"
+                            variant="flat"
                           >
+                            <v-icon size="16" class="mr-1">{{ getRoleIcon(invite.role) }}</v-icon>
                             {{ getRoleLabel(invite.role) }}
                           </v-chip>
                           <v-chip 
@@ -801,10 +957,22 @@ onMounted(() => {
                             size="small" 
                             variant="tonal"
                           >
+                            <v-icon size="16" class="mr-1">mdi-flag</v-icon>
                             {{ getPriorityLabel(invite.project?.priority || 'MEDIUM') }}
+                          </v-chip>
+                          <v-chip 
+                            v-if="invite.expiresAt" 
+                            color="warning" 
+                            size="small" 
+                            variant="outlined"
+                            class="ml-3"
+                          >
+                            <v-icon size="16" class="mr-1">mdi-clock</v-icon>
+                            Expires {{ formatRelativeDate(invite.expiresAt) }}
                           </v-chip>
                         </div>
                         
+                        <!-- Project Name and Description -->
                         <h6 class="text-h6 font-weight-medium mb-2">
                           {{ invite.project?.name || 'Project' }}
                         </h6>
@@ -813,23 +981,46 @@ onMounted(() => {
                           {{ invite.project.description }}
                         </p>
                         
-                        <div class="invite-details d-flex align-center text-caption text-medium-emphasis">
-                          <v-icon size="16" class="mr-1">mdi-calendar</v-icon>
+                        <!-- Project Details -->
+                        <div class="invite-details d-flex align-center text-caption text-medium-emphasis mb-3">
+                          <v-icon size="16" class="mr-1" color="primary">mdi-calendar</v-icon>
                           <span class="mr-4">
                             {{ formatDate(invite.project?.startDate) }} - {{ formatDate(invite.project?.endDate) }}
                           </span>
-                          <v-icon size="16" class="mr-1">mdi-email</v-icon>
+                          <v-icon size="16" class="mr-1" color="secondary">mdi-email</v-icon>
                           <span>{{ invite.email }}</span>
+                        </div>
+                        
+                        <!-- Invitation Message -->
+                        <div v-if="invite.message" class="invite-message mb-3">
+                          <v-card variant="tonal" color="grey-lighten-4" class="pa-3">
+                            <div class="d-flex align-start">
+                              <v-icon size="16" class="mr-2 mt-1" color="info">mdi-message-text</v-icon>
+                              <p class="text-body-2 text-medium-emphasis mb-0">
+                                <em>"{{ invite.message }}"</em>
+                              </p>
+                            </div>
+                          </v-card>
+                        </div>
+                        
+                        <!-- Project Stats Preview -->
+                        <div class="project-stats-preview d-flex align-center text-caption text-medium-emphasis">
+                          <v-icon size="16" class="mr-1" color="success">mdi-account-group</v-icon>
+                          <span class="mr-4">Team: {{ invite.project?.teamSize || 'N/A' }}</span>
+                          <v-icon size="16" class="mr-1" color="info">mdi-folder</v-icon>
+                          <span>Type: {{ getProjectTypeLabel(invite.project?.type || 'PROGRESSIVE') }}</span>
                         </div>
                       </div>
                       
-                      <div class="invite-actions d-flex flex-column gap-2">
+                      <!-- Action Buttons -->
+                      <div class="invite-actions d-flex flex-column gap-2 ml-4">
                         <v-btn 
                           color="success" 
                           variant="flat" 
                           size="small"
                           :loading="invite.loading"
                           @click="acceptInvite(invite.id)"
+                          class="accept-btn"
                         >
                           <v-icon size="16" class="mr-1">mdi-check</v-icon>
                           Accept
@@ -840,10 +1031,40 @@ onMounted(() => {
                           size="small"
                           :loading="invite.loading"
                           @click="declineInvite(invite.id)"
+                          class="decline-btn"
                         >
                           <v-icon size="16" class="mr-1">mdi-close</v-icon>
                           Decline
                         </v-btn>
+                        
+                        <!-- Additional Actions -->
+                        <v-menu>
+                          <template v-slot:activator="{ props }">
+                            <v-btn 
+                              icon 
+                              size="small" 
+                              variant="text"
+                              v-bind="props"
+                              color="grey"
+                            >
+                              <v-icon size="16">mdi-dots-vertical</v-icon>
+                            </v-btn>
+                          </template>
+                          <v-list>
+                            <v-list-item @click="viewProjectDetails(invite.project?.id)">
+                              <v-list-item-title>
+                                <v-icon size="16" class="mr-2">mdi-eye</v-icon>
+                                View Project
+                              </v-list-item-title>
+                            </v-list-item>
+                            <v-list-item @click="copyInviteLink(invite.id)">
+                              <v-list-item-title>
+                                <v-icon size="16" class="mr-2">mdi-link</v-icon>
+                                Copy Link
+                              </v-list-item-title>
+                            </v-list-item>
+                          </v-list>
+                        </v-menu>
                       </div>
                     </div>
                   </v-card-text>
@@ -986,6 +1207,7 @@ onMounted(() => {
 .invites-section {
   border: 1px solid rgb(var(--v-theme-outline));
   border-radius: 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
 }
 
 .invite-card {
@@ -993,13 +1215,16 @@ onMounted(() => {
 }
 
 .invite-item {
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border: 1px solid rgb(var(--v-theme-outline));
+  background: white;
 }
 
 .invite-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  transform: translateY(-3px);
+  border-color: rgb(var(--v-theme-primary));
 }
 
 .invite-info {
@@ -1015,7 +1240,77 @@ onMounted(() => {
 }
 
 .invites-list {
-  max-height: 400px;
+  max-height: 500px;
   overflow-y: auto;
+  padding-right: 8px;
+}
+
+.invites-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.invites-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.invites-list::-webkit-scrollbar-thumb {
+  background: rgb(var(--v-theme-primary));
+  border-radius: 3px;
+}
+
+.invites-list::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--v-theme-primary-darken-1));
+}
+
+/* Invite Message Styling */
+.invite-message {
+  border-left: 3px solid rgb(var(--v-theme-info));
+}
+
+/* Action Button Styling */
+.accept-btn {
+  font-weight: 600;
+  text-transform: none;
+  border-radius: 8px;
+}
+
+.decline-btn {
+  font-weight: 600;
+  text-transform: none;
+  border-radius: 8px;
+}
+
+/* Role and Priority Chip Styling */
+.invite-item .v-chip {
+  font-weight: 500;
+  text-transform: none;
+}
+
+/* Project Stats Preview */
+.project-stats-preview {
+  padding: 8px 0;
+  border-top: 1px solid rgb(var(--v-theme-outline));
+  margin-top: 12px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .invite-actions {
+    min-width: 100px;
+  }
+  
+  .invite-item .d-flex {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+  
+  .invite-actions {
+    margin-left: 0 !important;
+    margin-top: 16px;
+    flex-direction: row !important;
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 </style>

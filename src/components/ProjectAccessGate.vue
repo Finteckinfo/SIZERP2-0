@@ -193,7 +193,7 @@ const checkProjectAccess = async () => {
       emit('accessGranted', role);
     } else {
       // Check if user has a pending invite
-      const invites = await projectInviteApi.getUserInvites(user.value.id);
+      const invites = await projectInviteApi.getUserInvites();
       const pendingInvite = invites.find((invite: any) => 
         invite.projectId === props.projectId && invite.status === 'PENDING'
       );

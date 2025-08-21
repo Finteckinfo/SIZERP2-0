@@ -169,7 +169,7 @@ const loadUserInvites = async () => {
   
   loading.value = true;
   try {
-    const invites = await projectInviteApi.getUserInvites(user.value.id);
+    const invites = await projectInviteApi.getUserInvites();
     pendingInvites.value = invites.filter((invite: any) => invite.status === 'PENDING');
   } catch (error) {
     console.error('Failed to load user invites:', error);
