@@ -14,19 +14,24 @@ const api = axios.create({
 // Request interceptor - automatically adds JWT token to every request
 api.interceptors.request.use(async (config) => {
   try {
+    // Check if Clerk is ready before making any API calls
+    if (!window.Clerk?.session || !window.Clerk?.user) {
+      console.log('🚫 Clerk not ready, blocking API request:', config.url);
+      throw new Error('Clerk not ready - please wait for authentication');
+    }
+
     const headers = await authService.getAuthHeaders();
     config.headers = {
       ...(config.headers || {}),
       ...headers
-    } as any;
-    
+    } as any; // Cast to any to resolve TypeScript error with AxiosHeaders
+
     console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`, {
       hasAuth: !!config.headers.Authorization,
       tokenPreview: (config.headers.Authorization as string)?.substring(0, 30) + '...'
     });
   } catch (error) {
     console.error('❌ Failed to get auth headers:', error);
-    // Don't proceed without authentication
     throw new Error('Authentication required');
   }
   return config;

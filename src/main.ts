@@ -41,6 +41,26 @@ app.use(clerkPlugin, {
   publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
 });
 
+// Add global Clerk readiness check
+app.config.globalProperties.$clerkReady = false;
+
+// Wait for Clerk to be ready before allowing API calls
+window.addEventListener('load', () => {
+  const checkClerkReady = () => {
+    if (window.Clerk?.session && window.Clerk?.user) {
+      console.log('[main.ts] Clerk is ready, allowing API calls');
+      app.config.globalProperties.$clerkReady = true;
+      // Dispatch custom event for components to listen to
+      window.dispatchEvent(new CustomEvent('clerk-ready'));
+    } else {
+      console.log('[main.ts] Clerk not ready yet, retrying...');
+      setTimeout(checkClerkReady, 100);
+    }
+  };
+  
+  checkClerkReady();
+});
+
 // ---- Standard Plugins ----
 console.log('[main.ts] Registering router, pinia, and other plugins');
 app.use(router);

@@ -450,22 +450,24 @@ const fetchDeadlines = async () => {
 };
 
 // Load all data independently for progressive loading
-const loadAllData = () => {
-  if (!user.value?.id) return;
-  
-  // Reset errors
-  projectsError.value = null;
-  tasksError.value = null;
-  teamError.value = null;
-  
-  // Start all API calls simultaneously
-  fetchUserProjects(); // Load projects first, then calculate other stats
-  fetchRecentActivities();
-  fetchWeeklyProgress();
-  fetchDeadlines();
-  
-  // Check for pending invites
-  checkUserInvites();
+const loadAllData = async () => {
+  try {
+    // Wait for Clerk to be ready before making API calls
+    if (!user.value || !window.Clerk?.session) {
+      console.log('Waiting for Clerk to be ready...');
+      return;
+    }
+
+    console.log('Loading all data for user:', user.value.id);
+    await Promise.all([
+      fetchUserProjects(),
+      fetchRecentActivities(),
+      fetchWeeklyProgress(),
+      fetchDeadlines()
+    ]);
+  } catch (error) {
+    console.error('Error loading data:', error);
+  }
 };
 
 const checkUserInvites = async () => {
@@ -567,6 +569,14 @@ const declineInvite = async (inviteId: string) => {
 // Watch for user availability
 watch(() => user.value?.id, (newUserId) => {
   if (newUserId) {
+    loadAllData();
+  }
+}, { immediate: true });
+
+// Watch for Clerk session changes
+watch(() => window.Clerk?.session, (session) => {
+  if (session && user.value) {
+    console.log('Clerk session ready, loading data...');
     loadAllData();
   }
 }, { immediate: true });
