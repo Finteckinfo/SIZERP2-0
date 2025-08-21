@@ -461,10 +461,9 @@ export const authApi = {
   testBackendConnection: async () => {
     try {
       console.log('🔍 Testing backend connectivity...');
-      const response = await fetch(`${API_BASE_URL}/auth/health`);
-      const data = await response.json();
-      console.log('✅ Backend connectivity test:', data);
-      return data;
+      const response = await api.get('/auth/health');
+      console.log('✅ Backend connectivity test:', response.data);
+      return response.data;
     } catch (error) {
       console.error('❌ Backend connectivity test failed:', error);
       throw error;
