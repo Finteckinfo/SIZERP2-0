@@ -54,10 +54,25 @@ export class AuthService {
         // Log token info for debugging
         console.log('JWT Token obtained:', {
           userId: payload.user_id,
+          sub: payload.sub,
           email: payload.email,
+          audience: payload.aud,
+          issuer: payload.iss,
           expiresAt: new Date(this.tokenExpiry).toISOString(),
           tokenPreview: token.substring(0, 20) + '...'
         });
+
+        // Verify essential claims
+        if (!payload.user_id && !payload.sub) {
+          console.error('JWT missing user_id/sub claim');
+          this.clearTokenCache();
+          return null;
+        }
+        if (!payload.email) {
+          console.error('JWT missing email claim');
+          this.clearTokenCache();
+          return null;
+        }
       }
 
       return token;

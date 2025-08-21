@@ -26,10 +26,24 @@ api.interceptors.request.use(async (config) => {
       ...headers
     } as any; // Cast to any to resolve TypeScript error with AxiosHeaders
 
-    console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`, {
-      hasAuth: !!config.headers.Authorization,
-      tokenPreview: (config.headers.Authorization as string)?.substring(0, 30) + '...'
-    });
+    // Enhanced logging for JWT debugging
+    const authHeader = config.headers.Authorization as string;
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const payload = authService['decodeJWTPayload'](token);
+      console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`, {
+        hasAuth: true,
+        userId: payload?.user_id || payload?.sub,
+        email: payload?.email,
+        audience: payload?.aud,
+        tokenPreview: token.substring(0, 30) + '...'
+      });
+    } else {
+      console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`, {
+        hasAuth: false,
+        error: 'No Authorization header'
+      });
+    }
   } catch (error) {
     console.error('❌ Failed to get auth headers:', error);
     throw new Error('Authentication required');
