@@ -301,21 +301,29 @@ export const projectInviteApi = {
     return response.data;
   },
 
+  // Respond to invite (accept/decline) - Fixed to use 'response' field
+  respondToInvite: async (inviteId: string, status: 'ACCEPTED' | 'DECLINED') => {
+    // Convert status to the expected response format
+    const responseValue = status === 'ACCEPTED' ? 'ACCEPT' : 'DECLINE';
+    const response = await api.put(`/invites/${inviteId}/respond`, { 
+      response: responseValue 
+    });
+    return response.data;
+  },
+
   // Accept invite (using the existing respond endpoint)
   acceptInvite: async (inviteId: string) => {
-    const response = await api.put(`/invites/${inviteId}/respond`, { status: 'ACCEPTED' });
+    const response = await api.put(`/invites/${inviteId}/respond`, { 
+      response: 'ACCEPT' 
+    });
     return response.data;
   },
 
   // Decline invite (using the existing respond endpoint)
   declineInvite: async (inviteId: string) => {
-    const response = await api.put(`/invites/${inviteId}/respond`, { status: 'DECLINED' });
-    return response.data;
-  },
-
-  // Legacy respond to invite (for backward compatibility)
-  respondToInvite: async (inviteId: string, status: 'ACCEPTED' | 'DECLINED') => {
-    const response = await api.put(`/invites/${inviteId}/respond`, { status });
+    const response = await api.put(`/invites/${inviteId}/respond`, { 
+      response: 'DECLINE' 
+    });
     return response.data;
   }
 };
