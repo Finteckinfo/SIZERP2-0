@@ -1,12 +1,15 @@
 import axios from 'axios';
 import { authService } from './authService';
 
-// Production backend URL - hardcoded for Vercel deployment
-// Vercel environment variables are not available at runtime in the browser
-const API_BASE_URL = 'https://sizerpbackend2-0-production.up.railway.app/api';
+// Backend URL from environment (do NOT include '/api' here; we prefix per-request)
+const API_BASE_URL_ENV = (import.meta as any).env?.VITE_BACKEND_URL as string | undefined;
+const API_BASE_URL = (API_BASE_URL_ENV || '').replace(/\/+$/, '');
+if (!API_BASE_URL) {
+  console.warn('[projectApi] VITE_BACKEND_URL is not set. Please define it in your .env file.');
+}
 
 // Ensure the URL is correct and accessible
-console.log('🌐 API Base URL configured:', API_BASE_URL);
+console.log('🌐 API Base URL configured:', API_BASE_URL || '(missing)');
 
 // Centralized axios instance with proper JWT authentication interceptor
 const api = axios.create({ 
@@ -17,6 +20,11 @@ const api = axios.create({
 // Request interceptor - automatically adds JWT token to every request
 api.interceptors.request.use(async (config) => {
   try {
+    // Ensure all relative paths are prefixed with '/api'
+    if (config.url && !config.url.startsWith('http')) {
+      const path = config.url.startsWith('/api') ? config.url : `/api${config.url.startsWith('/') ? '' : '/'}${config.url}`;
+      config.url = path;
+    }
     // Check if Clerk is ready before making any API calls
     if (!window.Clerk?.session || !window.Clerk?.user) {
       console.log('🚫 Clerk not ready, blocking API request:', config.url);
@@ -436,7 +444,7 @@ export const authApi = {
     lastName?: string;
   }) => {
     console.log('🔄 Calling sync endpoint with data:', userData);
-    console.log('🌐 Full URL:', `${API_BASE_URL}/auth/sync-user`);
+    console.log('🌐 Full URL:', `${API_BASE_URL}/api/auth/sync-user`);
     
     const response = await api.post('/auth/sync-user', userData);
     console.log('✅ Sync response:', response.data);
@@ -461,9 +469,10 @@ export const authApi = {
   testBackendConnection: async () => {
     try {
       console.log('🔍 Testing backend connectivity...');
-      const response = await api.get('/auth/health');
-      console.log('✅ Backend connectivity test:', response.data);
-      return response.data;
+      const response = await fetch(`${API_BASE_URL}/api/auth/health`);
+      const data = await response.json();
+      console.log('✅ Backend connectivity test:', data);
+      return data;
     } catch (error) {
       console.error('❌ Backend connectivity test failed:', error);
       throw error;
