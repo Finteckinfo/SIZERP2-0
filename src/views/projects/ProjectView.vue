@@ -279,6 +279,10 @@ const priorityOptions = [
 // Load data from API
 const loadProjectData = async () => {
   try {
+    // Clear any previous errors
+    error.value = null;
+    loading.value = true;
+    
     // Wait for Clerk to be ready before making API calls
     if (!user.value || !window.Clerk?.session) {
       console.log('Waiting for Clerk to be ready...');
@@ -287,228 +291,58 @@ const loadProjectData = async () => {
 
     console.log('Loading project data for user:', user.value.id);
     
-    // Fetch projects using the new filtered endpoint
+    // Fetch projects using the new filtered backend endpoint
     const projectsResponse = await projectApi.getUserProjectsSimple();
-    projects.value = projectsResponse.data || [];
+    console.log('Projects API response:', projectsResponse);
     
-    // If no projects from API, add sample data for demonstration
-    if (projects.value.length === 0) {
-      projects.value = [
-        {
-          id: 'sample-1',
-          name: 'Website Redesign',
-          description: 'Modernize the company website with improved UX and mobile responsiveness',
-          type: 'PROGRESSIVE',
-          priority: 'HIGH',
-          startDate: '2024-01-15',
-          endDate: '2024-06-30',
-          ownerId: 'sample-owner',
-          createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
-        },
-        {
-          id: 'sample-2',
-          name: 'Mobile App Development',
-          description: 'Create a cross-platform mobile application for customer engagement',
-          type: 'PARALLEL',
-          priority: 'CRITICAL',
-          startDate: '2024-02-01',
-          endDate: '2024-08-31',
-          ownerId: 'sample-owner',
-          createdAt: '2024-01-15',
-          updatedAt: '2024-01-15'
-        },
-        {
-          id: 'sample-3',
-          name: 'Database Migration',
-          description: 'Migrate legacy database systems to modern cloud infrastructure',
-          type: 'PROGRESSIVE',
-          priority: 'MEDIUM',
-          startDate: '2024-03-01',
-          endDate: '2024-05-31',
-          ownerId: 'sample-owner',
-          createdAt: '2024-02-01',
-          updatedAt: '2024-02-01'
-        }
-      ];
+    // Handle different possible response structures
+    if (projectsResponse && Array.isArray(projectsResponse)) {
+      projects.value = projectsResponse;
+    } else if (projectsResponse && Array.isArray(projectsResponse.projects)) {
+      projects.value = projectsResponse.projects;
+    } else if (projectsResponse && Array.isArray(projectsResponse.data)) {
+      projects.value = projectsResponse.data;
+    } else {
+      projects.value = [];
     }
     
-    // Load tasks for all projects
+    console.log('Parsed projects:', projects.value);
+    
+    // Show message if no projects found
+    if (projects.value.length === 0) {
+      console.log('No projects found for user');
+    }
+    
+    // Load tasks for all projects (only if API succeeds)
     const allTasks: Task[] = [];
     for (const project of projects.value) {
       try {
-      const tasksResponse = await taskApi.getProjectTasks(project.id);
-      allTasks.push(...(tasksResponse.tasks || []));
+        const tasksResponse = await taskApi.getProjectTasks(project.id);
+        allTasks.push(...(tasksResponse.tasks || []));
       } catch (err) {
-        // If API fails, add sample tasks for demonstration
-        if (project.id.startsWith('sample-')) {
-          allTasks.push(
-            {
-              id: `task-${project.id}-1`,
-              title: 'Project Planning',
-              description: 'Initial project setup and planning phase',
-              status: 'COMPLETED',
-              departmentId: project.id,
-              priority: 'MEDIUM',
-              createdAt: '2024-01-01',
-              updatedAt: '2024-01-15'
-            },
-            {
-              id: `task-${project.id}-2`,
-              title: 'Development Phase',
-              description: 'Core development and implementation',
-              status: 'IN_PROGRESS',
-              departmentId: project.id,
-              priority: 'HIGH',
-              createdAt: '2024-01-15',
-              updatedAt: '2024-01-15'
-            },
-            {
-              id: `task-${project.id}-3`,
-              title: 'Testing & QA',
-              description: 'Quality assurance and testing procedures',
-              status: 'PENDING',
-              departmentId: project.id,
-              priority: 'MEDIUM',
-              createdAt: '2024-01-01',
-              updatedAt: '2024-01-01'
-            }
-          );
-        }
+        console.warn(`Failed to load tasks for project ${project.id}:`, err);
+        // Don't add sample tasks - just skip this project's tasks
       }
     }
     tasks.value = allTasks;
     
-    // Load team members for all projects
+    // Load team members for all projects (only if API succeeds)
     const allTeamMembers: UserRole[] = [];
     for (const project of projects.value) {
       try {
         const teamResponse = await userRoleApi.getProjectUserRoles(project.id);
         allTeamMembers.push(...(teamResponse.userRoles || []));
       } catch (err) {
-        // If API fails, add sample team members for demonstration
-        if (project.id.startsWith('sample-')) {
-          allTeamMembers.push(
-            {
-              id: `role-${project.id}-1`,
-              userId: user.value?.id || 'sample-user',
-              projectId: project.id,
-              role: 'PROJECT_MANAGER',
-              departmentOrder: [],
-              departmentScope: [],
-              managedDepartments: [],
-              accessibleDepartments: [],
-              assignedTasks: [],
-              createdAt: '2024-01-01',
-              user: {
-                id: user.value?.id || 'sample-user',
-                email: user.value?.emailAddresses?.[0]?.emailAddress || 'user@example.com',
-                firstName: user.value?.firstName || 'Sample',
-                lastName: user.value?.lastName || 'User',
-                createdAt: '2024-01-01',
-                updatedAt: '2024-01-01'
-              }
-            }
-          );
-        }
+        console.warn(`Failed to load team members for project ${project.id}:`, err);
+        // Don't add sample team members - just skip this project's team
       }
     }
     teamMembers.value = allTeamMembers;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error loading project data:', error);
-    // Use sample data as fallback
-    projects.value = [
-      {
-        id: 'sample-1',
-        name: 'Website Redesign',
-        description: 'Modernize the company website with improved UX and mobile responsiveness',
-        type: 'PROGRESSIVE',
-        priority: 'HIGH',
-        startDate: '2024-01-15',
-        endDate: '2024-06-30',
-        ownerId: 'sample-owner',
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
-      },
-      {
-        id: 'sample-2',
-        name: 'Mobile App Development',
-        description: 'Create a cross-platform mobile application for customer engagement',
-        type: 'PARALLEL',
-        priority: 'CRITICAL',
-        startDate: '2024-02-01',
-        endDate: '2024-08-31',
-        ownerId: 'sample-owner',
-        createdAt: '2024-01-15',
-        updatedAt: '2024-01-15'
-      },
-      {
-        id: 'sample-3',
-        name: 'Database Migration',
-        description: 'Migrate legacy database systems to modern cloud infrastructure',
-        type: 'PROGRESSIVE',
-        priority: 'MEDIUM',
-        startDate: '2024-03-01',
-        endDate: '2024-05-31',
-        ownerId: 'sample-owner',
-        createdAt: '2024-02-01',
-        updatedAt: '2024-02-01'
-      }
-    ];
-    tasks.value = [
-      {
-        id: 'task-sample-1-1',
-        title: 'Project Planning',
-        description: 'Initial project setup and planning phase',
-        status: 'COMPLETED',
-        departmentId: 'sample-1',
-        priority: 'MEDIUM',
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-15'
-      },
-      {
-        id: 'task-sample-1-2',
-        title: 'Development Phase',
-        description: 'Core development and implementation',
-        status: 'IN_PROGRESS',
-        departmentId: 'sample-1',
-        priority: 'HIGH',
-        createdAt: '2024-01-15',
-        updatedAt: '2024-01-15'
-      },
-      {
-        id: 'task-sample-1-3',
-        title: 'Testing & QA',
-        description: 'Quality assurance and testing procedures',
-        status: 'PENDING',
-        departmentId: 'sample-1',
-        priority: 'MEDIUM',
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
-      }
-    ];
-    teamMembers.value = [
-      {
-        id: 'role-sample-1-1',
-        userId: 'sample-user',
-        projectId: 'sample-1',
-        role: 'PROJECT_MANAGER',
-        departmentOrder: [],
-        departmentScope: [],
-        managedDepartments: [],
-        accessibleDepartments: [],
-        assignedTasks: [],
-        createdAt: '2024-01-01',
-        user: {
-          id: 'sample-user',
-          email: 'user@example.com',
-          firstName: 'Sample',
-          lastName: 'User',
-          createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
-        }
-      }
-    ];
+    error.value = `Failed to load some project data: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    // Don't clear existing data if there was a partial load
+    // The error will be displayed to the user
   } finally {
     loading.value = false;
   }
