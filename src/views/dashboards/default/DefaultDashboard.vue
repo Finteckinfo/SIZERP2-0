@@ -459,6 +459,17 @@ const loadAllData = async () => {
     }
 
     console.log('Loading all data for user:', user.value.id);
+    
+    // First, check backend health
+    try {
+      const { authApi } = await import('@/services/projectApi');
+      const health = await authApi.healthCheck();
+      console.log('✅ Backend health check passed:', health);
+    } catch (error) {
+      console.warn('⚠️ Backend health check failed:', error);
+      // Continue anyway - the sync endpoint might still work
+    }
+    
     await Promise.all([
       fetchUserProjects(),
       fetchRecentActivities(),

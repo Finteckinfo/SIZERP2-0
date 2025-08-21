@@ -411,6 +411,32 @@ export const tagApi = {
   }
 };
 
+// Auth APIs
+export const authApi = {
+  // Sync user with backend after Clerk authentication
+  syncUser: async (userData: {
+    userId: string;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+  }) => {
+    const response = await api.post('/auth/sync-user', userData);
+    return response.data;
+  },
+  
+  // Get current authenticated user
+  getCurrentUser: async () => {
+    const response = await api.get('/auth/me');
+    return response.data;
+  },
+
+  // Health check for auth system
+  healthCheck: async () => {
+    const response = await api.get('/auth/health');
+    return response.data;
+  }
+};
+
 // User APIs
 export const userApi = {
   // Get user profile

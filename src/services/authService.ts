@@ -73,6 +73,9 @@ export class AuthService {
           this.clearTokenCache();
           return null;
         }
+
+        // CRITICAL: Sync user with backend after getting JWT
+        await this.syncUserWithBackend(payload);
       }
 
       return token;
@@ -80,6 +83,48 @@ export class AuthService {
       console.error('Error getting JWT token:', error);
       this.clearTokenCache();
       return null;
+    }
+  }
+
+  // Sync user with backend to ensure session alignment
+  private async syncUserWithBackend(payload: any): Promise<void> {
+    try {
+      console.log('🔄 Syncing user with backend...', {
+        userId: payload.user_id || payload.sub,
+        email: payload.email
+      });
+
+      // Import authApi dynamically to avoid circular dependency
+      const { authApi } = await import('./projectApi');
+      
+      // Make a sync request to backend to ensure user exists
+      await authApi.syncUser({
+        userId: payload.user_id || payload.sub,
+        email: payload.email,
+        firstName: payload.first_name,
+        lastName: payload.last_name
+      });
+
+      console.log('✅ User synchronized with backend successfully');
+    } catch (error: any) {
+      console.warn('⚠️ Failed to sync user with backend:', error);
+      
+      // Enhanced error handling for different scenarios
+      if (error?.response?.status === 404) {
+        console.warn('⚠️ Backend sync endpoint not found - user sync skipped');
+        console.log('💡 This is normal if the endpoint is not yet deployed');
+      } else if (error?.response?.status === 401) {
+        console.error('❌ Authentication failed during user sync');
+        console.log('💡 Check if JWT token is valid and not expired');
+      } else if (error?.response?.status === 500) {
+        console.error('❌ Backend error during user sync');
+        console.log('💡 Check backend logs for database connection issues');
+      } else {
+        console.error('❌ Unknown error during user sync:', error);
+      }
+      
+      // Don't throw error - allow authentication to continue
+      // The backend webhooks should handle user creation automatically
     }
   }
 
