@@ -265,91 +265,58 @@ export const projectApi = {
 
 // Project Invite APIs
 export const projectInviteApi = {
-  // Get user's invites (new endpoint)
+  // Get user's invites (existing endpoint)
   getUserInvites: async () => {
-    const response = await api.get('/project-invites');
+    const response = await api.get('/invites');
     return response.data;
   },
 
-  // Get sent invites
-  getSentInvites: async () => {
-    const response = await api.get('/project-invites/sent');
-    return response.data;
-  },
-
-  // Get specific invite
-  getInvite: async (inviteId: string) => {
-    const response = await api.get(`/project-invites/${inviteId}`);
-    return response.data;
-  },
-
-  // Create invite
-  createInvite: async (inviteData: CreateInviteData) => {
-    const response = await api.post('/project-invites', inviteData);
-    return response.data;
-  },
-
-  // Update invite
-  updateInvite: async (inviteId: string, inviteData: Partial<ProjectInvite>) => {
-    const response = await api.put(`/project-invites/${inviteId}`, inviteData);
-    return response.data;
-  },
-
-  // Delete invite
-  deleteInvite: async (inviteId: string) => {
-    const response = await api.delete(`/project-invites/${inviteId}`);
-    return response.data;
-  },
-
-  // Accept invite
-  acceptInvite: async (inviteId: string) => {
-    const response = await api.post(`/project-invites/${inviteId}/accept`);
-    return response.data;
-  },
-
-  // Decline invite
-  declineInvite: async (inviteId: string) => {
-    const response = await api.post(`/project-invites/${inviteId}/decline`);
-    return response.data;
-  },
-
-  // Resend invite
-  resendInvite: async (inviteId: string) => {
-    const response = await api.post(`/project-invites/${inviteId}/resend`);
+  // Get invites for specific user
+  getUserInvitesByUserId: async (userId: string) => {
+    const response = await api.get(`/invites/user/${userId}`);
     return response.data;
   },
 
   // Get project invites
   getProjectInvites: async (projectId: string) => {
-    const response = await api.get(`/project-invites/project/${projectId}`);
+    const response = await api.get(`/invites/project/${projectId}`);
     return response.data;
   },
 
-  // Get user invites (legacy endpoint for backward compatibility)
-  getUserInvitesLegacy: async (userId: string) => {
-    const response = await api.get(`/project-invites/user/${userId}`);
+  // Create invite
+  createInvite: async (inviteData: CreateInviteData) => {
+    const response = await api.post('/invites', inviteData);
     return response.data;
   },
 
-  // Expire invite
-  expireInvite: async (inviteId: string) => {
-    const response = await api.patch(`/project-invites/${inviteId}/expire`);
+  // Update invite
+  updateInvite: async (inviteId: string, inviteData: Partial<ProjectInvite>) => {
+    const response = await api.put(`/invites/${inviteId}`, inviteData);
     return response.data;
   },
 
-  // Get invite statistics
-  getInviteStats: async () => {
-    const response = await api.get('/project-invites/stats');
+  // Delete invite
+  deleteInvite: async (inviteId: string) => {
+    const response = await api.delete(`/invites/${inviteId}`);
+    return response.data;
+  },
+
+  // Accept invite (using the existing respond endpoint)
+  acceptInvite: async (inviteId: string) => {
+    const response = await api.put(`/invites/${inviteId}/respond`, { status: 'ACCEPTED' });
+    return response.data;
+  },
+
+  // Decline invite (using the existing respond endpoint)
+  declineInvite: async (inviteId: string) => {
+    const response = await api.put(`/invites/${inviteId}/respond`, { status: 'DECLINED' });
     return response.data;
   },
 
   // Legacy respond to invite (for backward compatibility)
   respondToInvite: async (inviteId: string, status: 'ACCEPTED' | 'DECLINED') => {
-    if (status === 'ACCEPTED') {
-      return await projectInviteApi.acceptInvite(inviteId);
-    } else {
-      return await projectInviteApi.declineInvite(inviteId);
-    }
+    const response = await api.put(`/invites/${inviteId}/respond`, { status });
+    return response.data;
   }
 };
 
