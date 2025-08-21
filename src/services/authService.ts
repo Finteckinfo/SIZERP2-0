@@ -170,27 +170,30 @@ export class AuthService {
 
   // Handle authentication errors
   public handleAuthError(error: any): void {
-    if (error.response?.status === 401 && !this.isRedirecting) {
-      console.error('Authentication failed - clearing token cache');
+    console.error('🚨 AUTH ERROR DETECTED - NO REDIRECT FOR DEBUGGING:', {
+      status: error.response?.status,
+      message: error.message,
+      url: error.config?.url,
+      method: error.config?.method,
+      headers: error.config?.headers,
+      data: error.response?.data,
+      fullError: error
+    });
+
+    // COMPLETELY DISABLE ALL REDIRECTS FOR DEBUGGING
+    console.log('🚫 REDIRECT DISABLED - You can now see the actual errors!');
+    
+    if (error.response?.status === 401) {
+      console.error('❌ 401 UNAUTHORIZED ERROR DETAILS:', {
+        requestUrl: error.config?.url,
+        requestMethod: error.config?.method,
+        hasAuthHeader: !!error.config?.headers?.Authorization,
+        authHeaderPreview: error.config?.headers?.Authorization?.substring(0, 50) + '...',
+        responseData: error.response?.data,
+        responseHeaders: error.response?.headers
+      });
+      
       this.clearTokenCache();
-      
-      // Prevent redirect loops
-      this.isRedirecting = true;
-      
-      // Only redirect if not already on login/register pages
-      const currentPath = window.location.pathname;
-      if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
-        console.log('Redirecting to login due to 401 error');
-        window.location.href = '/login';
-      } else {
-        console.log('Already on auth page, not redirecting');
-        // Reset redirect flag after a delay
-        setTimeout(() => {
-          this.isRedirecting = false;
-        }, 1000);
-      }
-    } else if (error.response?.status === 401) {
-      console.log('401 error but already redirecting or on auth page, ignoring');
     }
   }
 

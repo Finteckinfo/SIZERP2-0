@@ -58,10 +58,22 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error(`❌ API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${error.response?.status}`, error.response?.data);
-    
+    console.error('🚨 API ERROR - FULL DETAILS FOR DEBUGGING:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      requestHeaders: error.config?.headers,
+      responseHeaders: error.response?.headers,
+      responseData: error.response?.data,
+      requestBody: error.config?.data,
+      timestamp: new Date().toISOString(),
+      fullError: error
+    });
+
     // Handle authentication errors globally
     if (error.response?.status === 401) {
+      console.error('🔥 401 ERROR - CALLING AUTH ERROR HANDLER');
       authService.handleAuthError(error);
     }
     
