@@ -51,8 +51,8 @@ export class AuthService {
         this.tokenExpiry = payload.exp * 1000; // Convert to milliseconds
         this.tokenCache = token;
         
-        // Log token info for debugging
-        console.log('JWT Token obtained:', {
+        // Enhanced JWT payload verification
+        console.log('🔍 JWT Token obtained - VERIFYING PAYLOAD:', {
           userId: payload.user_id,
           sub: payload.sub,
           email: payload.email,
@@ -61,6 +61,17 @@ export class AuthService {
           expiresAt: new Date(this.tokenExpiry).toISOString(),
           tokenPreview: token.substring(0, 20) + '...'
         });
+
+        // CRITICAL: Check if email is a template literal
+        if (payload.email && payload.email.includes('{{')) {
+          console.error('🚨 CRITICAL: JWT contains template literals!');
+          console.error('❌ Email field:', payload.email);
+          console.error('💡 Fix: Update Clerk JWT template to use email_address field');
+          console.error('💡 Expected: user@example.com, Got:', payload.email);
+          
+          // Still continue but warn about the issue
+          console.warn('⚠️ Continuing with invalid email - this will cause backend errors');
+        }
 
         // Verify essential claims
         if (!payload.user_id && !payload.sub) {

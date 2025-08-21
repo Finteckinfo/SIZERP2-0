@@ -5,6 +5,9 @@ import { authService } from './authService';
 // Vercel environment variables are not available at runtime in the browser
 const API_BASE_URL = 'https://sizerpbackend2-0-production.up.railway.app/api';
 
+// Ensure the URL is correct and accessible
+console.log('🌐 API Base URL configured:', API_BASE_URL);
+
 // Centralized axios instance with proper JWT authentication interceptor
 const api = axios.create({ 
   baseURL: API_BASE_URL,
@@ -432,7 +435,11 @@ export const authApi = {
     firstName?: string;
     lastName?: string;
   }) => {
+    console.log('🔄 Calling sync endpoint with data:', userData);
+    console.log('🌐 Full URL:', `${API_BASE_URL}/auth/sync-user`);
+    
     const response = await api.post('/auth/sync-user', userData);
+    console.log('✅ Sync response:', response.data);
     return response.data;
   },
   
@@ -444,8 +451,24 @@ export const authApi = {
 
   // Health check for auth system
   healthCheck: async () => {
+    console.log('🏥 Testing backend health...');
     const response = await api.get('/auth/health');
+    console.log('✅ Health check response:', response.data);
     return response.data;
+  },
+
+  // Test backend connectivity
+  testBackendConnection: async () => {
+    try {
+      console.log('🔍 Testing backend connectivity...');
+      const response = await fetch(`${API_BASE_URL}/auth/health`);
+      const data = await response.json();
+      console.log('✅ Backend connectivity test:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Backend connectivity test failed:', error);
+      throw error;
+    }
   }
 };
 
