@@ -1,11 +1,4 @@
 import {
-  CircleIcon,
-  WindmillIcon,
-  TypographyIcon,
-  ShadowIcon,
-  PaletteIcon,
-  KeyIcon,
-  BugIcon,
   DashboardIcon,
   BrandChromeIcon,
   HelpIcon,
@@ -18,7 +11,9 @@ import {
   ShoppingCartIcon,
   CreditCardIcon,
   BuildingIcon,
-  ClipboardIcon
+  ClipboardIcon,
+  FolderIcon,
+  PlusIcon
 } from 'vue-tabler-icons';
 
 export interface menu {
@@ -45,23 +40,33 @@ const sidebarItem: menu[] = [
     to: '/dashboard/default'
   },
   {divider: true},
-  { header: 'Pages' },
+  { header: 'Task Management' },
   {
     title: 'Project',
-    icon: KeyIcon,
+    icon: FolderIcon,
     to: '/projects',
     children: [
       {
         title: 'Create Project',
-        icon: CircleIcon,
+        icon: PlusIcon,
         to: '/projects/create'
       },
       {
         title: 'My Projects',
-        icon: CircleIcon,
+        icon: FolderIcon,
         to: '/projects'
       }
     ]
+  },
+  {
+    title: 'Task Calendar',
+    icon: CalendarIcon,
+    to: ''
+  },
+  {
+    title: 'Kanban Board',
+    icon: BrandChromeIcon,
+    to: ''
   },
   { divider: true },
   { header: 'Communication' },
@@ -90,23 +95,6 @@ const sidebarItem: menu[] = [
   {
     title: 'Performance Metrics',
     icon: ChartBarIcon,
-    to: ''
-  },
-  { divider: true },
-  { header: 'Task Management' },
-  {
-    title: 'Task Calendar',
-    icon: CalendarIcon,
-    to: ''
-  },
-  {
-    title: 'Project Tasks',
-    icon: ClipboardIcon,
-    to: ''
-  },
-  {
-    title: 'Kanban Board',
-    icon: BrandChromeIcon,
     to: ''
   },
   { divider: true },

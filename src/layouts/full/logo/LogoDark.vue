@@ -1,7 +1,7 @@
 <template>
   <div class="logo">
     <RouterLink to="/">
-      <img :src="logoUrl" alt="Logo" width="92" height="32" />
+      <img :src="logoUrl" alt="Logo" width="92" height="76" />
     </RouterLink>
   </div>
 </template>
