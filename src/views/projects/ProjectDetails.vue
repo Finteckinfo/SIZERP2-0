@@ -121,13 +121,13 @@
                     <div>
                       <div class="meta-label">Your Role</div>
                       <div class="meta-value">
-                        <v-chip 
-                          :color="getRoleColor(userRole?.role)" 
-                          variant="outlined" 
-                          size="small"
-                        >
-                          {{ getUserRoleLabel(userRole?.role) }}
-                        </v-chip>
+                                                 <v-chip 
+                           :color="getRoleColor(userRole?.role || 'CLIENT')" 
+                           variant="outlined" 
+                           size="small"
+                         >
+                           {{ getUserRoleLabel(userRole?.role || 'CLIENT') }}
+                         </v-chip>
                       </div>
                     </div>
                   </div>
@@ -246,10 +246,10 @@
                     :key="task.id"
                     class="task-item"
                   >
-                    <div class="task-info">
-                      <div class="task-name">{{ task.name }}</div>
-                      <div class="task-description">{{ task.description || 'No description' }}</div>
-                    </div>
+                                         <div class="task-info">
+                       <div class="task-name">{{ task.title }}</div>
+                       <div class="task-description">{{ task.description || 'No description' }}</div>
+                     </div>
                     <div class="task-meta">
                       <v-chip 
                         :color="getTaskStatusColor(task.status)" 
