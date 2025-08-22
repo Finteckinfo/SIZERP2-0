@@ -170,22 +170,91 @@
             </v-col>
           </v-row>
 
-          <!-- Team Members Section -->
-          <v-row class="mb-6">
-            <v-col cols="12">
-              <v-card elevation="0" class="pa-4 border rounded-lg">
-                <div class="d-flex align-center justify-space-between mb-4">
-                  <h3 class="text-h6 font-weight-medium">Team Members</h3>
-                  <v-btn 
-                    color="primary" 
-                    variant="outlined" 
-                    size="small"
-                    @click="inviteTeamMember"
-                  >
-                    <v-icon class="mr-2">mdi-account-plus</v-icon>
-                    Invite Member
-                  </v-btn>
-                </div>
+                     <!-- Departments Section -->
+           <v-row class="mb-6">
+             <v-col cols="12">
+               <v-card elevation="0" class="pa-4 border rounded-lg">
+                 <div class="d-flex align-center justify-space-between mb-4">
+                   <h3 class="text-h6 font-weight-medium">Project Departments</h3>
+                   <v-btn 
+                     color="primary" 
+                     variant="outlined" 
+                     size="small"
+                     @click="addDepartment"
+                   >
+                     <v-icon class="mr-2">mdi-domain-plus</v-icon>
+                     Add Department
+                   </v-btn>
+                 </div>
+                 
+                 <div v-if="departments.length === 0" class="text-center py-8">
+                   <v-icon size="48" color="grey-lighten-1" class="mb-3">mdi-domain</v-icon>
+                   <p class="text-grey">No departments created yet</p>
+                 </div>
+                 
+                 <div v-else class="departments-grid">
+                   <div 
+                     v-for="dept in departments" 
+                     :key="dept.id"
+                     class="department-card"
+                   >
+                     <div class="department-header">
+                       <div class="department-icon">
+                         <v-icon 
+                           :color="getDepartmentTypeColor(dept.type)" 
+                           size="32"
+                         >
+                           {{ getDepartmentTypeIcon(dept.type) }}
+                         </v-icon>
+                       </div>
+                       <div class="department-info">
+                         <h4 class="department-name">{{ dept.name }}</h4>
+                         <p class="department-description">{{ dept.description }}</p>
+                         <div class="department-meta">
+                           <v-chip 
+                             :color="getDepartmentTypeColor(dept.type)" 
+                             variant="tonal" 
+                             size="small"
+                           >
+                             {{ getDepartmentTypeLabel(dept.type) }}
+                           </v-chip>
+                           <span class="task-count">{{ dept.tasks?.length || 0 }} tasks</span>
+                         </div>
+                       </div>
+                     </div>
+                     <div class="department-actions">
+                       <v-btn icon variant="text" size="small">
+                         <v-icon>mdi-eye</v-icon>
+                       </v-btn>
+                       <v-btn icon variant="text" size="small">
+                         <v-icon>mdi-pencil</v-icon>
+                       </v-btn>
+                       <v-btn icon variant="text" size="small">
+                         <v-icon>mdi-delete</v-icon>
+                       </v-btn>
+                     </div>
+                   </div>
+                 </div>
+               </v-card>
+             </v-col>
+           </v-row>
+
+           <!-- Team Members Section -->
+           <v-row class="mb-6">
+             <v-col cols="12">
+               <v-card elevation="0" class="pa-4 border rounded-lg">
+                 <div class="d-flex align-center justify-space-between mb-4">
+                   <h3 class="text-h6 font-weight-medium">Team Members</h3>
+                   <v-btn 
+                     color="primary" 
+                     variant="outlined" 
+                     size="small"
+                     @click="inviteTeamMember"
+                   >
+                     <v-icon class="mr-2">mdi-account-plus</v-icon>
+                     Invite Member
+                   </v-btn>
+                 </div>
                 
                 <div class="team-grid">
                   <div 
@@ -318,7 +387,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUser } from '@clerk/vue';
-import { projectApi, taskApi, userRoleApi, type Project, type Task, type UserRole } from '@/services/projectApi';
+import { projectApi, taskApi, userRoleApi, departmentApi, type Project, type Task, type UserRole, type Department } from '@/services/projectApi';
 
 const router = useRouter();
 const route = useRoute();
@@ -328,6 +397,7 @@ const { user } = useUser();
 const project = ref<Project | null>(null);
 const tasks = ref<Task[]>([]);
 const teamMembers = ref<UserRole[]>([]);
+const departments = ref<Department[]>([]);
 const userRole = ref<UserRole | null>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
@@ -356,9 +426,18 @@ const loadProjectData = async () => {
     const tasksResponse = await taskApi.getProjectTasks(route.params.id as string);
     tasks.value = tasksResponse.tasks || [];
 
-    // Load team members
-    const teamResponse = await userRoleApi.getProjectUserRoles(route.params.id as string);
-    teamMembers.value = teamResponse.userRoles || [];
+         // Load team members
+     const teamResponse = await userRoleApi.getProjectUserRoles(route.params.id as string);
+     teamMembers.value = teamResponse.userRoles || [];
+
+     // Load project departments
+     try {
+       const departmentsResponse = await departmentApi.getProjectDepartments(route.params.id as string);
+       departments.value = departmentsResponse.departments || [];
+     } catch (deptError) {
+       console.warn('Failed to load departments:', deptError);
+       departments.value = [];
+     }
 
     // Get user's role in this project
     const roleResponse = await userRoleApi.getUserRoleInProject(route.params.id as string, user.value.id);
@@ -532,6 +611,36 @@ const inviteTeamMember = () => {
   console.log('Invite team member clicked');
 };
 
+const addDepartment = () => {
+  // TODO: Implement add department functionality
+  console.log('Add department clicked');
+};
+
+// Department helper functions
+const getDepartmentTypeColor = (type: string) => {
+  const colors: Record<string, string> = {
+    'MAJOR': 'primary',
+    'MINOR': 'secondary'
+  };
+  return colors[type] || 'grey';
+};
+
+const getDepartmentTypeIcon = (type: string) => {
+  const icons: Record<string, string> = {
+    'MAJOR': 'mdi-domain',
+    'MINOR': 'mdi-domain'
+  };
+  return icons[type] || 'mdi-domain';
+};
+
+const getDepartmentTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    'MAJOR': 'Major Department',
+    'MINOR': 'Minor Department'
+  };
+  return labels[type] || type;
+};
+
 const viewAllTasks = () => {
   // TODO: Navigate to tasks view or show all tasks modal
   console.log('View all tasks clicked');
@@ -643,6 +752,82 @@ watch(() => route.params.id, (newId) => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
+}
+
+.departments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.department-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.department-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.department-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.department-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  background: #f8fafc;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.department-info {
+  flex: 1;
+}
+
+.department-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.department-description {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+.department-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.task-count {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.department-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .team-member-card {
@@ -778,6 +963,10 @@ watch(() => route.params.id, (newId) => {
   }
   
   .team-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .departments-grid {
     grid-template-columns: 1fr;
   }
   

@@ -5,272 +5,315 @@
     @access-denied="handleAccessDenied"
   >
     <div class="project-workspace">
-      <v-container fluid class="pa-0">
-      <!-- Header -->
-      <v-app-bar elevation="0" color="white" class="px-6 border-b">
-        <div class="d-flex align-center">
-          <v-btn icon @click="$router.push('/projects')" class="mr-4">
-            <v-icon>mdi-arrow-left</v-icon>
-          </v-btn>
-          <div class="d-flex align-center">
-            <v-icon color="primary" class="mr-2">mdi-lock</v-icon>
-            <h1 class="text-h5 font-weight-bold text-grey-darken-3">{{ project?.name || 'Loading...' }}</h1>
-            <v-chip 
-              v-if="project"
-              :color="getStatusColor(project.type)" 
-              size="small" 
-              class="ml-3"
+      <!-- Modern Header -->
+      <div class="workspace-header">
+        <div class="header-content">
+          <div class="header-left">
+            <v-btn 
+              icon 
+              variant="text" 
+              @click="$router.push('/projects')" 
+              class="back-btn"
             >
-              {{ project.type }}
-            </v-chip>
-          </div>
-        </div>
-        
-        <div class="d-flex align-center mr-6">
-          <div class="d-flex align-center mr-4">
-            <div class="user-avatars">
-              <v-avatar 
-                v-for="(member, index) in teamMembers" 
-                :key="index"
-                size="32" 
-                :color="getAvatarColor(member.user?.firstName || member.user?.email || '')"
-                class="mr-n2"
-              >
-                <v-icon color="white" size="20">mdi-account</v-icon>
-              </v-avatar>
-            </div>
-            <v-btn variant="outlined" size="small" class="ml-4">
-              <v-icon class="mr-2">mdi-account-plus</v-icon>
-              Invite
+              <v-icon size="24">mdi-arrow-left</v-icon>
             </v-btn>
-          </div>
-        </div>
-        
-        <v-spacer />
-        
-        <div class="d-flex align-center">
-          <v-btn icon class="mr-2">
-            <v-icon>mdi-theme-light-dark</v-icon>
-          </v-btn>
-          <v-btn icon class="mr-2">
-            <v-icon>mdi-filter-variant</v-icon>
-          </v-btn>
-          <v-btn icon class="mr-4">
-            <v-icon>mdi-download</v-icon>
-          </v-btn>
-          <v-text-field
-            placeholder="Search tasks..."
-            variant="outlined"
-            density="compact"
-            hide-details
-            class="search-field"
-            prepend-inner-icon="mdi-magnify"
-          />
-        </div>
-      </v-app-bar>
-
-      <!-- Main Content -->
-      <div class="main-content">
-        <!-- Loading State -->
-        <div v-if="loading" class="loading-state">
-          <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
-          <p class="mt-4 text-grey">Loading project data...</p>
-        </div>
-
-        <!-- Error State -->
-        <div v-else-if="error" class="error-state">
-          <v-alert type="error" class="mb-4">
-            {{ error }}
-          </v-alert>
-          <v-btn color="primary" @click="loadProjectData">Retry</v-btn>
-        </div>
-
-        <!-- Content -->
-        <div v-else>
-          <!-- Project Overview -->
-          <v-row class="mb-6">
-          <v-col cols="12" md="8">
-            <v-card elevation="0" class="pa-4 border rounded-lg">
-              <div class="d-flex align-center justify-space-between mb-4">
-                <h3 class="text-h6 font-weight-medium">Project Overview</h3>
-                <v-btn color="primary" variant="outlined" size="small">
-                  <v-icon class="mr-2">mdi-pencil</v-icon>
-                  Edit
-                </v-btn>
-              </div>
-              <p class="text-body-2 text-medium-emphasis mb-4">{{ project?.description || 'No description available' }}</p>
-              
-              <div class="project-stats">
-                <div class="stat-item">
-                  <v-icon size="20" color="primary">mdi-calendar</v-icon>
-                  <span class="stat-label">Start Date:</span>
-                  <span class="stat-value">{{ project ? formatDate(project.startDate) : 'N/A' }}</span>
-                </div>
-                <div class="stat-item">
-                  <v-icon size="20" color="warning">mdi-calendar</v-icon>
-                  <span class="stat-label">End Date:</span>
-                  <span class="stat-value">{{ project ? formatDate(project.endDate) : 'N/A' }}</span>
-                </div>
-                <div class="stat-item">
-                  <v-icon size="20" color="success">mdi-account-group</v-icon>
-                  <span class="stat-label">Team Size:</span>
-                  <span class="stat-value">{{ projectStats.teamSize }} members</span>
-                </div>
-                <div class="stat-item">
-                  <v-icon size="20" color="info">mdi-domain</v-icon>
-                  <span class="stat-label">Departments:</span>
-                  <span class="stat-value">{{ projectStats.departmentsCount }}</span>
-                </div>
-              </div>
-            </v-card>
-          </v-col>
-          
-          <v-col cols="12" md="4">
-            <v-card elevation="0" class="pa-4 border rounded-lg">
-              <h4 class="text-subtitle-1 font-weight-medium mb-3">Quick Actions</h4>
-              <div class="d-flex flex-column gap-2">
-                <v-btn color="primary" variant="outlined" size="small">
-                  <v-icon class="mr-2">mdi-plus</v-icon>
-                  Add Task
-                </v-btn>
-                <v-btn color="success" variant="outlined" size="small">
-                  <v-icon class="mr-2">mdi-account-plus</v-icon>
-                  Add Member
-                </v-btn>
-                <v-btn color="warning" variant="outlined" size="small">
-                  <v-icon class="mr-2">mdi-calendar</v-icon>
-                  Schedule Meeting
-                </v-btn>
-                <v-btn color="info" variant="outlined" size="small">
-                  <v-icon class="mr-2">mdi-file-document</v-icon>
-                  Create Report
-                </v-btn>
-              </div>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <!-- Task Management -->
-        <div class="task-management">
-          <div class="d-flex align-center justify-space-between mb-4">
-            <h3 class="text-h6 font-weight-medium">Tasks & Sections</h3>
-            <div class="d-flex gap-2">
-              <v-btn color="primary" variant="outlined" size="small">
-                <v-icon class="mr-2">mdi-folder-plus</v-icon>
-                Add Section
-              </v-btn>
-              <v-btn color="primary" size="small">
-                <v-icon class="mr-2">mdi-plus</v-icon>
-                Add Task
-              </v-btn>
-            </div>
-          </div>
-
-          <!-- Task Sections -->
-          <div class="task-sections">
-            <div 
-              v-for="section in projectSections" 
-              :key="section.id"
-              class="task-section"
-            >
-              <div class="section-header">
-                <div class="d-flex align-center">
-                  <v-icon 
-                    :color="section.color" 
-                    class="mr-2"
-                    @click="toggleSection(section.id)"
-                  >
-                    {{ section.collapsed ? 'mdi-chevron-right' : 'mdi-chevron-down' }}
-                  </v-icon>
-                  <h4 class="text-subtitle-1 font-weight-medium">{{ section.name }}</h4>
-                  <v-chip 
-                    :color="section.color" 
-                    size="small" 
-                    class="ml-3"
-                  >
-                    {{ section.tasks.length }}
-                  </v-chip>
-                </div>
-                <div class="section-actions">
-                  <v-btn icon size="small" variant="text">
-                    <v-icon>mdi-dots-vertical</v-icon>
-                  </v-btn>
-                </div>
-              </div>
-              
-              <div v-if="!section.collapsed" class="section-content">
-                <div 
-                  v-for="task in section.tasks" 
-                  :key="task.id"
-                  class="task-item"
-                  :class="{ 'completed': task.completed }"
+            <div class="project-info">
+              <h1 class="project-title">{{ project?.name || 'Loading...' }}</h1>
+              <div class="project-meta">
+                <v-chip 
+                  v-if="project"
+                  :color="getStatusColor(getProjectStatus(project))" 
+                  size="small" 
+                  variant="tonal"
                 >
-                  <div class="task-checkbox">
-                    <v-checkbox
-                      v-model="task.completed"
-                      :color="section.color"
-                      hide-details
-                      density="compact"
-                    />
-                  </div>
-                  
-                  <div class="task-content">
-                    <div class="task-header">
-                      <h5 class="task-title">{{ task.title }}</h5>
-                      <div class="task-meta">
-                        <v-chip 
-                          :color="getPriorityColor(task.priority)" 
-                          size="small"
-                          variant="outlined"
-                        >
-                          {{ task.priority }}
-                        </v-chip>
-                        <span class="task-date">{{ formatDate(task.dueDate) }}</span>
-                      </div>
-                    </div>
-                    
-                    <p class="task-description">{{ task.description }}</p>
-                    
-                    <div class="task-footer">
-                      <div class="task-assignees">
-                        <v-avatar 
-                          v-for="(assignee, index) in task.assignees" 
-                          :key="index"
-                          size="24" 
-                          :color="getAvatarColor(assignee.color)"
-                          class="mr-n1"
-                        >
-                          <v-icon color="white" size="16">mdi-account</v-icon>
-                        </v-avatar>
-                      </div>
-                      
-                      <div class="task-actions">
-                        <v-btn icon size="small" variant="text">
-                          <v-icon>mdi-comment</v-icon>
-                        </v-btn>
-                        <v-btn icon size="small" variant="text">
-                          <v-icon>mdi-attachment</v-icon>
-                        </v-btn>
-                        <v-btn icon size="small" variant="text">
-                          <v-icon>mdi-dots-vertical</v-icon>
-                        </v-btn>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="add-task-placeholder" @click="addTaskToSection(section.id)">
-                  <v-icon color="grey" class="mr-2">mdi-plus</v-icon>
-                  <span class="text-grey">Add task to {{ section.name }}</span>
-                </div>
+                  {{ getStatusLabel(getProjectStatus(project)) }}
+                </v-chip>
+                <span class="project-type">{{ project?.type || 'Project' }}</span>
               </div>
             </div>
           </div>
+          
+          <div class="header-right">
+            <div class="team-preview">
+              <div class="avatar-stack">
+                <v-avatar 
+                  v-for="(member, index) in teamMembers.slice(0, 3)" 
+                  :key="index"
+                  size="32" 
+                  :color="getAvatarColor(member.user?.firstName || member.user?.email || '')"
+                  class="member-avatar"
+                >
+                  <v-icon color="white" size="16">mdi-account</v-icon>
+                </v-avatar>
+                <div v-if="teamMembers.length > 3" class="more-members">
+                  +{{ teamMembers.length - 3 }}
+                </div>
+              </div>
+              <v-btn variant="outlined" size="small" class="invite-btn">
+                <v-icon size="16" class="mr-2">mdi-account-plus</v-icon>
+                Invite
+              </v-btn>
+            </div>
+            
+            <div class="header-actions">
+              <v-btn icon variant="text" size="small">
+                <v-icon>mdi-magnify</v-icon>
+              </v-btn>
+              <v-btn icon variant="text" size="small">
+                <v-icon>mdi-bell-outline</v-icon>
+              </v-btn>
+              <v-btn icon variant="text" size="small">
+                <v-icon>mdi-dots-vertical</v-icon>
+              </v-btn>
+            </div>
           </div>
         </div>
       </div>
-    </v-container>
-  </div>
+
+      <!-- Main Content -->
+      <div class="workspace-content">
+        <v-container fluid class="pa-0">
+          <!-- Loading State -->
+          <div v-if="loading" class="loading-state">
+            <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+            <p class="mt-4 text-grey">Loading workspace...</p>
+          </div>
+
+          <!-- Error State -->
+          <div v-else-if="error" class="error-state">
+            <v-alert type="error" class="mb-4">
+              {{ error }}
+            </v-alert>
+            <v-btn color="primary" @click="loadProjectData">Retry</v-btn>
+          </div>
+
+          <!-- Content -->
+          <div v-else class="workspace-grid">
+            <!-- Left Column - Project Info & Quick Actions -->
+            <div class="left-column">
+              <!-- Project Overview Card -->
+              <v-card class="info-card" elevation="0">
+                <div class="card-header">
+                  <h3 class="card-title">Project Overview</h3>
+                  <v-btn icon variant="text" size="small">
+                    <v-icon>mdi-pencil</v-icon>
+                  </v-btn>
+                </div>
+                
+                <p class="project-description">
+                  {{ project?.description || 'No description available' }}
+                </p>
+                
+                <div class="project-stats">
+                  <div class="stat-row">
+                    <div class="stat-item">
+                      <v-icon size="20" color="primary">mdi-calendar-start</v-icon>
+                      <div class="stat-content">
+                        <span class="stat-label">Start Date</span>
+                        <span class="stat-value">{{ project?.startDate ? formatDate(project.startDate) : 'N/A' }}</span>
+                      </div>
+                    </div>
+                    <div class="stat-item">
+                      <v-icon size="20" color="warning">mdi-calendar-end</v-icon>
+                      <div class="stat-content">
+                        <span class="stat-label">End Date</span>
+                        <span class="stat-value">{{ project?.endDate ? formatDate(project.endDate) : 'N/A' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="stat-row">
+                    <div class="stat-item">
+                      <v-icon size="20" color="success">mdi-account-group</v-icon>
+                      <div class="stat-content">
+                        <span class="stat-label">Team Size</span>
+                        <span class="stat-value">{{ projectStats.teamSize }} members</span>
+                      </div>
+                    </div>
+                    <div class="stat-item">
+                      <v-icon size="20" color="info">mdi-domain</v-icon>
+                      <div class="stat-content">
+                        <span class="stat-label">Departments</span>
+                        <span class="stat-value">{{ projectStats.departmentsCount }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </v-card>
+
+              <!-- Quick Actions Card -->
+              <v-card class="actions-card" elevation="0">
+                <h3 class="card-title">Quick Actions</h3>
+                <div class="actions-grid">
+                  <v-btn 
+                    color="primary" 
+                    variant="tonal" 
+                    size="large"
+                    class="action-btn"
+                    @click="addTask"
+                  >
+                    <v-icon size="20" class="mr-2">mdi-plus</v-icon>
+                    Add Task
+                  </v-btn>
+                  <v-btn 
+                    color="success" 
+                    variant="tonal" 
+                    size="large"
+                    class="action-btn"
+                    @click="addMember"
+                  >
+                    <v-icon size="20" class="mr-2">mdi-account-plus</v-icon>
+                    Add Member
+                  </v-btn>
+                  <v-btn 
+                    color="warning" 
+                    variant="tonal" 
+                    size="large"
+                    class="action-btn"
+                    @click="scheduleMeeting"
+                  >
+                    <v-icon size="20" class="mr-2">mdi-calendar</v-icon>
+                    Schedule
+                  </v-btn>
+                  <v-btn 
+                    color="info" 
+                    variant="tonal" 
+                    size="large"
+                    class="action-btn"
+                    @click="createReport"
+                  >
+                    <v-icon size="20" class="mr-2">mdi-file-document</v-icon>
+                    Report
+                  </v-btn>
+                </div>
+              </v-card>
+
+              <!-- Progress Card -->
+              <v-card class="progress-card" elevation="0">
+                <h3 class="card-title">Project Progress</h3>
+                <div class="progress-content">
+                  <div class="progress-circle">
+                    <v-progress-circular
+                      :model-value="getProjectProgress()"
+                      :color="getProgressColor(getProjectProgress())"
+                      size="80"
+                      width="8"
+                    >
+                      {{ getProjectProgress() }}%
+                    </v-progress-circular>
+                  </div>
+                  <div class="progress-stats">
+                    <div class="progress-stat">
+                      <span class="stat-number">{{ tasks.length }}</span>
+                      <span class="stat-label">Total Tasks</span>
+                    </div>
+                    <div class="progress-stat">
+                      <span class="stat-number">{{ getCompletedTasksCount() }}</span>
+                      <span class="stat-label">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </v-card>
+            </div>
+
+            <!-- Right Column - Tasks & Sections -->
+            <div class="right-column">
+              <!-- Tasks Header -->
+              <div class="tasks-header">
+                <h2 class="section-title">Tasks & Sections</h2>
+                <div class="tasks-actions">
+                  <v-btn color="primary" variant="outlined" size="small">
+                    <v-icon size="16" class="mr-2">mdi-folder-plus</v-icon>
+                    Add Section
+                  </v-btn>
+                  <v-btn color="primary" size="small">
+                    <v-icon size="16" class="mr-2">mdi-plus</v-icon>
+                    Add Task
+                  </v-btn>
+                </div>
+              </div>
+
+              <!-- Task Sections -->
+              <div class="task-sections">
+                <div 
+                  v-for="section in projectSections" 
+                  :key="section.id"
+                  class="task-section"
+                >
+                  <div class="section-header" @click="toggleSection(section.id)">
+                    <div class="section-info">
+                      <v-icon 
+                        :color="section.color" 
+                        class="section-icon"
+                      >
+                        {{ section.collapsed ? 'mdi-chevron-right' : 'mdi-chevron-down' }}
+                      </v-icon>
+                      <h4 class="section-name">{{ section.name }}</h4>
+                      <v-chip 
+                        :color="section.color" 
+                        size="small" 
+                        variant="tonal"
+                      >
+                        {{ section.tasks.length }}
+                      </v-chip>
+                    </div>
+                    <div class="section-actions">
+                      <v-btn icon variant="text" size="small">
+                        <v-icon>mdi-dots-vertical</v-icon>
+                      </v-btn>
+                    </div>
+                  </div>
+                  
+                  <div v-if="!section.collapsed" class="section-tasks">
+                    <div 
+                      v-for="task in section.tasks" 
+                      :key="task.id"
+                      class="task-item"
+                    >
+                      <div class="task-content">
+                        <v-checkbox
+                          v-model="task.completed"
+                          :color="section.color"
+                          hide-details
+                          class="task-checkbox"
+                        />
+                        <div class="task-details">
+                          <div class="task-title">{{ task.title }}</div>
+                          <div class="task-meta">
+                            <v-chip 
+                              :color="getTaskStatusColor(task.completed ? 'COMPLETED' : 'PENDING')" 
+                              size="x-small" 
+                              variant="tonal"
+                            >
+                              {{ getTaskStatusLabel(task.completed ? 'COMPLETED' : 'PENDING') }}
+                            </v-chip>
+                            <v-chip 
+                              :color="getPriorityColor(task.priority)" 
+                              size="x-small" 
+                              variant="outlined"
+                            >
+                              {{ getPriorityLabel(task.priority) }}
+                            </v-chip>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="task-actions">
+                        <v-btn icon variant="text" size="small">
+                          <v-icon>mdi-pencil</v-icon>
+                        </v-btn>
+                        <v-btn icon variant="text" size="small">
+                          <v-icon>mdi-delete</v-icon>
+                        </v-btn>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </v-container>
+      </div>
+    </div>
   </ProjectAccessGate>
 </template>
 
@@ -363,15 +406,32 @@ const completedTasks = computed(() => {
 });
 
 // Helper functions
+const getProjectStatus = (project: Project) => {
+  const now = new Date();
+  const start = new Date(project.startDate);
+  const end = new Date(project.endDate);
+  
+  if (now < start) return 'PENDING';
+  if (now >= start && now <= end) return 'ACTIVE';
+  return 'COMPLETED';
+};
+
 const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'TODO': return 'grey';
-    case 'IN_PROGRESS': return 'warning';
-    case 'REVIEW': return 'info';
-    case 'DONE': return 'success';
-    case 'REWORK': return 'error';
-    default: return 'primary';
-  }
+  const colors: Record<string, string> = {
+    'ACTIVE': 'success',
+    'PENDING': 'warning',
+    'COMPLETED': 'info'
+  };
+  return colors[status] || 'primary';
+};
+
+const getStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    'ACTIVE': 'Active',
+    'PENDING': 'Pending',
+    'COMPLETED': 'Completed'
+  };
+  return labels[status] || status;
 };
 
 const getPriorityColor = (priority: string) => {
@@ -394,6 +454,56 @@ const getAvatarColor = (color: string) => {
   }
 };
 
+const getTaskStatusColor = (status: string) => {
+  const colors: Record<string, string> = {
+    'PENDING': 'warning',
+    'IN_PROGRESS': 'info',
+    'COMPLETED': 'success',
+    'APPROVED': 'success'
+  };
+  return colors[status] || 'grey';
+};
+
+const getTaskStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    'PENDING': 'Pending',
+    'IN_PROGRESS': 'In Progress',
+    'COMPLETED': 'Completed',
+    'APPROVED': 'Approved'
+  };
+  return labels[status] || status;
+};
+
+const getPriorityLabel = (priority: string) => {
+  const labels: Record<string, string> = {
+    'LOW': 'Low',
+    'MEDIUM': 'Medium',
+    'HIGH': 'High',
+    'CRITICAL': 'Critical'
+  };
+  return labels[priority] || priority;
+};
+
+const getProjectProgress = () => {
+  if (tasks.value.length === 0) return 0;
+  const completedTasks = tasks.value.filter(task => 
+    task.status === 'COMPLETED' || task.status === 'APPROVED'
+  );
+  return Math.round((completedTasks.length / tasks.value.length) * 100);
+};
+
+const getProgressColor = (progress: number) => {
+  if (progress >= 80) return 'success';
+  if (progress >= 50) return 'warning';
+  return 'error';
+};
+
+const getCompletedTasksCount = () => {
+  return tasks.value.filter(task => 
+    task.status === 'COMPLETED' || task.status === 'APPROVED'
+  ).length;
+};
+
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', { 
     month: 'short', 
@@ -412,6 +522,26 @@ const toggleSection = (sectionId: string) => {
 const addTaskToSection = (sectionId: string) => {
   console.log('Adding task to section:', sectionId);
   // TODO: Implement add task functionality
+};
+
+const addTask = () => {
+  console.log('Add task clicked');
+  // TODO: Implement add task functionality
+};
+
+const addMember = () => {
+  console.log('Add member clicked');
+  // TODO: Implement add member functionality
+};
+
+const scheduleMeeting = () => {
+  console.log('Schedule meeting clicked');
+  // TODO: Implement schedule meeting functionality
+};
+
+const createReport = () => {
+  console.log('Create report clicked');
+  // TODO: Implement create report functionality
 };
 
 // Access gate handlers
@@ -443,44 +573,164 @@ onMounted(() => {
   min-height: 100vh;
 }
 
-.main-content {
-  padding: 24px;
-}
-
-.loading-state,
-.error-state {
+.workspace-header {
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 16px 24px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 64px 24px;
-  text-align: center;
-}
-
-.loading-state .v-progress-circular {
-  margin-bottom: 16px;
-}
-
-.border {
-  border: 1px solid #e2e8f0;
-}
-
-.border-b {
+  justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
   border-bottom: 1px solid #e2e8f0;
 }
 
-.search-field {
-  max-width: 300px;
-}
-
-.user-avatars {
+.header-content {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.back-btn {
+  margin-right: 16px;
+}
+
+.project-info {
+  display: flex;
+  align-items: baseline;
+}
+
+.project-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-right: 12px;
+}
+
+.project-meta {
+  display: flex;
+  align-items: baseline;
+}
+
+.project-type {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-left: 8px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.team-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar-stack {
+  display: flex;
+  align-items: center;
+}
+
+.member-avatar {
+  margin-right: -8px;
+}
+
+.more-members {
+  background-color: #e0e7ff;
+  color: #4f46e5;
+  border-radius: 12px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.invite-btn {
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-weight: 600;
+  text-transform: none;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.workspace-content {
+  padding-top: 120px; /* Adjust for fixed header */
+  padding-bottom: 24px;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: 24px;
+  padding: 0 24px;
+}
+
+.left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.info-card,
+.actions-card,
+.progress-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  padding: 24px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.project-description {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 24px;
 }
 
 .project-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
   gap: 16px;
 }
 
@@ -490,33 +740,120 @@ onMounted(() => {
   gap: 12px;
 }
 
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
 .stat-label {
+  font-size: 0.75rem;
   color: #64748b;
-  font-size: 0.875rem;
 }
 
 .stat-value {
+  font-size: 1.125rem;
+  font-weight: 600;
   color: #1e293b;
-  font-weight: 500;
-  font-size: 0.875rem;
 }
 
-.task-management {
-  margin-top: 32px;
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
 }
 
-.task-sections {
+.action-btn {
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: 600;
+  text-transform: none;
+}
+
+.progress-card {
+  margin-top: 24px;
+}
+
+.progress-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.progress-circle {
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-stats {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+}
+
+.progress-stat {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.right-column {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
+.tasks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.tasks-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.task-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .task-section {
-  background: white;
+  background: #f8fafc;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   border: 1px solid #e2e8f0;
   overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.task-section:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .section-header {
@@ -528,29 +865,35 @@ onMounted(() => {
   justify-content: space-between;
 }
 
-.section-header h4 {
-  margin: 0;
-  color: #1e293b;
-  font-size: 1rem;
-}
-
-.section-actions {
+.section-info {
   display: flex;
   align-items: center;
 }
 
-.section-content {
+.section-icon {
+  margin-right: 12px;
+}
+
+.section-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.section-tasks {
   padding: 16px;
 }
 
 .task-item {
   display: flex;
-  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
   padding: 16px;
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid #e2e8f0;
   margin-bottom: 12px;
-  background: white;
+  background: #ffffff;
   transition: all 0.3s ease;
 }
 
@@ -568,20 +911,20 @@ onMounted(() => {
   color: #64748b;
 }
 
-.task-checkbox {
-  flex-shrink: 0;
-  margin-top: 4px;
-}
-
 .task-content {
-  flex-grow: 1;
-}
-
-.task-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
+  gap: 16px;
+}
+
+.task-checkbox {
+  flex-shrink: 0;
+}
+
+.task-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .task-title {
@@ -623,7 +966,7 @@ onMounted(() => {
 .task-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 12px;
 }
 
 .add-task-placeholder {
@@ -645,13 +988,73 @@ onMounted(() => {
   background: #eff6ff;
 }
 
-@media (max-width: 768px) {
-  .main-content {
-    padding: 16px;
+@media (max-width: 960px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
   }
-  
+}
+
+@media (max-width: 768px) {
+  .workspace-header {
+    padding: 12px 16px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .header-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .team-preview {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .avatar-stack {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .member-avatar {
+    margin-right: 0;
+  }
+
+  .more-members {
+    order: 1;
+  }
+
+  .invite-btn {
+    order: 2;
+  }
+
+  .header-actions {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .workspace-content {
+    padding-top: 100px; /* Adjust for fixed header */
+  }
+
   .project-stats {
     grid-template-columns: 1fr;
+  }
+  
+  .stat-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
   
   .task-header {
@@ -667,3 +1070,4 @@ onMounted(() => {
   }
 }
 </style>
+
