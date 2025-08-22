@@ -75,7 +75,7 @@ const formatDate = (date: string | Date) => {
   <v-card 
     elevation="2" 
     class="project-card h-100 cursor-pointer transition-all duration-300 hover:elevation-8"
-    @click="$router.push(`/projects/${project.id}`)"
+    @click="$router.push(`/projects/${project.id}/workspace`)"
   >
     <v-card-text class="pa-6">
       <!-- Project Header -->
