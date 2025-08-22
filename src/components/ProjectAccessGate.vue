@@ -184,7 +184,7 @@ const checkProjectAccess = async () => {
   loading.value = true;
   try {
     // Check if user has a role in this project
-    const role = await userRoleApi.getUserRoleInProject(user.value.id, props.projectId);
+    const role = await userRoleApi.getUserRoleInProject(props.projectId, user.value.id);
     
     if (role) {
       userRole.value = role;
