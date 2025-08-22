@@ -1,0 +1,794 @@
+<template>
+  <div class="project-details">
+    <v-container fluid class="pa-0">
+      <!-- Header -->
+      <v-app-bar elevation="0" color="white" class="px-6 border-b">
+        <div class="d-flex align-center">
+          <v-btn icon @click="$router.push('/projects')" class="mr-4">
+            <v-icon>mdi-arrow-left</v-icon>
+          </v-btn>
+          <div class="d-flex align-center">
+            <v-icon color="primary" class="mr-2">mdi-folder</v-icon>
+            <h1 class="text-h5 font-weight-bold text-grey-darken-3">{{ project?.name || 'Loading...' }}</h1>
+            <v-chip 
+              v-if="project"
+              :color="getStatusColor(getProjectStatus(project))" 
+              size="small" 
+              class="ml-3"
+            >
+              {{ getStatusLabel(getProjectStatus(project)) }}
+            </v-chip>
+          </div>
+        </div>
+        
+        <v-spacer />
+        
+        <div class="d-flex align-center">
+          <v-btn 
+            color="primary" 
+            variant="outlined" 
+            class="mr-3"
+            @click="openWorkspace"
+          >
+            <v-icon class="mr-2">mdi-application</v-icon>
+            Open Workspace
+          </v-btn>
+          <v-btn 
+            color="secondary" 
+            variant="outlined" 
+            class="mr-3"
+            @click="editProject"
+          >
+            <v-icon class="mr-2">mdi-pencil</v-icon>
+            Edit Project
+          </v-btn>
+          <v-btn 
+            color="info" 
+            variant="outlined"
+            @click="shareProject"
+          >
+            <v-icon class="mr-2">mdi-share-variant</v-icon>
+            Share
+          </v-btn>
+        </div>
+      </v-app-bar>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Loading State -->
+        <div v-if="loading" class="loading-state">
+          <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+          <p class="mt-4 text-grey">Loading project details...</p>
+        </div>
+
+        <!-- Error State -->
+        <div v-else-if="error" class="error-state">
+          <v-alert type="error" class="mb-4">
+            {{ error }}
+          </v-alert>
+          <v-btn color="primary" @click="loadProjectData">Retry</v-btn>
+        </div>
+
+        <!-- Content -->
+        <div v-else-if="project">
+          <!-- Project Overview Section -->
+          <v-row class="mb-6">
+            <v-col cols="12" md="8">
+              <v-card elevation="0" class="pa-4 border rounded-lg">
+                <div class="d-flex align-center justify-space-between mb-4">
+                  <h3 class="text-h6 font-weight-medium">Project Overview</h3>
+                  <v-chip 
+                    :color="getProjectTypeColor(project.type)" 
+                    variant="tonal"
+                  >
+                    {{ getProjectTypeLabel(project.type) }}
+                  </v-chip>
+                </div>
+                
+                <p class="text-body-1 text-grey-darken-1 mb-4">
+                  {{ project.description || 'No description provided' }}
+                </p>
+
+                <div class="project-meta">
+                  <div class="meta-item">
+                    <v-icon size="20" color="grey" class="mr-3">mdi-calendar-range</v-icon>
+                    <div>
+                      <div class="meta-label">Timeline</div>
+                      <div class="meta-value">
+                        {{ formatDate(project.startDate) }} - {{ formatDate(project.endDate) }}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="meta-item">
+                    <v-icon size="20" color="grey" class="mr-3">mdi-flag</v-icon>
+                    <div>
+                      <div class="meta-label">Priority</div>
+                      <div class="meta-value">
+                        <v-chip 
+                          :color="getPriorityColor(project.priority)" 
+                          variant="tonal" 
+                          size="small"
+                        >
+                          {{ getPriorityLabel(project.priority) }}
+                        </v-chip>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="meta-item">
+                    <v-icon size="20" color="grey" class="mr-3">mdi-account-tie</v-icon>
+                    <div>
+                      <div class="meta-label">Your Role</div>
+                      <div class="meta-value">
+                        <v-chip 
+                          :color="getRoleColor(userRole?.role)" 
+                          variant="outlined" 
+                          size="small"
+                        >
+                          {{ getUserRoleLabel(userRole?.role) }}
+                        </v-chip>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </v-card>
+            </v-col>
+
+            <v-col cols="12" md="4">
+              <v-card elevation="0" class="pa-4 border rounded-lg">
+                <h4 class="text-h6 font-weight-medium mb-4">Quick Stats</h4>
+                
+                <div class="stats-grid">
+                  <div class="stat-item">
+                    <div class="stat-value">{{ getProjectProgress() }}%</div>
+                    <div class="stat-label">Progress</div>
+                    <v-progress-linear
+                      :model-value="getProjectProgress()"
+                      :color="getProgressColor(getProjectProgress())"
+                      height="6"
+                      rounded
+                    />
+                  </div>
+                  
+                  <div class="stat-item">
+                    <div class="stat-value">{{ tasks.length }}</div>
+                    <div class="stat-label">Total Tasks</div>
+                  </div>
+                  
+                  <div class="stat-item">
+                    <div class="stat-value">{{ teamMembers.length }}</div>
+                    <div class="stat-label">Team Members</div>
+                  </div>
+                  
+                  <div class="stat-item">
+                    <div class="stat-value">{{ getCompletedTasksCount() }}</div>
+                    <div class="stat-label">Completed Tasks</div>
+                  </div>
+                </div>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <!-- Team Members Section -->
+          <v-row class="mb-6">
+            <v-col cols="12">
+              <v-card elevation="0" class="pa-4 border rounded-lg">
+                <div class="d-flex align-center justify-space-between mb-4">
+                  <h3 class="text-h6 font-weight-medium">Team Members</h3>
+                  <v-btn 
+                    color="primary" 
+                    variant="outlined" 
+                    size="small"
+                    @click="inviteTeamMember"
+                  >
+                    <v-icon class="mr-2">mdi-account-plus</v-icon>
+                    Invite Member
+                  </v-btn>
+                </div>
+                
+                <div class="team-grid">
+                  <div 
+                    v-for="member in teamMembers" 
+                    :key="member.id"
+                    class="team-member-card"
+                  >
+                    <div class="member-avatar">
+                      <v-avatar 
+                        :color="getAvatarColor(member.user?.firstName || member.user?.email || '')"
+                        size="48"
+                      >
+                        <v-icon color="white" size="24">mdi-account</v-icon>
+                      </v-avatar>
+                    </div>
+                    <div class="member-info">
+                      <div class="member-name">
+                        {{ member.user?.firstName || member.user?.email || 'Unknown User' }}
+                      </div>
+                      <v-chip 
+                        :color="getRoleColor(member.role)" 
+                        variant="tonal" 
+                        size="small"
+                      >
+                        {{ getUserRoleLabel(member.role) }}
+                      </v-chip>
+                    </div>
+                  </div>
+                </div>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <!-- Recent Tasks Section -->
+          <v-row class="mb-6">
+            <v-col cols="12">
+              <v-card elevation="0" class="pa-4 border rounded-lg">
+                <div class="d-flex align-center justify-space-between mb-4">
+                  <h3 class="text-h6 font-weight-medium">Recent Tasks</h3>
+                  <v-btn 
+                    color="primary" 
+                    variant="outlined" 
+                    size="small"
+                    @click="viewAllTasks"
+                  >
+                    View All Tasks
+                  </v-btn>
+                </div>
+                
+                <div v-if="tasks.length === 0" class="text-center py-8">
+                  <v-icon size="48" color="grey-lighten-1" class="mb-3">mdi-checkbox-blank-circle-outline</v-icon>
+                  <p class="text-grey">No tasks created yet</p>
+                </div>
+                
+                <div v-else class="tasks-list">
+                  <div 
+                    v-for="task in recentTasks" 
+                    :key="task.id"
+                    class="task-item"
+                  >
+                    <div class="task-info">
+                      <div class="task-name">{{ task.name }}</div>
+                      <div class="task-description">{{ task.description || 'No description' }}</div>
+                    </div>
+                    <div class="task-meta">
+                      <v-chip 
+                        :color="getTaskStatusColor(task.status)" 
+                        variant="tonal" 
+                        size="small"
+                      >
+                        {{ getTaskStatusLabel(task.status) }}
+                      </v-chip>
+                      <div class="task-priority">
+                        <v-chip 
+                          :color="getPriorityColor(task.priority)" 
+                          variant="outlined" 
+                          size="x-small"
+                        >
+                          {{ getPriorityLabel(task.priority) }}
+                        </v-chip>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <!-- Project Timeline Section -->
+          <v-row class="mb-6">
+            <v-col cols="12">
+              <v-card elevation="0" class="pa-4 border rounded-lg">
+                <h3 class="text-h6 font-weight-medium mb-4">Project Timeline</h3>
+                
+                <div class="timeline">
+                  <div class="timeline-item">
+                    <div class="timeline-marker start"></div>
+                    <div class="timeline-content">
+                      <div class="timeline-date">{{ formatDate(project.startDate) }}</div>
+                      <div class="timeline-title">Project Started</div>
+                    </div>
+                  </div>
+                  
+                  <div class="timeline-item">
+                    <div class="timeline-marker current"></div>
+                    <div class="timeline-content">
+                      <div class="timeline-date">Current</div>
+                      <div class="timeline-title">In Progress</div>
+                    </div>
+                  </div>
+                  
+                  <div class="timeline-item">
+                    <div class="timeline-marker end"></div>
+                    <div class="timeline-content">
+                      <div class="timeline-date">{{ formatDate(project.endDate) }}</div>
+                      <div class="timeline-title">Project Deadline</div>
+                    </div>
+                  </div>
+                </div>
+              </v-card>
+            </v-col>
+          </v-row>
+        </div>
+      </div>
+    </v-container>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { useUser } from '@clerk/vue';
+import { projectApi, taskApi, userRoleApi, type Project, type Task, type UserRole } from '@/services/projectApi';
+
+const router = useRouter();
+const route = useRoute();
+const { user } = useUser();
+
+// Reactive data
+const project = ref<Project | null>(null);
+const tasks = ref<Task[]>([]);
+const teamMembers = ref<UserRole[]>([]);
+const userRole = ref<UserRole | null>(null);
+const loading = ref(true);
+const error = ref<string | null>(null);
+
+// Computed properties
+const recentTasks = computed(() => {
+  return tasks.value.slice(0, 5); // Show only 5 most recent tasks
+});
+
+// Methods
+const loadProjectData = async () => {
+  if (!user.value?.id || !route.params.id) {
+    loading.value = false;
+    return;
+  }
+
+  try {
+    loading.value = true;
+    error.value = null;
+
+    // Load project details
+    const projectResponse = await projectApi.getProject(route.params.id as string);
+    project.value = projectResponse;
+
+    // Load project tasks
+    const tasksResponse = await taskApi.getProjectTasks(route.params.id as string);
+    tasks.value = tasksResponse.tasks || [];
+
+    // Load team members
+    const teamResponse = await userRoleApi.getProjectUserRoles(route.params.id as string);
+    teamMembers.value = teamResponse.userRoles || [];
+
+    // Get user's role in this project
+    const roleResponse = await userRoleApi.getUserRoleInProject(route.params.id as string, user.value.id);
+    userRole.value = roleResponse;
+
+  } catch (err: any) {
+    console.error('Error loading project data:', err);
+    error.value = `Failed to load project data: ${err.message || 'Unknown error'}`;
+  } finally {
+    loading.value = false;
+  }
+};
+
+// Helper functions
+const getProjectStatus = (project: Project) => {
+  const now = new Date();
+  const start = new Date(project.startDate);
+  const end = new Date(project.endDate);
+  
+  if (now < start) return 'PENDING';
+  if (now >= start && now <= end) return 'ACTIVE';
+  return 'COMPLETED';
+};
+
+const getStatusColor = (status: string) => {
+  const colors: Record<string, string> = {
+    'ACTIVE': 'success',
+    'PENDING': 'warning',
+    'COMPLETED': 'info'
+  };
+  return colors[status] || 'grey';
+};
+
+const getStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    'ACTIVE': 'Active',
+    'PENDING': 'Pending',
+    'COMPLETED': 'Completed'
+  };
+  return labels[status] || status;
+};
+
+const getProjectTypeColor = (type: string) => {
+  const colors: Record<string, string> = {
+    'PROGRESSIVE': 'success',
+    'PARALLEL': 'warning'
+  };
+  return colors[type] || 'grey';
+};
+
+const getProjectTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    'PROGRESSIVE': 'Progressive',
+    'PARALLEL': 'Parallel'
+  };
+  return labels[type] || type;
+};
+
+const getPriorityColor = (priority: string) => {
+  const colors: Record<string, string> = {
+    'LOW': 'success',
+    'MEDIUM': 'warning',
+    'HIGH': 'error',
+    'CRITICAL': 'error'
+  };
+  return colors[priority] || 'grey';
+};
+
+const getPriorityLabel = (priority: string) => {
+  const labels: Record<string, string> = {
+    'LOW': 'Low',
+    'MEDIUM': 'Medium',
+    'HIGH': 'High',
+    'CRITICAL': 'Critical'
+  };
+  return labels[priority] || priority;
+};
+
+const getRoleColor = (role: string) => {
+  const colors: Record<string, string> = {
+    'CLIENT': 'primary',
+    'PROJECT_OWNER': 'primary',
+    'PROJECT_MANAGER': 'success',
+    'EMPLOYEE': 'info'
+  };
+  return colors[role] || 'grey';
+};
+
+const getUserRoleLabel = (role: string) => {
+  const labels: Record<string, string> = {
+    'CLIENT': 'Client',
+    'PROJECT_OWNER': 'Project Owner',
+    'PROJECT_MANAGER': 'Project Manager',
+    'EMPLOYEE': 'Employee'
+  };
+  return labels[role] || role;
+};
+
+const getTaskStatusColor = (status: string) => {
+  const colors: Record<string, string> = {
+    'PENDING': 'warning',
+    'IN_PROGRESS': 'info',
+    'COMPLETED': 'success',
+    'APPROVED': 'success'
+  };
+  return colors[status] || 'grey';
+};
+
+const getTaskStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    'PENDING': 'Pending',
+    'IN_PROGRESS': 'In Progress',
+    'COMPLETED': 'Completed',
+    'APPROVED': 'Approved'
+  };
+  return labels[status] || status;
+};
+
+const getAvatarColor = (name: string) => {
+  const colors = ['red', 'purple', 'blue', 'green', 'orange', 'black'];
+  const index = name.charCodeAt(0) % colors.length;
+  return colors[index];
+};
+
+const getProjectProgress = () => {
+  if (tasks.value.length === 0) return 0;
+  const completedTasks = tasks.value.filter(task => 
+    task.status === 'COMPLETED' || task.status === 'APPROVED'
+  );
+  return Math.round((completedTasks.length / tasks.value.length) * 100);
+};
+
+const getProgressColor = (progress: number) => {
+  if (progress >= 80) return 'success';
+  if (progress >= 50) return 'warning';
+  return 'error';
+};
+
+const getCompletedTasksCount = () => {
+  return tasks.value.filter(task => 
+    task.status === 'COMPLETED' || task.status === 'APPROVED'
+  ).length;
+};
+
+const formatDate = (date: string | Date | null) => {
+  if (!date) return 'N/A';
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
+// Action functions
+const openWorkspace = () => {
+  router.push(`/projects/${route.params.id}/workspace`);
+};
+
+const editProject = () => {
+  // TODO: Implement edit project functionality
+  console.log('Edit project clicked');
+};
+
+const shareProject = () => {
+  // TODO: Implement share project functionality
+  console.log('Share project clicked');
+};
+
+const inviteTeamMember = () => {
+  // TODO: Implement invite team member functionality
+  console.log('Invite team member clicked');
+};
+
+const viewAllTasks = () => {
+  // TODO: Navigate to tasks view or show all tasks modal
+  console.log('View all tasks clicked');
+};
+
+// Lifecycle
+onMounted(() => {
+  if (user.value?.id && route.params.id) {
+    loadProjectData();
+  }
+});
+
+// Watch for user changes and load data when ready
+watch(user, (newUser) => {
+  if (newUser && route.params.id) {
+    loadProjectData();
+  }
+}, { immediate: true });
+
+// Watch for route changes
+watch(() => route.params.id, (newId) => {
+  if (newId && user.value?.id) {
+    loadProjectData();
+  }
+});
+</script>
+
+<style scoped>
+.project-details {
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.main-content {
+  padding: 24px;
+}
+
+.border {
+  border: 1px solid #e2e8f0;
+}
+
+.border-b {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+}
+
+.loading-state .v-progress-circular {
+  margin-bottom: 16px;
+}
+
+.project-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+}
+
+.meta-label {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.meta-value {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.team-member-card {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.member-avatar {
+  margin-right: 12px;
+}
+
+.member-info {
+  flex: 1;
+}
+
+.member-name {
+  font-weight: 500;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.task-info {
+  flex: 1;
+}
+
+.task-name {
+  font-weight: 500;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.task-description {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.task-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.task-priority {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.timeline {
+  position: relative;
+  padding: 20px 0;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.timeline-marker {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 24px;
+  z-index: 1;
+}
+
+.timeline-marker.start {
+  background: #10b981;
+}
+
+.timeline-marker.current {
+  background: #3b82f6;
+}
+
+.timeline-marker.end {
+  background: #ef4444;
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-date {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.timeline-title {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 16px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .task-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .task-meta {
+    align-items: flex-start;
+  }
+}
+</style>
