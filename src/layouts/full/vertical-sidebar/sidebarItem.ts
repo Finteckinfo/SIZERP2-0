@@ -8,7 +8,17 @@ import {
   BugIcon,
   DashboardIcon,
   BrandChromeIcon,
-  HelpIcon
+  HelpIcon,
+  MessageIcon,
+  ChartBarIcon,
+  CalendarIcon,
+  UsersIcon,
+  FileTextIcon,
+  SettingsIcon,
+  ShoppingCartIcon,
+  CreditCardIcon,
+  BuildingIcon,
+  ClipboardIcon
 } from 'vue-tabler-icons';
 
 export interface menu {
@@ -30,80 +40,115 @@ export interface menu {
 const sidebarItem: menu[] = [
   { header: 'Dashboard' },
   {
-    title: 'Default',
+    title: 'Dashboard',
     icon: DashboardIcon,
     to: '/dashboard/default'
   },
-  { divider: true },
+  {divider: true},
   { header: 'Pages' },
   {
-    title: 'Authentication',
+    title: 'Project',
     icon: KeyIcon,
-    to: '/auth',
+    to: '/projects',
     children: [
       {
-        title: 'Login',
+        title: 'Create Project',
         icon: CircleIcon,
-        to: '/login1'
+        to: '/projects/create'
       },
       {
-        title: 'Register',
+        title: 'My Projects',
         icon: CircleIcon,
-        to: '/register'
+        to: '/projects'
       }
     ]
-  },
-  {
-    title: 'Error 404',
-    icon: BugIcon,
-    to: '/error'
   },
   { divider: true },
-  { header: 'Utilities' },
+  { header: 'Communication' },
   {
-    title: 'Typography',
-    icon: TypographyIcon,
-    to: '/utils/typography'
+    title: 'Messages',
+    icon: MessageIcon,
+    to: ''
   },
   {
-    title: 'Shadows',
-    icon: ShadowIcon,
-    to: '/utils/shadows'
+    title: 'Team Chat',
+    icon: UsersIcon,
+    to: ''
+  },
+  { divider: true },
+  { header: 'Analytics & Reports' },
+  {
+    title: 'Analytics',
+    icon: ChartBarIcon,
+    to: ''
   },
   {
-    title: 'Colors',
-    icon: PaletteIcon,
-    to: '/utils/colors'
+    title: 'Reports',
+    icon: FileTextIcon,
+    to: ''
   },
-
   {
-    title: 'Icons',
-    icon: WindmillIcon,
-    to: '/forms/radio',
-    children: [
-      {
-        title: 'Tabler Icons',
-        icon: CircleIcon,
-        to: '/icons/tabler'
-      },
-      {
-        title: 'Material Icons',
-        icon: CircleIcon,
-        to: '/icons/material'
-      }
-    ]
+    title: 'Performance Metrics',
+    icon: ChartBarIcon,
+    to: ''
   },
+  { divider: true },
+  { header: 'Task Management' },
+  {
+    title: 'Task Calendar',
+    icon: CalendarIcon,
+    to: ''
+  },
+  {
+    title: 'Project Tasks',
+    icon: ClipboardIcon,
+    to: ''
+  },
+  {
+    title: 'Kanban Board',
+    icon: BrandChromeIcon,
+    to: ''
+  },
+  { divider: true },
+  { header: 'Business Operations' },
+  {
+    title: 'CRM',
+    icon: UsersIcon,
+    to: ''
+  },
+  {
+    title: 'Inventory',
+    icon: ShoppingCartIcon,
+    to: ''
+  },
+  {
+    title: 'Finance',
+    icon: CreditCardIcon,
+    to: ''
+  },
+  {
+    title: 'HR Management',
+    icon: BuildingIcon,
+    to: ''
+  },
+  { divider: true },
   { divider: true },
   {
     title: 'Sample Page',
     icon: BrandChromeIcon,
     to: '/starter'
   },
+  { divider: true },
+  { header: 'System' },
   {
-    title: 'Documentation',
+    title: 'Settings',
+    icon: SettingsIcon,
+    to: ''
+  },
+  {
+    title: 'Help & Support',
     icon: HelpIcon,
-    to: 'https://codedthemes.gitbook.io/SIZLAND-vuetify/',
-    type: 'external'
+    to: ''
   }
 ];
 
