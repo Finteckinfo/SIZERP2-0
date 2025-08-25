@@ -5,12 +5,12 @@ import { useCustomizerStore } from '@/stores/customizer';
 const customizer = useCustomizerStore();
 
 // themes font Family options
-const fontFamily = ref(['Roboto', 'Poppins', 'Inter']);
+const fontFamily = ref(['Poppins', 'Roboto', 'Inter']);
 // themes font Family options
 
 function clearoptions() {
   customizer.inputBg = false;
-  customizer.fontTheme = 'Roboto';
+  customizer.fontTheme = 'Poppins';
 }
 </script>
 

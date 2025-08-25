@@ -1,54 +1,24 @@
 <script setup lang="ts">
-import Logo from '@/layouts/full/logo/LogoDark.vue';
+import Logo from '@/assets/images/logos/Logo.vue';
 import { SignIn, SignUp } from '@clerk/vue';
 import { useTheme } from '@/composables/useTheme';
 import ThemeToggle from '@/components/shared/ThemeToggle.vue';
 import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 const { isDark } = useTheme();
-const isLoginMode = ref(true);
+const route = useRoute();
 
-const toggleMode = () => {
-  isLoginMode.value = !isLoginMode.value;
-};
+// Determine if we're in login or register mode based on route
+const isLoginMode = ref(route.path === '/login');
 
-// Watch for theme changes and update document body class for Clerk
-watch(isDark, (newValue) => {
-  // Update document body class to trigger Clerk's appearance detection
-  if (newValue) {
-    document.body.classList.add('dark-theme');
-    document.body.classList.remove('light-theme');
-    document.documentElement.classList.add('dark-theme');
-    document.documentElement.classList.remove('light-theme');
-  } else {
-    document.body.classList.add('light-theme');
-    document.body.classList.remove('dark-theme');
-    document.documentElement.classList.add('light-theme');
-    document.documentElement.classList.remove('dark-theme');
-  }
-  
-  // Force Clerk to re-render with new appearance
-  if (window.Clerk) {
-    // Try to directly set Clerk's appearance mode
-    try {
-      if (window.Clerk.setActive && typeof window.Clerk.setActive === 'function') {
-        // This might not work, but worth trying
-        console.log('Attempting to sync Clerk appearance with theme');
-      }
-    } catch (e) {
-      console.log('Clerk appearance sync not available');
-    }
-    
-    // Trigger a small DOM change to make Clerk re-evaluate appearance
-    const clerkContainer = document.querySelector('.clerk-container') as HTMLElement;
-    if (clerkContainer) {
-      clerkContainer.style.opacity = '0.99';
-      setTimeout(() => {
-        clerkContainer.style.opacity = '1';
-      }, 10);
-    }
-  }
-}, { immediate: true });
+// Watch for route changes to switch between forms
+watch(() => route.path, (newPath) => {
+  isLoginMode.value = newPath === '/login';
+});
+
+console.log('🔍 LoginPage mounted, route:', route.path, 'isLoginMode:', isLoginMode.value);
+console.log('🔍 Theme state:', isDark.value);
 </script>
 
 <template>
@@ -92,16 +62,18 @@ watch(isDark, (newValue) => {
             <SignIn 
               v-if="isLoginMode"
               :redirect-url="'/'"
-              :sign-up-url="'#'"
-              :routing="'hash'"
+              :sign-up-url="'/register'"
+              :routing="'path'"
+              path="/login"
             />
             
             <!-- SignUp Component -->
             <SignUp 
               v-else
               :redirect-url="'/'"
-              :sign-in-url="'#'"
-              :routing="'hash'"
+              :sign-in-url="'/login'"
+              :routing="'path'"
+              path="/register"
             />
           </div>
         </div>
@@ -213,7 +185,10 @@ watch(isDark, (newValue) => {
 
 .logo-section {
   margin: 2.5rem 0;
-  text-align: center;
+  text-align: left;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .form-title {

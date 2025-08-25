@@ -1,6 +1,4 @@
-import { ref, onMounted, computed } from 'vue';
-import { PurpleTheme, DarkPurpleTheme } from '@/theme';
-import type { ThemeTypes } from '@/types/themeTypes/ThemeType';
+import { ref, onMounted } from 'vue';
 
 // Theme storage key
 const THEME_STORAGE_KEY = 'siz-erp-theme';
@@ -12,69 +10,87 @@ const getSystemPreference = (): boolean => {
 };
 
 // Get stored theme preference
-const getStoredTheme = (): string | null => {
+const getStoredTheme = (): boolean | null => {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem(THEME_STORAGE_KEY);
+  try {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === null) return null;
+    return JSON.parse(stored);
+  } catch (error) {
+    console.error('Error reading stored theme:', error);
+    return null;
+  }
 };
 
 // Store theme preference
-const storeTheme = (themeName: string): void => {
+const storeTheme = (isDarkMode: boolean): void => {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(THEME_STORAGE_KEY, themeName);
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(isDarkMode));
+  } catch (error) {
+    console.error('Error storing theme:', error);
+  }
 };
 
 export const useTheme = () => {
-  const currentTheme = ref<ThemeTypes>(PurpleTheme);
   const isDark = ref<boolean>(false);
-
-  // Apply theme to document
-  const applyTheme = (theme: ThemeTypes) => {
-    const root = document.documentElement;
-    
-    // Apply color variables
-    Object.entries(theme.colors).forEach(([key, value]) => {
-      if (value) {
-        root.style.setProperty(`--color-${key}`, value);
-      }
-    });
-    
-    // Apply custom variables
-    if (theme.variables) {
-      Object.entries(theme.variables).forEach(([key, value]) => {
-        root.style.setProperty(`--${key}`, String(value));
-      });
-    }
-    
-    // Add theme class to body
-    document.body.className = document.body.className.replace(/theme-\w+/g, '');
-    document.body.classList.add(`theme-${theme.name.toLowerCase()}`);
-  };
 
   // Toggle theme
   const toggle = () => {
-    const newTheme = isDark.value ? PurpleTheme : DarkPurpleTheme;
-    currentTheme.value = newTheme;
-    isDark.value = newTheme.dark;
-    applyTheme(newTheme);
-    storeTheme(newTheme.name);
+    isDark.value = !isDark.value;
+    storeTheme(isDark.value);
+    
+    // Apply theme immediately to DOM
+    if (isDark.value) {
+      document.body.classList.add('dark-theme');
+      document.documentElement.classList.add('dark-theme');
+      document.documentElement.style.setProperty('--page-background', '#101828');
+      document.documentElement.style.setProperty('--text-color', '#ffffff');
+      document.body.style.backgroundColor = '#101828';
+      document.documentElement.style.backgroundColor = '#101828';
+    } else {
+      document.body.classList.remove('dark-theme');
+      document.documentElement.classList.remove('dark-theme');
+      document.documentElement.style.removeProperty('--page-background');
+      document.documentElement.style.removeProperty('--text-color');
+      document.body.style.backgroundColor = '';
+      document.documentElement.style.backgroundColor = '';
+    }
+    
+    // Force a reflow to ensure CSS changes are applied immediately
+    document.body.offsetHeight;
   };
 
   // Set specific theme
-  const setTheme = (themeName: string) => {
-    const newTheme = themeName === 'DarkPurpleTheme' ? DarkPurpleTheme : PurpleTheme;
-    currentTheme.value = newTheme;
-    isDark.value = newTheme.dark;
-    applyTheme(newTheme);
-    storeTheme(newTheme.name);
+  const setTheme = (darkMode: boolean) => {
+    isDark.value = darkMode;
+    storeTheme(isDark.value);
+    
+    // Apply theme immediately to DOM
+    if (isDark.value) {
+      document.body.classList.add('dark-theme');
+      document.documentElement.classList.add('dark-theme');
+      document.documentElement.style.setProperty('--page-background', '#101828');
+      document.documentElement.style.setProperty('--text-color', '#ffffff');
+      document.body.style.backgroundColor = '#101828';
+      document.documentElement.style.backgroundColor = '#101828';
+    } else {
+      document.body.classList.remove('dark-theme');
+      document.documentElement.classList.remove('dark-theme');
+      document.documentElement.style.removeProperty('--page-background');
+      document.documentElement.style.removeProperty('--text-color');
+      document.body.style.backgroundColor = '';
+      document.documentElement.style.backgroundColor = '';
+    }
+    
+    // Force a reflow to ensure CSS changes are applied immediately
+    document.body.offsetHeight;
   };
 
   // Reset to system preference
   const resetToSystem = () => {
     const systemPrefersDark = getSystemPreference();
-    const newTheme = systemPrefersDark ? DarkPurpleTheme : PurpleTheme;
-    currentTheme.value = newTheme;
-    isDark.value = newTheme.dark;
-    applyTheme(newTheme);
+    setTheme(systemPrefersDark);
     localStorage.removeItem(THEME_STORAGE_KEY);
   };
 
@@ -83,48 +99,40 @@ export const useTheme = () => {
     const storedTheme = getStoredTheme();
     const systemPrefersDark = getSystemPreference();
     
-    let initialTheme: ThemeTypes;
+    let initialTheme: boolean;
     
-    if (storedTheme) {
+    if (storedTheme !== null) {
       // Use stored preference
-      initialTheme = storedTheme === 'DarkPurpleTheme' ? DarkPurpleTheme : PurpleTheme;
+      initialTheme = storedTheme;
     } else {
       // Use system preference
-      initialTheme = systemPrefersDark ? DarkPurpleTheme : PurpleTheme;
+      initialTheme = systemPrefersDark;
     }
     
-    currentTheme.value = initialTheme;
-    isDark.value = initialTheme.dark;
-    applyTheme(initialTheme);
-  });
-
-  // Listen for system preference changes
-  onMounted(() => {
-    if (typeof window === 'undefined') return;
+    isDark.value = initialTheme;
     
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      // Only auto-switch if no stored preference
-      if (!getStoredTheme()) {
-        const newTheme = e.matches ? DarkPurpleTheme : PurpleTheme;
-        currentTheme.value = newTheme;
-        isDark.value = newTheme.dark;
-        applyTheme(newTheme);
-      }
-    };
-    
-    mediaQuery.addEventListener('change', handleChange);
-    
-    // Cleanup
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    // Apply theme immediately to DOM
+    if (isDark.value) {
+      document.body.classList.add('dark-theme');
+      document.documentElement.classList.add('dark-theme');
+      document.documentElement.style.setProperty('--page-background', '#101828');
+      document.documentElement.style.setProperty('--text-color', '#ffffff');
+      document.body.style.backgroundColor = '#101828';
+      document.documentElement.style.backgroundColor = '#101828';
+    } else {
+      document.body.classList.remove('dark-theme');
+      document.documentElement.classList.remove('dark-theme');
+      document.documentElement.style.removeProperty('--page-background');
+      document.documentElement.style.removeProperty('--text-color');
+      document.body.style.backgroundColor = '';
+      document.documentElement.style.backgroundColor = '';
+    }
   });
 
   return {
-    theme: currentTheme,
     isDark,
     toggle,
     setTheme,
-    resetToSystem,
-    themeName: computed(() => currentTheme.value.name)
+    resetToSystem
   };
 };
