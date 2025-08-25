@@ -3,9 +3,11 @@
 import { useAuth } from '@clerk/vue';
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useTheme } from '@/composables/useTheme';
 
 const router = useRouter();
 const { isLoaded, isSignedIn } = useAuth();
+const { isDark } = useTheme();
 
 onMounted(() => {
   if (isLoaded.value && !isSignedIn.value) {
@@ -15,7 +17,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="isLoaded && isSignedIn">
+  <div 
+    v-if="isLoaded && isSignedIn"
+    :class="{ 'dark-theme': isDark }"
+  >
     <slot />
   </div>
 </template>

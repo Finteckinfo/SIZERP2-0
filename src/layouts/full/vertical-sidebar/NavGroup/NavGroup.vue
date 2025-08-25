@@ -1,7 +1,27 @@
-<script setup>
-const props = defineProps({ item: Object });
+<script setup lang="ts">
+import { useTheme } from '@/composables/useTheme';
+
+interface NavGroupItem {
+  header?: string;
+}
+
+interface Props {
+  item?: NavGroupItem;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  item: undefined
+});
+
+const { isDark } = useTheme();
 </script>
 
 <template>
-  <v-list-subheader color="darkText" class="smallCap">{{ props.item.header }}</v-list-subheader>
+  <v-list-subheader 
+    color="darkText" 
+    class="smallCap"
+    :class="{ 'dark-theme': isDark }"
+  >
+    {{ props.item?.header }}
+  </v-list-subheader>
 </template>

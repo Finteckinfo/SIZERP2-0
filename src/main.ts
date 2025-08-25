@@ -4,6 +4,7 @@ import App from './App.vue';
 import { router } from './router';
 import vuetify from './plugins/vuetify';
 import '@/scss/style.scss';
+import '@/assets/css/theme.css';
 import { PerfectScrollbarPlugin } from 'vue3-perfect-scrollbar';
 import VueTablerIcons from 'vue-tabler-icons';
 import print from 'vue3-print-nb';

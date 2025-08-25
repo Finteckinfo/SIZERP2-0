@@ -1,12 +1,20 @@
 <script setup lang="ts">
+import { useTheme } from '@/composables/useTheme';
+
 const props = defineProps({
   title: String
 });
+
+const { isDark } = useTheme();
 </script>
 
 // ===============================|| Ui Parent Card||=============================== //
 <template>
-  <v-card variant="flat">
+  <v-card 
+    variant="flat" 
+    :class="{ 'dark-theme': isDark }"
+    class="theme-aware-card"
+  >
     <v-card-item>
       <div class="d-sm-flex align-center justify-space-between">
         <v-card-title>{{ props.title }}</v-card-title>

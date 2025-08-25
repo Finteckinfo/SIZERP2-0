@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useClerk } from "@clerk/vue";
+import { useTheme } from '@/composables/useTheme';
 
 const clerk = useClerk();
 const loading = ref(true);
 const errorMsg = ref("");
+const { isDark } = useTheme();
 
 onMounted(async () => {
   try {
@@ -20,7 +22,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="callback-container">
+  <div :class="{ 'dark-theme': isDark }" class="callback-container">
     <template v-if="loading">
       <v-row justify="center" align="center" class="fill-height">
         <v-col cols="auto" class="text-center">

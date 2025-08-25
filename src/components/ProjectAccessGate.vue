@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="{ 'dark-theme': isDark }">
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-8">
       <v-progress-circular indeterminate color="primary"></v-progress-circular>
@@ -37,7 +37,7 @@
     
     <!-- Project Acceptance Modal -->
     <v-dialog v-model="showAcceptanceModal" persistent max-width="600">
-      <v-card>
+      <v-card :class="{ 'dark-theme': isDark }">
         <v-card-title class="d-flex align-center">
           <v-icon class="mr-2" color="primary">mdi-handshake</v-icon>
           Accept Project Invitation
@@ -142,6 +142,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUser } from '@clerk/vue';
 import { userRoleApi, projectInviteApi, type UserRole, type ProjectInvite } from '@/services/projectApi';
+import { useTheme } from '@/composables/useTheme';
 
 // Props
 interface Props {
@@ -159,6 +160,7 @@ const emit = defineEmits<{
 // Composables
 const router = useRouter();
 const { user } = useUser();
+const { isDark } = useTheme();
 
 // Reactive data
 const loading = ref(true);

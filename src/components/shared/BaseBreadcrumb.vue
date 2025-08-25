@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ChevronRightIcon } from 'vue-tabler-icons';
+import { useTheme } from '@/composables/useTheme';
 
 type Breadcrumb = {
   title: string;
@@ -11,13 +12,19 @@ const props = defineProps({
   breadcrumbs: Array as () => Breadcrumb[],
   icon: String
 });
+
+const { isDark } = useTheme();
 </script>
 
 // ===============================|| Theme Breadcrumb ||=============================== //
 <template>
   <v-row class="page-breadcrumb mb-1 mt-1">
     <v-col cols="12" md="12">
-      <v-card variant="flat" class="px-4 py-3">
+      <v-card 
+        variant="flat" 
+        class="px-4 py-3"
+        :class="{ 'dark-theme': isDark }"
+      >
         <v-row no-gutters class="align-center">
           <v-col md="5">
             <h3 class="text-h3">{{ props.title }}</h3>

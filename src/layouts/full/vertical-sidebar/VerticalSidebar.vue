@@ -7,6 +7,7 @@ import Logo from '../logo/LogoMain.vue';
 import NavCollapse from './NavCollapse/NavCollapse.vue';
 import NavGroup from './NavGroup/NavGroup.vue';
 import NavItem from './NavItem/NavItem.vue';
+import ThemeToggle from '@/components/shared/ThemeToggle.vue';
 
 const customizer = useCustomizerStore();
 const sidebarMenu = shallowRef(sidebarItems);
@@ -37,13 +38,13 @@ const sidebarMenu = shallowRef(sidebarItems);
         <!---Menu Loop -->
         <template v-for="(item, i) in sidebarMenu" :key="i">
           <!---Item Sub Header -->
-          <NavGroup :item="item" v-if="item.header" :key="item.title" />
+          <NavGroup :item="item" v-if="item.header" :key="item.header" />
           <!---Item Divider -->
           <v-divider class="my-3" v-else-if="item.divider" />
           <!---If Has Child -->
-          <NavCollapse class="leftPadding" :item="item" :level="0" v-else-if="item.children" />
+          <NavCollapse class="leftPadding" :item="item" :level="0" v-else-if="item.children && item.title" />
           <!---Single Item-->
-          <NavItem :item="item" v-else class="leftPadding" />
+          <NavItem :item="item" v-else-if="item.title" class="leftPadding" />
           <!---End Single Item-->
         </template>
       </v-list>
@@ -52,6 +53,10 @@ const sidebarMenu = shallowRef(sidebarItems);
       </div>
       <div class="pa-4 text-center">
         <v-chip color="inputBorder" size="small"> v1.3.0 </v-chip>
+      </div>
+      <!-- Theme Toggle -->
+      <div class="pa-4 text-center">
+        <ThemeToggle :show-label="true" size="small" />
       </div>
     </perfect-scrollbar>
   </v-navigation-drawer>

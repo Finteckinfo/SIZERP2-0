@@ -1,9 +1,21 @@
 <template>
-  <div v-if="!walletConnected" class="wallet-guard">
-    <v-container fluid class="fill-height">
+  <div 
+    v-if="!walletConnected" 
+    class="wallet-guard"
+    :class="{ 'dark-theme': isDark }"
+  >
+    <v-container 
+      fluid 
+      class="fill-height"
+      :class="{ 'dark-theme': isDark }"
+    >
       <v-row align="center" justify="center">
         <v-col cols="12" sm="8" md="6" lg="4">
-          <v-card elevation="0" class="text-center pa-8">
+          <v-card 
+            elevation="0" 
+            class="text-center pa-8"
+            :class="{ 'dark-theme': isDark }"
+          >
             <v-avatar size="80" color="warning" class="mb-6">
               <span class="text-h3">🔒</span>
             </v-avatar>
@@ -61,13 +73,21 @@
     </v-container>
   </div>
   
-  <slot v-else />
+  <div 
+    v-else
+    :class="{ 'dark-theme': isDark }"
+  >
+    <slot />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
+import { useTheme } from '@/composables/useTheme';
 import { connectedWallet, isWalletConnected, openWalletModal, getWalletStatus } from '@/stores/walletStore';
 import { activeAccount, clearWalletConnection } from '@/lib/walletManager';
+
+const { isDark } = useTheme();
 
 // Check if wallet is connected
 const walletConnected = computed(() => {

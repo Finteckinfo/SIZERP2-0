@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { FolderIcon, UsersIcon, CheckIcon, ClockIcon } from 'vue-tabler-icons';
+import { useTheme } from '@/composables/useTheme';
 
 interface ProjectStats {
   totalProjects: number;
@@ -18,6 +19,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const { isDark } = useTheme();
 
 const completionRate = computed(() => {
   if (props.stats.totalTasks === 0) return 0;
@@ -31,7 +33,11 @@ const activeRate = computed(() => {
 </script>
 
 <template>
-  <v-card elevation="0" class="bg-lightprimary">
+  <v-card 
+    elevation="0" 
+    class="bg-lightprimary"
+    :class="{ 'dark-theme': isDark }"
+  >
     <v-card-text class="pa-6">
       <div class="d-flex align-center justify-space-between mb-6">
         <h3 class="text-h4 font-weight-medium">Project Overview</h3>

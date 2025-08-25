@@ -1,6 +1,7 @@
 <template>
-  <v-dialog v-model="showModal" persistent max-width="700" scrollable>
-    <v-card>
+  <div :class="{ 'dark-theme': isDark }">
+    <v-dialog v-model="showModal" persistent max-width="700" scrollable>
+    <v-card :class="{ 'dark-theme': isDark }">
       <v-card-title class="d-flex align-center">
         <v-icon class="mr-2" color="primary">mdi-email-outline</v-icon>
         Project Invitations
@@ -130,12 +131,14 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useUser } from '@clerk/vue';
 import { projectInviteApi, type ProjectInvite } from '@/services/projectApi';
+import { useTheme } from '@/composables/useTheme';
 
 // Props
 interface Props {
@@ -152,6 +155,7 @@ const emit = defineEmits<{
 
 // Composables
 const { user } = useUser();
+const { isDark } = useTheme();
 
 // Reactive data
 const loading = ref(false);

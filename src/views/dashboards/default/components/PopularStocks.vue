@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useTheme } from '@/composables/useTheme';
 
 // import icons
 import { ChevronUpIcon, ChevronDownIcon } from 'vue-tabler-icons';
@@ -53,6 +54,8 @@ const lineChart1 = {
   ]
 };
 
+const { isDark } = useTheme();
+
 const revenues = ref([
   {
     name: 'Bajaj Finery',
@@ -83,7 +86,10 @@ const revenues = ref([
 </script>
 
 <template>
-  <v-card elevation="0">
+  <v-card 
+    elevation="0"
+    :class="{ 'dark-theme': isDark }"
+  >
     <v-card variant="outlined">
       <v-card-text>
         <div class="d-flex align-center">

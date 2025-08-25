@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useTheme } from '@/composables/useTheme';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import UiChildCard from '@/components/shared/UiChildCard.vue';
 
+const { isDark } = useTheme();
 const page = ref({ title: 'Typography Page' });
 const headings = ref([
   ['Heading 1', 'text-h1'],
@@ -35,7 +37,8 @@ const breadcrumbs = ref([
 </script>
 
 <template>
-  <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
+  <div :class="{ 'dark-theme': isDark }">
+    <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
   <v-row>
     <v-col cols="12" md="12">
       <UiParentCard title="Basic Typography">
@@ -83,4 +86,5 @@ const breadcrumbs = ref([
       </UiParentCard>
     </v-col>
   </v-row>
+  </div>
 </template>

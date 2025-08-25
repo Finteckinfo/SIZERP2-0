@@ -1,5 +1,9 @@
 <template>
-  <v-card elevation="0" class="project-card-skeleton">
+  <v-card 
+    elevation="0" 
+    class="project-card-skeleton"
+    :class="{ 'dark-theme': isDark }"
+  >
     <v-card-text class="pa-4">
       <div class="d-flex align-center justify-space-between mb-3">
         <!-- Project name skeleton -->
@@ -32,7 +36,9 @@
 </template>
 
 <script setup lang="ts">
-// No props or logic needed for skeleton
+import { useTheme } from '@/composables/useTheme';
+
+const { isDark } = useTheme();
 </script>
 
 <style scoped>

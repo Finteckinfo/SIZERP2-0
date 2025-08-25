@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { CalendarIcon, UsersIcon, FolderIcon } from 'vue-tabler-icons';
 import { type Project, type Task, type UserRole } from '@/services/projectApi';
+import { useTheme } from '@/composables/useTheme';
 
 interface ProjectCardData {
   project: Project;
@@ -17,6 +18,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const { isDark } = useTheme();
 
 // Computed properties
 const projectTypeColor = computed(() => {
@@ -75,6 +77,7 @@ const formatDate = (date: string | Date) => {
   <v-card 
     elevation="2" 
     class="project-card h-100 cursor-pointer transition-all duration-300 hover:elevation-8"
+    :class="{ 'dark-theme': isDark }"
     @click="$router.push(`/projects/${project.id}/workspace`)"
   >
     <v-card-text class="pa-6">
