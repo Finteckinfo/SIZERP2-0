@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { SignUp } from '@clerk/vue';
+import { useClerkTheme } from '@/composables/useClerkTheme';
 import Logo from '@/assets/images/logos/Logo.vue';
+
+const { clerkAppearance } = useClerkTheme();
 </script>
 
 <template>
@@ -13,6 +16,7 @@ import Logo from '@/assets/images/logos/Logo.vue';
       :sign-in-url="'/login'"
       :routing="'path'"
       path="/register"
+      :appearance="clerkAppearance"
     />
   </div>
 </template>

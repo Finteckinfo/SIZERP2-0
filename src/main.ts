@@ -5,11 +5,13 @@ import { router } from './router';
 import vuetify from './plugins/vuetify';
 import '@/scss/style.scss';
 import '@/assets/css/theme.css';
+import '@/index.css';
 import { PerfectScrollbarPlugin } from 'vue3-perfect-scrollbar';
 import VueTablerIcons from 'vue-tabler-icons';
 import print from 'vue3-print-nb';
 import VueApexCharts from 'vue3-apexcharts';
 import { clerkPlugin } from '@clerk/vue';
+import { dark } from '@clerk/themes';
 
 // ---- Node.js polyfills for browser ----
 import { Buffer } from 'buffer';
@@ -40,6 +42,14 @@ const app = createApp(App);
 console.log('[main.ts] Initializing Clerk plugin');
 app.use(clerkPlugin, {
   publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+  appearance: {
+    baseTheme: dark,
+    variables: {
+      colorPrimary: '#39B84C',
+      colorBackground: 'transparent',
+      colorInputBackground: 'transparent',
+    },
+  },
 });
 
 // Add global Clerk readiness check

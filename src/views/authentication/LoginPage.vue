@@ -2,11 +2,13 @@
 import Logo from '@/assets/images/logos/Logo.vue';
 import { SignIn, SignUp } from '@clerk/vue';
 import { useTheme } from '@/composables/useTheme';
+import { useClerkTheme } from '@/composables/useClerkTheme';
 import ThemeToggle from '@/components/shared/ThemeToggle.vue';
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const { isDark } = useTheme();
+const { clerkAppearance } = useClerkTheme();
 const route = useRoute();
 
 // Determine if we're in login or register mode based on route
@@ -65,6 +67,7 @@ console.log('🔍 Theme state:', isDark.value);
               :sign-up-url="'/register'"
               :routing="'path'"
               path="/login"
+              :appearance="clerkAppearance"
             />
             
             <!-- SignUp Component -->
@@ -74,6 +77,7 @@ console.log('🔍 Theme state:', isDark.value);
               :sign-in-url="'/login'"
               :routing="'path'"
               path="/register"
+              :appearance="clerkAppearance"
             />
           </div>
         </div>
@@ -202,14 +206,9 @@ console.log('🔍 Theme state:', isDark.value);
   margin-top: 2rem;
 }
 
-// Dark theme adjustments - only for our custom elements, not Clerk components
+// Dark theme adjustments - only for our custom elements
 .dark-theme {
   background: #101828 !important;
-  
-  // CSS custom properties that Clerk can detect
-  --clerk-appearance-mode: dark;
-  --clerk-primary-color: #2D8A3A;
-  --clerk-background-color: #1F1F23;
   
   .banner-overlay {
     background: rgba(0, 0, 0, 0.7);
@@ -234,13 +233,6 @@ body.dark-theme {
 // Ensure the login page container also has the dark background
 .login-page.dark-theme .login-container {
   background: #101828 !important;
-}
-
-// Light theme properties
-:not(.dark-theme) {
-  --clerk-appearance-mode: light;
-  --clerk-primary-color: #39B84C;
-  --clerk-background-color: #FFFFFF;
 }
 
 // Responsive design

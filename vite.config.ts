@@ -3,6 +3,7 @@ import { fileURLToPath, URL } from 'url';
 import { defineConfig } from 'vite';
 import vuetify from 'vite-plugin-vuetify';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import tailwindcss from '@tailwindcss/vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -17,6 +18,7 @@ export default defineConfig({
     vuetify({
       autoImport: true
     }),
+    tailwindcss(),
     nodePolyfills({
       // Whether to polyfill specific globals
       globals: {
