@@ -52,34 +52,27 @@ async function handleLogout() {
       persistent-placeholder
       placeholder="Search"
       class="my-3"
-      color="primary"
       variant="outlined"
       hide-details
     >
       <template v-slot:prepend-inner>
-        <SearchIcon stroke-width="1.5" size="20" class="text-lightText SearchIcon" />
+        <SearchIcon stroke-width="1.5" size="20" class="SearchIcon" />
       </template>
     </v-text-field>
 
     <v-divider></v-divider>
 
     <perfect-scrollbar style="height: calc(100vh - 300px); max-height: 515px">
-      <div class="bg-lightprimary rounded-md px-5 py-3 my-3">
-        <div class="d-flex align-center justify-space-between">
-          <h5 class="text-h5">Start DND Mode</h5>
-          <v-switch v-model="swt1" color="primary" hide-details></v-switch>
-        </div>
+      <div class="rounded-md px-5 py-3 my-3" :style="{ background: 'var(--erp-surface)', color: 'var(--erp-text)' }">
         <div class="d-flex align-center justify-space-between">
           <h5 class="text-h5">Allow Notifications</h5>
-          <v-switch v-model="swt2" color="primary" hide-details></v-switch>
+          <v-switch v-model="swt2" hide-details inset :style="{ '--v-theme-primary': 'var(--erp-accent-indigo)' }"></v-switch>
         </div>
       </div>
 
-      <v-divider></v-divider>
-
       <!-- Wallet Connect button -->
       <div class="my-4">
-        <v-btn color="primary" block class="rounded-lg" @click="handleOpenWallet()">
+        <v-btn block class="rounded-lg" :style="{ background: 'var(--erp-accent-indigo)', color: '#ffffff' }" @click="handleOpenWallet()">
           {{ walletAddress }}
         </v-btn>
 
@@ -91,24 +84,24 @@ async function handleLogout() {
       <v-divider></v-divider>
 
       <v-list class="mt-3">
-        <v-list-item color="secondary" rounded="md">
+        <v-list-item rounded="md" class="erp-hover" :style="{ background: 'transparent', color: 'var(--erp-text)' }">
           <template v-slot:prepend>
             <SettingsIcon size="20" class="mr-2" />
           </template>
           <v-list-item-title class="text-subtitle-2"> Account Settings </v-list-item-title>
         </v-list-item>
 
-        <v-list-item color="secondary" rounded="md">
+        <v-list-item rounded="md" class="erp-hover" :style="{ background: 'transparent', color: 'var(--erp-text)' }">
           <template v-slot:prepend>
             <UserIcon size="20" class="mr-2" />
           </template>
           <v-list-item-title class="text-subtitle-2"> Social Profile </v-list-item-title>
           <template v-slot:append>
-            <v-chip color="warning" class="text-white" text="02" variant="flat" size="small" />
+            <v-chip class="text-white" text="02" variant="flat" size="small" :style="{ background: 'var(--erp-accent-indigo)' }" />
           </template>
         </v-list-item>
 
-        <v-list-item @click="handleLogout()" color="secondary" rounded="md">
+        <v-list-item @click="handleLogout()" rounded="md" class="erp-hover" :style="{ background: 'transparent', color: 'var(--erp-text)' }">
           <template v-slot:prepend>
             <LogoutIcon size="20" class="mr-2" />
           </template>

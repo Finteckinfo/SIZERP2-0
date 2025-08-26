@@ -181,7 +181,8 @@
   border-radius: 10px !important;
 }
 .erp-item--active {
-  background-color: var(--erp-surface) !important;
+  background-color: var(--erp-accent-green) !important;
+  color: #ffffff !important;
   outline: 2px solid color-mix(in srgb, var(--erp-accent-indigo) 22%, transparent) !important;
 }
 .leftSidebar .v-list-item__overlay { display: none !important; }
@@ -234,16 +235,17 @@ html body.dark-theme .v-navigation-drawer.leftSidebar .scrollnavbar {
 
 /* Override any Vuetify theme colors */
 .leftSidebar .v-list-item:hover {
-  background-color: var(--erp-surface) !important;
-  color: var(--erp-text) !important;
+  background-color: var(--erp-accent-green) !important;
+  color: #ffffff !important;
 }
 .leftSidebar .v-list-item--active {
-  background-color: var(--erp-surface) !important;
-  color: var(--erp-text) !important;
+  background-color: var(--erp-accent-green) !important;
+  color: #ffffff !important;
 }
 .leftSidebar .v-list-group > .v-list-item--active,
 .leftSidebar .v-list-group > .v-list-item:hover {
-  background-color: var(--erp-surface) !important;
+  background-color: var(--erp-accent-green) !important;
+  color: #ffffff !important;
 }
 
 /* Dropdown surfaces use sidebar bg for both modes */
