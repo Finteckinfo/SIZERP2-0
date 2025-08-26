@@ -44,7 +44,7 @@ const quickActions = [
 </script>
 
 <template>
-  <v-card elevation="0" class="bg-primary overflow-hidden">
+  <v-card elevation="0" class="overflow-hidden" :style="{ background: '#39b84c' }">
     <v-card-text class="pa-6">
       <div class="d-flex align-center justify-space-between mb-6">
         <div>
@@ -67,6 +67,7 @@ const quickActions = [
           <v-card 
             elevation="0" 
             class="action-card h-100 cursor-pointer transition-all duration-300"
+            :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }"
             @click="action.action"
           >
             <v-card-text class="pa-4 text-center">
@@ -99,14 +100,12 @@ const quickActions = [
 
 <style scoped>
 .action-card {
-  background: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(var(--v-border-color), 0.1);
 }
 
 .action-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  background: white;
 }
 
 .cursor-pointer {

@@ -126,6 +126,7 @@
   --erp-sidebar-bg: #ffffff;
   --erp-page-bg: #f3f4f6;
   --erp-surface: #f3f4f6;
+  --erp-card-bg: #ffffff;
   --erp-accent-green: #6ec207;
   --erp-accent-indigo: #615fff;
   --erp-text: #101828;
@@ -138,6 +139,7 @@
   --erp-sidebar-bg: #1e2939; /* sidenav + dropdowns */
   --erp-page-bg: #101828;
   --erp-surface: #1e2939;
+  --erp-card-bg: #101828;
   --erp-accent-green: #6ec207;
   --erp-accent-indigo: #615fff;
   --erp-text: #ffffff;

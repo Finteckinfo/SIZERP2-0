@@ -1178,7 +1178,7 @@ onMounted(() => {
 }
 
 .welcome-header {
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-secondary)) 100%);
+  background: linear-gradient(135deg, #6ec207 0%, #39b84c 100%);
   color: white;
   padding: 32px;
   border-radius: 16px;
