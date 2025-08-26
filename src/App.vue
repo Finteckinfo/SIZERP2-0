@@ -1,5 +1,5 @@
 <template>
-  <div :class="{ 'dark-theme': isDark }">
+  <div :class="{ 'dark-theme': isDark }" :style="{ background: 'var(--erp-header-bg)' }">
     <RouterView></RouterView>
   </div>
 </template>

@@ -12,6 +12,7 @@ const customizer = useCustomizerStore();
   <v-locale-provider>
     <v-app
       :class="[customizer.fontTheme, customizer.mini_sidebar ? 'mini-sidebar' : '', customizer.inputBg ? 'inputWithbg' : '']"
+      :style="{ backgroundColor: 'var(--erp-header-bg)' }"
     >
       <Customizer />
       <VerticalSidebarVue />
@@ -42,11 +43,10 @@ const customizer = useCustomizerStore();
             </v-btn>
           </div>
         </v-container>
-        <v-container fluid class="pt-0">
+       
           <div>
             <FooterPanel />
           </div>
-        </v-container>
       </v-main>
     </v-app>
   </v-locale-provider>
