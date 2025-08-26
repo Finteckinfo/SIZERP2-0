@@ -34,11 +34,12 @@ const { isDark } = useTheme();
     :to="item?.type === 'external' ? '' : item?.to"
     :href="item?.type === 'external' ? item?.to : ''"
     rounded
-    class="mb-1"
-    color="secondary"
+    class="mb-1 erp-hover erp-item"
+    active-class="erp-item--active"
     :disabled="item?.disabled"
     :target="item?.type === 'external' ? '_blank' : ''"
     :class="{ 'dark-theme': isDark }"
+    :style="{ color: 'var(--erp-text)' }"
   >
     <!---If icon-->
     <template v-slot:prepend>

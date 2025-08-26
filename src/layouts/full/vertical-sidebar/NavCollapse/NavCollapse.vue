@@ -38,7 +38,7 @@ const { isDark } = useTheme();
     <!---Dropdown  -->
     <!-- ---------------------------------------------- -->
     <template v-slot:activator="{ props: activatorProps }">
-      <v-list-item v-bind="activatorProps" :value="item?.title" rounded class="mb-1" color="secondary">
+      <v-list-item v-bind="activatorProps" :value="item?.title" rounded class="mb-1 erp-hover" :style="{ color: 'var(--erp-text)' }">
         <!---Icon  -->
         <template v-slot:prepend>
           <Icon :item="item?.icon" :level="level" />

@@ -35,11 +35,10 @@ function searchbox() {
 </script>
 
 <template>
-  <v-app-bar elevation="0" height="80">
+  <v-app-bar elevation="0" height="80" class="erp-header">
     <!-- Sidebar toggle button for large screens (mini sidebar) -->
     <v-btn
-      class="d-none d-lg-block text-secondary"
-      color="lightsecondary"
+      class="d-none d-lg-block erp-icon-btn erp-hover"
       icon
       rounded="sm"
       variant="flat"
@@ -51,8 +50,7 @@ function searchbox() {
 
     <!-- Sidebar toggle button for small screens (sidebar drawer) -->
     <v-btn
-      class="d-lg-none text-secondary ms-3"
-      color="lightsecondary"
+      class="d-lg-none erp-icon-btn ms-3 erp-hover"
       icon
       rounded="sm"
       variant="flat"
@@ -64,8 +62,7 @@ function searchbox() {
 
     <!-- search mobile -->
     <v-btn
-      class="d-lg-none text-secondary ml-3"
-      color="lightsecondary"
+      class="d-lg-none erp-icon-btn ml-3 erp-hover"
       icon
       rounded="sm"
       variant="flat"
@@ -75,14 +72,14 @@ function searchbox() {
       <SearchIcon size="17" stroke-width="1.5" />
     </v-btn>
 
-    <v-sheet v-if="showSearch" class="search-sheet v-col-12">
+    <v-sheet v-if="showSearch" class="search-sheet v-col-12 erp-dropdown-surface">
       <Searchbar :closesearch="searchbox" />
     </v-sheet>
 
     <!-- ---------------------------------------------- -->
     <!-- Search part -->
     <!-- ---------------------------------------------- -->
-    <v-sheet class="mx-3 v-col-3 v-col-xl-2 v-col-lg-4 d-none d-lg-block">
+    <v-sheet class="mx-3 v-col-3 v-col-xl-2 v-col-lg-4 d-none d-lg-block" :style="{ background: 'transparent' }">
       <Searchbar />
     </v-sheet>
 
@@ -98,11 +95,11 @@ function searchbox() {
     <!-- ---------------------------------------------- -->
     <v-menu :close-on-content-click="false">
       <template v-slot:activator="{ props }">
-        <v-btn icon class="text-secondary mx-3" color="lightsecondary" rounded="sm" size="small" variant="flat" v-bind="props">
+        <v-btn icon class="mx-3 erp-icon-btn erp-hover" rounded="sm" size="small" variant="flat" v-bind="props">
           <BellIcon stroke-width="1.5" size="22" />
         </v-btn>
       </template>
-      <v-sheet rounded="md" width="330" elevation="12">
+      <v-sheet rounded="md" width="330" elevation="12" class="erp-dropdown-surface">
         <NotificationDD />
       </v-sheet>
     </v-menu>
@@ -112,7 +109,7 @@ function searchbox() {
     <!-- ---------------------------------------------- -->
     <v-menu :close-on-content-click="false">
       <template v-slot:activator="{ props }">
-        <v-btn class="profileBtn text-primary" color="lightprimary" variant="flat" rounded="pill" v-bind="props">
+        <v-btn class="profileBtn" :style="{ background: 'var(--erp-surface)', color: 'var(--erp-text)' }" variant="flat" rounded="pill" v-bind="props">
           <v-avatar size="30" class="mr-2 py-2">
             <img 
               :src="userProfileImage" 
@@ -126,7 +123,7 @@ function searchbox() {
           <SettingsIcon stroke-width="1.5" />
         </v-btn>
       </template>
-      <v-sheet rounded="md" width="330" elevation="12">
+      <v-sheet rounded="md" width="330" elevation="12" class="erp-dropdown-surface">
         <ProfileDD />
       </v-sheet>
     </v-menu>

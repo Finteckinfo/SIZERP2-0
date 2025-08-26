@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue';
+import { shallowRef, onMounted } from 'vue';
 import { useCustomizerStore } from '../../../stores/customizer';
 import sidebarItems from './sidebarItem';
 
@@ -11,6 +11,13 @@ import ThemeToggle from '@/components/shared/ThemeToggle.vue';
 
 const customizer = useCustomizerStore();
 const sidebarMenu = shallowRef(sidebarItems);
+
+// Debug: Log CSS variables
+onMounted(() => {
+  console.log('Sidebar CSS Variables:');
+  console.log('--erp-sidebar-bg:', getComputedStyle(document.documentElement).getPropertyValue('--erp-sidebar-bg'));
+  console.log('--erp-text:', getComputedStyle(document.documentElement).getPropertyValue('--erp-text'));
+});
 </script>
 
 <template>
@@ -22,6 +29,10 @@ const sidebarMenu = shallowRef(sidebarItems);
     mobile-breakpoint="lg"
     app
     class="leftSidebar"
+    :style="{ 
+      backgroundColor: 'var(--erp-sidebar-bg)',
+      color: 'var(--erp-text)'
+    }"
     :rail="customizer.mini_sidebar"
     expand-on-hover
   >
@@ -34,13 +45,13 @@ const sidebarMenu = shallowRef(sidebarItems);
     <!---Navigation -->
     <!-- ---------------------------------------------- -->
     <perfect-scrollbar class="scrollnavbar">
-      <v-list class="pa-4">
+      <v-list class="pa-4" :style="{ background: 'transparent' }">
         <!---Menu Loop -->
         <template v-for="(item, i) in sidebarMenu" :key="i">
           <!---Item Sub Header -->
           <NavGroup :item="item" v-if="item.header" :key="item.header" />
           <!---Item Divider -->
-          <v-divider class="my-3" v-else-if="item.divider" />
+          <v-divider class="my-3" v-else-if="item.divider" :style="{ borderColor: 'var(--erp-border)' }" />
           <!---If Has Child -->
           <NavCollapse class="leftPadding" :item="item" :level="0" v-else-if="item.children && item.title" />
           <!---Single Item-->
@@ -52,7 +63,7 @@ const sidebarMenu = shallowRef(sidebarItems);
         <!-- <ExtraBox /> -->
       </div>
       <div class="pa-4 text-center">
-        <v-chip color="inputBorder" size="small"> v1.3.0 </v-chip>
+        <v-chip size="small" :style="{ backgroundColor: 'var(--erp-surface)', color: 'var(--erp-text)' }"> v1.3.0 </v-chip>
       </div>
       <!-- Theme Toggle -->
       <div class="pa-4 text-center">
