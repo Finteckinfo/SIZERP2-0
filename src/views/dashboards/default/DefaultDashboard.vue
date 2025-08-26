@@ -763,13 +763,6 @@ onMounted(() => {
       </p>
     </div>
 
-    <!-- Quick Actions Section - Always visible (static content) -->
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <QuickActions />
-      </v-col>
-    </v-row>
-
     <!-- Project Overview Stats - Progressive loading -->
     <v-row class="mb-6">
       <v-col cols="12">
@@ -1165,7 +1158,12 @@ onMounted(() => {
         </v-card>
     </v-col>
   </v-row>
-  
+  <!-- Quick Actions Section - Always visible (static content) -->
+  <v-row class="mb-6">
+      <v-col cols="12">
+        <QuickActions />
+      </v-col>
+    </v-row>
   <!-- Onboarding Modal for Project Invitations -->
   <OnboardingModal
     v-model="showOnboardingModal"
