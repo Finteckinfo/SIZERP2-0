@@ -1185,6 +1185,29 @@ onMounted(() => {
   margin-bottom: 32px;
 }
 
+/* Dashboard-wide defaults for cards, lists, dividers */
+.erp-dashboard :deep(.v-card) {
+  background-color: var(--erp-card-bg) !important;
+  color: var(--erp-text) !important;
+  border: 1px solid var(--erp-border) !important;
+}
+/* Do not affect special header/quick actions */
+.erp-dashboard :deep(.welcome-header),
+.erp-dashboard :deep(.qa-root) {
+  border: none !important;
+}
+
+.erp-dashboard :deep(.v-divider) {
+  border-color: var(--erp-border) !important;
+}
+
+.erp-dashboard :deep(.v-list-item) {
+  color: var(--erp-text) !important;
+}
+.erp-dashboard :deep(.v-list-item:hover) {
+  background: var(--erp-surface) !important;
+}
+
 .skeleton-text,
 .skeleton-chip {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);

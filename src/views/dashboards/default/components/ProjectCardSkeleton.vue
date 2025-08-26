@@ -3,6 +3,7 @@
     elevation="0" 
     class="project-card-skeleton"
     :class="{ 'dark-theme': isDark }"
+    :style="{ background: 'var(--erp-card-bg)', border: '1px solid var(--erp-border)' }"
   >
     <v-card-text class="pa-4">
       <div class="d-flex align-center justify-space-between mb-3">
@@ -43,7 +44,6 @@ const { isDark } = useTheme();
 
 <style scoped>
 .project-card-skeleton {
-  border: 1px solid rgb(var(--v-border-color));
   transition: all 0.3s ease;
 }
 

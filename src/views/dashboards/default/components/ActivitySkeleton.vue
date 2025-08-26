@@ -30,14 +30,15 @@
 
 <style scoped>
 .activity-skeleton {
-  border: 1px solid rgb(var(--v-border-color));
+  background: var(--erp-card-bg) !important;
+  border: 1px solid var(--erp-border) !important;
 }
 
 .activity-item-skeleton {
   padding: 12px;
-  border: 1px solid rgb(var(--v-border-color));
+  border: 1px solid var(--erp-border) !important;
   border-radius: 8px;
-  background: rgb(var(--v-theme-surface));
+  background: var(--erp-surface) !important;
 }
 
 .skeleton-text,
