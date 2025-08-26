@@ -1,45 +1,28 @@
 <script setup lang="ts">
 import { PlusIcon, FolderIcon, UsersIcon, CalendarIcon, ChartBarIcon } from 'vue-tabler-icons';
 import { useRouter } from 'vue-router';
+import { computed } from 'vue';
+import { useTheme } from '@/composables/useTheme';
 
 const router = useRouter();
+const { isDark } = useTheme();
+
+const headerColor = computed(() => (isDark.value ? '#ffffff' : '#101828'));
+const subHeaderColor = computed(() => (isDark.value ? 'rgba(255,255,255,0.85)' : 'rgba(16,24,40,0.8)'));
+const iconColor = computed(() => (isDark.value ? '#ffffff' : '#101828'));
+const iconAvatarStyle = computed(() =>
+  isDark.value
+    ? { background: 'transparent', border: '1px solid rgba(255,255,255,0.35)' }
+    : { background: 'transparent', border: '1px solid rgba(16,24,40,0.2)' }
+);
+const dividerColor = computed(() => (isDark.value ? 'rgba(255,255,255,0.35)' : 'rgba(16,24,40,0.15)'));
 
 const quickActions = [
-  { 
-    title: 'Create Project', 
-    description: 'Start a new project',
-    icon: PlusIcon, 
-    color: 'primary', 
-    action: () => router.push('/projects/create')
-  },
-  { 
-    title: 'My Projects', 
-    description: 'View all your projects',
-    icon: FolderIcon, 
-    color: 'success', 
-    action: () => router.push('/projects')
-  },
-  { 
-    title: 'Team Members', 
-    description: 'Manage team and roles',
-    icon: UsersIcon, 
-    color: 'info', 
-    action: () => console.log('Team Members clicked') 
-  },
-  { 
-    title: 'Task Calendar', 
-    description: 'View task timeline',
-    icon: CalendarIcon, 
-    color: 'warning', 
-    action: () => console.log('Task Calendar clicked') 
-  },
-  { 
-    title: 'Analytics', 
-    description: 'Project performance',
-    icon: ChartBarIcon, 
-    color: 'secondary', 
-    action: () => console.log('Analytics clicked') 
-  }
+  { title: 'Create Project', description: 'Start a new project', icon: PlusIcon, color: 'primary', action: () => router.push('/projects/create') },
+  { title: 'My Projects', description: 'View all your projects', icon: FolderIcon, color: 'success', action: () => router.push('/projects') },
+  { title: 'Team Members', description: 'Manage team and roles', icon: UsersIcon, color: 'info', action: () => console.log('Team Members clicked') },
+  { title: 'Task Calendar', description: 'View task timeline', icon: CalendarIcon, color: 'warning', action: () => console.log('Task Calendar clicked') },
+  { title: 'Analytics', description: 'Project performance', icon: ChartBarIcon, color: 'secondary', action: () => console.log('Analytics clicked') }
 ];
 </script>
 
@@ -48,15 +31,15 @@ const quickActions = [
     <v-card-text class="pa-6">
       <div class="d-flex align-center justify-space-between mb-3">
         <div>
-          <h3 class="text-h4 font-weight-medium text-white mb-2">Quick Actions</h3>
-          <p class="text-body-1 text-white text-opacity-80">Access your most used features</p>
+          <h3 class="text-h4 font-weight-medium mb-2" :style="{ color: headerColor }">Quick Actions</h3>
+          <p class="text-body-1" :style="{ color: subHeaderColor }">Access your most used features</p>
         </div>
-        <v-avatar size="60" color="white" class="text-primary">
-          <PlusIcon size="30" />
+        <v-avatar size="60" :style="iconAvatarStyle">
+          <PlusIcon size="30" :color="iconColor" />
         </v-avatar>
       </div>
 
-      <v-divider class="qa-divider mb-6"></v-divider>
+      <v-divider class="mb-6" :style="{ borderColor: dividerColor }"></v-divider>
 
       <v-row>
         <v-col 
@@ -108,11 +91,6 @@ const quickActions = [
 .action-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.qa-divider {
-  border-color: rgba(255, 255, 255, 0.35) !important;
-  opacity: 0.7;
 }
 
 .cursor-pointer {
