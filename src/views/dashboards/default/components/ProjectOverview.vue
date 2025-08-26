@@ -35,13 +35,13 @@ const activeRate = computed(() => {
 <template>
   <v-card 
     elevation="0" 
-    class="bg-lightprimary"
     :class="{ 'dark-theme': isDark }"
+    :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)', border: '1px solid var(--erp-border)' }"
   >
     <v-card-text class="pa-6">
       <div class="d-flex align-center justify-space-between mb-6">
         <h3 class="text-h4 font-weight-medium">Project Overview</h3>
-        <v-avatar size="50" color="primary" class="text-white">
+        <v-avatar size="50" :style="{ background: 'var(--erp-accent-indigo)', color: '#fff' }">
           <FolderIcon size="24" />
         </v-avatar>
       </div>
@@ -49,19 +49,19 @@ const activeRate = computed(() => {
       <v-row>
         <!-- Total Projects -->
         <v-col cols="12" sm="6" lg="3">
-          <div class="text-center pa-4 bg-white rounded-lg">
+          <div class="text-center pa-4 rounded-lg" :style="{ background: 'var(--erp-card-bg)', border: '1px solid var(--erp-border)' }">
             <div class="d-flex align-center justify-center mb-3">
-              <v-avatar size="40" color="primary" class="text-white">
+              <v-avatar size="40" :style="{ background: 'var(--erp-accent-indigo)', color: '#fff' }">
                 <FolderIcon size="20" />
               </v-avatar>
             </div>
-            <h4 class="text-h3 font-weight-bold text-primary mb-1">{{ stats.totalProjects }}</h4>
+            <h4 class="text-h3 font-weight-bold mb-1" :style="{ color: 'var(--erp-accent-indigo)' }">{{ stats.totalProjects }}</h4>
             <p class="text-body-2 text-medium-emphasis">Total Projects</p>
             <v-chip 
               size="small" 
-              color="success" 
               variant="tonal"
               class="mt-2"
+              :style="{ background: 'color-mix(in srgb, var(--erp-accent-green) 20%, transparent)', color: 'var(--erp-text)' }"
             >
               {{ activeRate }}% Active
             </v-chip>
@@ -70,19 +70,19 @@ const activeRate = computed(() => {
 
         <!-- Active Projects -->
         <v-col cols="12" sm="6" lg="3">
-          <div class="text-center pa-4 bg-white rounded-lg">
+          <div class="text-center pa-4 rounded-lg" :style="{ background: 'var(--erp-card-bg)', border: '1px solid var(--erp-border)' }">
             <div class="d-flex align-center justify-center mb-3">
-              <v-avatar size="40" color="success" class="text-white">
+              <v-avatar size="40" :style="{ background: 'var(--erp-accent-green)', color: '#fff' }">
                 <CheckIcon size="20" />
               </v-avatar>
             </div>
-            <h4 class="text-h3 font-weight-bold text-success mb-1">{{ stats.activeProjects }}</h4>
+            <h4 class="text-h3 font-weight-bold mb-1" :style="{ color: 'var(--erp-accent-green)' }">{{ stats.activeProjects }}</h4>
             <p class="text-body-2 text-medium-emphasis">Active Projects</p>
             <v-chip 
               size="small" 
-              color="info" 
               variant="tonal"
               class="mt-2"
+              :style="{ background: 'color-mix(in srgb, var(--erp-accent-indigo) 20%, transparent)', color: 'var(--erp-text)' }"
             >
               {{ stats.completedProjects }} Completed
             </v-chip>
@@ -91,19 +91,19 @@ const activeRate = computed(() => {
 
         <!-- Total Tasks -->
         <v-col cols="12" sm="6" lg="3">
-          <div class="text-center pa-4 bg-white rounded-lg">
+          <div class="text-center pa-4 rounded-lg" :style="{ background: 'var(--erp-card-bg)', border: '1px solid var(--erp-border)' }">
             <div class="d-flex align-center justify-center mb-3">
-              <v-avatar size="40" color="warning" class="text-white">
+              <v-avatar size="40" :style="{ background: 'var(--erp-accent-indigo)', color: '#fff' }">
                 <ClockIcon size="20" />
               </v-avatar>
             </div>
-            <h4 class="text-h3 font-weight-bold text-warning mb-1">{{ stats.totalTasks }}</h4>
+            <h4 class="text-h3 font-weight-bold mb-1" :style="{ color: 'var(--erp-accent-indigo)' }">{{ stats.totalTasks }}</h4>
             <p class="text-body-2 text-medium-emphasis">Total Tasks</p>
             <v-chip 
               size="small" 
-              color="success" 
               variant="tonal"
               class="mt-2"
+              :style="{ background: 'color-mix(in srgb, var(--erp-accent-green) 20%, transparent)', color: 'var(--erp-text)' }"
             >
               {{ completionRate }}% Done
             </v-chip>
@@ -112,19 +112,19 @@ const activeRate = computed(() => {
 
         <!-- Team Members -->
         <v-col cols="12" sm="6" lg="3">
-          <div class="text-center pa-4 bg-white rounded-lg">
+          <div class="text-center pa-4 rounded-lg" :style="{ background: 'var(--erp-card-bg)', border: '1px solid var(--erp-border)' }">
             <div class="d-flex align-center justify-center mb-3">
-              <v-avatar size="40" color="info" class="text-white">
+              <v-avatar size="40" :style="{ background: 'var(--erp-accent-green)', color: '#fff' }">
                 <UsersIcon size="20" />
               </v-avatar>
             </div>
-            <h4 class="text-h3 font-weight-bold text-info mb-1">{{ stats.teamMembers }}</h4>
+            <h4 class="text-h3 font-weight-bold mb-1" :style="{ color: 'var(--erp-accent-green)' }">{{ stats.teamMembers }}</h4>
             <p class="text-body-2 text-medium-emphasis">Team Members</p>
             <v-chip 
               size="small" 
-              color="secondary" 
               variant="tonal"
               class="mt-2"
+              :style="{ background: 'color-mix(in srgb, var(--erp-accent-indigo) 20%, transparent)', color: 'var(--erp-text)' }"
             >
               {{ stats.totalDepartments }} Depts
             </v-chip>
@@ -133,7 +133,7 @@ const activeRate = computed(() => {
       </v-row>
 
       <!-- Progress Summary -->
-      <div class="mt-6 pa-4 bg-white rounded-lg">
+      <div class="mt-6 pa-4 rounded-lg" :style="{ background: 'var(--erp-card-bg)', border: '1px solid var(--erp-border)' }">
         <h6 class="text-h6 font-weight-medium mb-3">Overall Progress</h6>
         <div class="d-flex align-center justify-space-between mb-2">
           <span class="text-body-2">Task Completion</span>
@@ -141,9 +141,9 @@ const activeRate = computed(() => {
         </div>
         <v-progress-linear
           :model-value="completionRate"
-          color="success"
           height="8"
           rounded
+          :style="{ '--v-theme-primary': 'var(--erp-accent-green)' }"
           class="mb-3"
         ></v-progress-linear>
         
@@ -153,9 +153,9 @@ const activeRate = computed(() => {
         </div>
         <v-progress-linear
           :model-value="activeRate"
-          color="primary"
           height="8"
           rounded
+          :style="{ '--v-theme-primary': 'var(--erp-accent-indigo)' }"
         ></v-progress-linear>
       </div>
     </v-card-text>

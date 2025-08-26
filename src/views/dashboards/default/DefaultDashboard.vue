@@ -763,6 +763,13 @@ onMounted(() => {
       </p>
     </div>
 
+    <!-- Quick Actions Section - Always visible (static content) -->
+    <v-row class="mb-6">
+      <v-col cols="12">
+        <QuickActions />
+      </v-col>
+    </v-row>
+
     <!-- Project Overview Stats - Progressive loading -->
     <v-row class="mb-6">
       <v-col cols="12">
@@ -869,26 +876,26 @@ onMounted(() => {
     <!-- Project Invites Section -->
     <v-row class="mb-6">
       <v-col cols="12">
-        <v-card elevation="0" class="invites-section">
+        <v-card elevation="0" class="invites-section" :style="{ background: 'var(--erp-card-bg)', border: '1px solid var(--erp-border)', color: 'var(--erp-text)' }">
           <v-card-title class="d-flex align-center pa-4 pb-2">
-            <v-icon class="mr-3" color="primary" size="24">mdi-email-outline</v-icon>
+            <v-icon class="mr-3" size="24" :style="{ color: 'var(--erp-accent-indigo)' }">mdi-email-outline</v-icon>
             <span class="text-h5 font-weight-medium">Project Invitations</span>
             <v-chip 
               v-if="pendingInvites.length > 0" 
-              color="warning" 
               size="small" 
               class="ml-3"
+              :style="{ background: 'color-mix(in srgb, var(--erp-accent-green) 20%, transparent)', color: 'var(--erp-text)' }"
             >
               {{ pendingInvites.length }} Pending
             </v-chip>
             <v-spacer></v-spacer>
             <v-btn 
               v-if="pendingInvites.length > 0"
-              color="primary" 
               variant="tonal" 
               size="small"
               @click="refreshInvites"
               :loading="invitesLoading"
+              :style="{ background: 'color-mix(in srgb, var(--erp-accent-indigo) 20%, transparent)', color: 'var(--erp-text)' }"
             >
               <v-icon>mdi-refresh</v-icon>
               Refresh
@@ -898,25 +905,25 @@ onMounted(() => {
           <v-card-text class="pa-4 pt-0">
             <!-- Loading State -->
             <div v-if="invitesLoading" class="text-center pa-6">
-              <v-progress-circular indeterminate color="primary" size="32"></v-progress-circular>
+              <v-progress-circular indeterminate size="32" :style="{ '--v-theme-primary': 'var(--erp-accent-indigo)' }"></v-progress-circular>
               <p class="text-body-2 text-medium-emphasis mt-3">Loading invitations...</p>
             </div>
 
             <!-- No Invites State -->
             <div v-else-if="pendingInvites.length === 0" class="text-center pa-6">
-              <v-avatar size="80" color="grey-lighten-4" class="mb-4">
-                <v-icon size="40" color="grey-lighten-1">mdi-email-check</v-icon>
+              <v-avatar size="80" class="mb-4" :style="{ background: 'var(--erp-surface)' }">
+                <v-icon size="40" :style="{ color: 'var(--erp-border)' }">mdi-email-check</v-icon>
               </v-avatar>
               <h6 class="text-h6 text-medium-emphasis mb-2">No Pending Invitations</h6>
               <p class="text-body-2 text-medium-emphasis mb-4">
                 You're all caught up! No project invitations waiting for your response.
               </p>
               <v-btn 
-                color="primary" 
                 variant="outlined" 
                 size="small"
                 @click="refreshInvites"
                 :loading="invitesLoading"
+                :style="{ color: 'var(--erp-text)', borderColor: 'var(--erp-border)' }"
               >
                 <v-icon size="16" class="mr-1">mdi-refresh</v-icon>
                 Check for New Invites
@@ -930,35 +937,35 @@ onMounted(() => {
                 :key="invite.id"
                 class="invite-card mb-4"
               >
-                <v-card variant="outlined" class="invite-item" elevation="1">
+                <v-card variant="outlined" class="invite-item" elevation="1" :style="{ background: 'var(--erp-card-bg)', border: '1px solid var(--erp-border)' }">
                   <v-card-text class="pa-4">
                     <div class="d-flex align-start justify-space-between">
                       <div class="invite-info flex-grow-1">
                         <!-- Role and Priority Chips -->
                         <div class="d-flex align-center mb-3">
                           <v-chip 
-                            :color="getRoleColor(invite.role)" 
                             size="small" 
                             class="mr-3"
                             variant="flat"
+                            :style="{ background: 'var(--erp-accent-indigo)', color: '#fff' }"
                           >
                             <v-icon size="16" class="mr-1">{{ getRoleIcon(invite.role) }}</v-icon>
                             {{ getRoleLabel(invite.role) }}
                           </v-chip>
                           <v-chip 
-                            :color="getPriorityColor(invite.project?.priority || 'MEDIUM')" 
                             size="small" 
                             variant="tonal"
+                            :style="{ background: 'color-mix(in srgb, var(--erp-accent-green) 20%, transparent)', color: 'var(--erp-text)' }"
                           >
                             <v-icon size="16" class="mr-1">mdi-flag</v-icon>
                             {{ getPriorityLabel(invite.project?.priority || 'MEDIUM') }}
                           </v-chip>
                           <v-chip 
                             v-if="invite.expiresAt" 
-                            color="warning" 
                             size="small" 
                             variant="outlined"
                             class="ml-3"
+                            :style="{ color: 'var(--erp-text)', borderColor: 'var(--erp-border)' }"
                           >
                             <v-icon size="16" class="mr-1">mdi-clock</v-icon>
                             Expires {{ formatRelativeDate(invite.expiresAt) }}
@@ -976,19 +983,19 @@ onMounted(() => {
                         
                         <!-- Project Details -->
                         <div class="invite-details d-flex align-center text-caption text-medium-emphasis mb-3">
-                          <v-icon size="16" class="mr-1" color="primary">mdi-calendar</v-icon>
+                          <v-icon size="16" class="mr-1" :style="{ color: 'var(--erp-accent-indigo)' }">mdi-calendar</v-icon>
                           <span class="mr-4">
                             {{ formatDate(invite.project?.startDate) }} - {{ formatDate(invite.project?.endDate) }}
                           </span>
-                          <v-icon size="16" class="mr-1" color="secondary">mdi-email</v-icon>
+                          <v-icon size="16" class="mr-1" :style="{ color: 'var(--erp-accent-indigo)' }">mdi-email</v-icon>
                           <span>{{ invite.email }}</span>
                         </div>
                         
                         <!-- Invitation Message -->
                         <div v-if="invite.message" class="invite-message mb-3">
-                          <v-card variant="tonal" color="grey-lighten-4" class="pa-3">
+                          <v-card variant="tonal" class="pa-3" :style="{ background: 'var(--erp-surface)', border: '1px solid var(--erp-border)' }">
                             <div class="d-flex align-start">
-                              <v-icon size="16" class="mr-2 mt-1" color="info">mdi-message-text</v-icon>
+                              <v-icon size="16" class="mr-2 mt-1" :style="{ color: 'var(--erp-accent-indigo)' }">mdi-message-text</v-icon>
                               <p class="text-body-2 text-medium-emphasis mb-0">
                                 <em>"{{ invite.message }}"</em>
                               </p>
@@ -998,9 +1005,9 @@ onMounted(() => {
                         
                         <!-- Project Stats Preview -->
                         <div class="project-stats-preview d-flex align-center text-caption text-medium-emphasis">
-                          <v-icon size="16" class="mr-1" color="success">mdi-account-group</v-icon>
+                          <v-icon size="16" class="mr-1" :style="{ color: 'var(--erp-accent-green)' }">mdi-account-group</v-icon>
                           <span class="mr-4">Team: {{ invite.project?.teamSize || 'N/A' }}</span>
-                          <v-icon size="16" class="mr-1" color="info">mdi-folder</v-icon>
+                          <v-icon size="16" class="mr-1" :style="{ color: 'var(--erp-accent-indigo)' }">mdi-folder</v-icon>
                           <span>Type: {{ getProjectTypeLabel(invite.project?.type || 'PROGRESSIVE') }}</span>
                         </div>
                       </div>
@@ -1008,23 +1015,23 @@ onMounted(() => {
                       <!-- Action Buttons -->
                       <div class="invite-actions d-flex flex-column gap-2 ml-4">
                         <v-btn 
-                          color="success" 
                           variant="flat" 
                           size="small"
                           :loading="invite.loading"
                           @click="acceptInvite(invite.id)"
                           class="accept-btn"
+                          :style="{ background: 'var(--erp-accent-green)', color: '#fff' }"
                         >
                           <v-icon size="16" class="mr-1">mdi-check</v-icon>
                           Accept
                         </v-btn>
                         <v-btn 
-                          color="error" 
                           variant="outlined" 
                           size="small"
                           :loading="invite.loading"
                           @click="declineInvite(invite.id)"
                           class="decline-btn"
+                          :style="{ color: 'var(--erp-text)', borderColor: 'var(--erp-border)' }"
                         >
                           <v-icon size="16" class="mr-1">mdi-close</v-icon>
                           Decline
@@ -1043,7 +1050,7 @@ onMounted(() => {
                               <v-icon size="16">mdi-dots-vertical</v-icon>
                             </v-btn>
                           </template>
-                          <v-list>
+                          <v-list :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }">
                             <v-list-item @click="viewProjectDetails(invite.project?.id)">
                               <v-list-item-title>
                                 <v-icon size="16" class="mr-2">mdi-eye</v-icon>
@@ -1144,7 +1151,7 @@ onMounted(() => {
                   >
                     <v-chip
                       size="small"
-                      :color="deadline.priority === 'urgent' ? 'error' : 'warning'"
+                      :style="{ background: deadline.priority === 'urgent' ? 'var(--erp-accent-indigo)' : 'color-mix(in srgb, var(--erp-accent-indigo) 20%, transparent)', color: '#fff' }"
                       class="mr-2"
                     >
                       {{ deadline.priority === 'urgent' ? 'Urgent' : 'Due Soon' }}
@@ -1158,12 +1165,7 @@ onMounted(() => {
         </v-card>
     </v-col>
   </v-row>
-  <!-- Quick Actions Section - Always visible (static content) -->
-  <v-row class="mb-6">
-      <v-col cols="12">
-        <QuickActions />
-      </v-col>
-    </v-row>
+  
   <!-- Onboarding Modal for Project Invitations -->
   <OnboardingModal
     v-model="showOnboardingModal"
