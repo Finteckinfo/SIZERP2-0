@@ -46,7 +46,7 @@ const quickActions = [
 <template>
   <v-card elevation="0" class="overflow-hidden" :style="{ background: '#39b84c' }">
     <v-card-text class="pa-6">
-      <div class="d-flex align-center justify-space-between mb-6">
+      <div class="d-flex align-center justify-space-between mb-3">
         <div>
           <h3 class="text-h4 font-weight-medium text-white mb-2">Quick Actions</h3>
           <p class="text-body-1 text-white text-opacity-80">Access your most used features</p>
@@ -55,6 +55,8 @@ const quickActions = [
           <PlusIcon size="30" />
         </v-avatar>
       </div>
+
+      <v-divider class="qa-divider mb-6"></v-divider>
 
       <v-row>
         <v-col 
@@ -106,6 +108,11 @@ const quickActions = [
 .action-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.qa-divider {
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  opacity: 0.7;
 }
 
 .cursor-pointer {
