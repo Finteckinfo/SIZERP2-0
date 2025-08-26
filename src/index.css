@@ -124,6 +124,7 @@
   /* Light mode */
   --erp-header-bg: #ffffff;
   --erp-sidebar-bg: #ffffff;
+  --erp-page-bg: #f3f4f6;
   --erp-surface: #f3f4f6;
   --erp-accent-green: #6ec207;
   --erp-accent-indigo: #615fff;
@@ -135,6 +136,7 @@
   /* Dark mode */
   --erp-header-bg: #101828; /* topnav + page area */
   --erp-sidebar-bg: #1e2939; /* sidenav + dropdowns */
+  --erp-page-bg: #101828;
   --erp-surface: #1e2939;
   --erp-accent-green: #6ec207;
   --erp-accent-indigo: #615fff;

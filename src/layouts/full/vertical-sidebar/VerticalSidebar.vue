@@ -7,7 +7,6 @@ import Logo from '../logo/LogoMain.vue';
 import NavCollapse from './NavCollapse/NavCollapse.vue';
 import NavGroup from './NavGroup/NavGroup.vue';
 import NavItem from './NavItem/NavItem.vue';
-import ThemeToggle from '@/components/shared/ThemeToggle.vue';
 
 const customizer = useCustomizerStore();
 const sidebarMenu = shallowRef(sidebarItems);
@@ -64,10 +63,6 @@ onMounted(() => {
       </div>
       <div class="pa-4 text-center">
         <v-chip size="small" :style="{ backgroundColor: 'var(--erp-surface)', color: 'var(--erp-text)' }"> v1.3.0 </v-chip>
-      </div>
-      <!-- Theme Toggle -->
-      <div class="pa-4 text-center">
-        <ThemeToggle :show-label="true" size="small" />
       </div>
     </perfect-scrollbar>
   </v-navigation-drawer>

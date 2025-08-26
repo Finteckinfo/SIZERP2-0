@@ -18,9 +18,18 @@ const customizer = useCustomizerStore();
       <VerticalHeaderVue />
 
       <v-main>
-        <v-container fluid class="page-wrapper">
-          <div>
-            <RouterView />
+        <v-container fluid class="page-wrapper" :style="{ backgroundColor: 'var(--erp-page-bg)' }">
+          <div class="page-content-wrapper">
+            <v-card 
+              class="page-content-card" 
+              elevation="0" 
+              :style="{ 
+                backgroundColor: 'var(--erp-sidebar-bg)',
+                border: '1px solid var(--erp-border)'
+              }"
+            >
+              <RouterView />
+            </v-card>
             <v-btn
               class="customizer-btn"
               size="large"
@@ -42,3 +51,25 @@ const customizer = useCustomizerStore();
     </v-app>
   </v-locale-provider>
 </template>
+
+<style scoped>
+.page-content-wrapper {
+  position: relative;
+  min-height: calc(100vh - 200px); /* Account for header and footer */
+}
+
+.page-content-card {
+  margin: 24px;
+  border-radius: 16px;
+  padding: 24px;
+  min-height: calc(100vh - 280px); /* Account for margins and padding */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .page-content-card {
+    margin: 16px;
+    padding: 16px;
+  }
+}
+</style>

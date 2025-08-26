@@ -9,6 +9,7 @@ import { BellIcon, SettingsIcon, SearchIcon, Menu2Icon } from 'vue-tabler-icons'
 import NotificationDD from './NotificationDD.vue';
 import ProfileDD from './ProfileDD.vue';
 import Searchbar from './SearchBarPanel.vue';
+import ThemeToggle from '@/components/shared/ThemeToggle.vue';
 
 const customizer = useCustomizerStore();
 const showSearch = ref(false);
@@ -89,6 +90,11 @@ function searchbox() {
     <!-- ---------------------------------------------- -->
     <!---right part -->
     <!-- ---------------------------------------------- -->
+
+    <!-- Theme Toggle moved here -->
+    <div class="mx-2 d-none d-md-flex align-center">
+      <ThemeToggle :show-label="false" size="small" />
+    </div>
 
     <!-- ---------------------------------------------- -->
     <!-- Notification -->
