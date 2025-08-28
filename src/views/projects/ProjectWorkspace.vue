@@ -166,6 +166,16 @@
                     Add Member
                   </v-btn>
                   <v-btn 
+                    color="primary" 
+                    variant="tonal" 
+                    size="large"
+                    class="action-btn"
+                    @click="addDepartment"
+                  >
+                    <v-icon size="20" class="mr-2">mdi-folder-plus</v-icon>
+                    Add Department/Section
+                  </v-btn>
+                  <v-btn 
                     color="warning" 
                     variant="tonal" 
                     size="large"
@@ -532,6 +542,11 @@ const addTask = () => {
 const addMember = () => {
   console.log('Add member clicked');
   // TODO: Implement add member functionality
+};
+
+const addDepartment = () => {
+  console.log('Add department clicked');
+  // TODO: Implement add department functionality
 };
 
 const scheduleMeeting = () => {

@@ -325,6 +325,44 @@ export const projectInviteApi = {
       response: 'DECLINE' 
     });
     return response.data;
+  },
+
+  // NEW: Send invite to new user for existing project
+  sendProjectInvite: async (projectId: string, inviteData: {
+    email: string;
+    role: 'PROJECT_MANAGER' | 'EMPLOYEE';
+    expiresInDays?: number;
+  }) => {
+    const response = await api.post(`/projects/${projectId}/invites`, inviteData);
+    return response.data;
+  },
+
+  // NEW: Get all invites for existing project with filtering
+  getProjectInvitesWithFilter: async (projectId: string, params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }) => {
+    const response = await api.get(`/projects/${projectId}/invites`, { params });
+    return response.data;
+  },
+
+  // NEW: Accept/update invite for existing project
+  updateProjectInvite: async (projectId: string, inviteId: string, inviteData: {
+    status?: 'PENDING' | 'ACCEPTED' | 'DECLINED';
+    userId?: string;
+  }) => {
+    const response = await api.patch(`/projects/${projectId}/invites/${inviteId}`, inviteData);
+    return response.data;
+  },
+
+  // NEW: Cancel/delete invite for existing project
+  cancelProjectInvite: async (projectId: string, inviteId: string) => {
+    const response = await api.delete(`/projects/${projectId}/invites/${inviteId}`);
+    return response.data;
   }
 };
 
@@ -391,6 +429,50 @@ export const departmentApi = {
   reorderProjectDepartments: async (projectId: string, departmentOrder: { id: string; order: number }[]) => {
     const response = await api.put(`/departments/project/${projectId}/reorder`, { departmentOrder });
     return response.data;
+  },
+
+  // NEW: Create department for existing project
+  createProjectDepartment: async (projectId: string, departmentData: {
+    name: string;
+    type: 'MAJOR' | 'MINOR';
+    description?: string;
+    order: number;
+    isVisible: boolean;
+  }) => {
+    const response = await api.post(`/projects/${projectId}/departments`, departmentData);
+    return response.data;
+  },
+
+  // NEW: Get all departments for existing project with filtering
+  getProjectDepartmentsWithFilter: async (projectId: string, params?: {
+    page?: number;
+    limit?: number;
+    type?: string;
+    search?: string;
+    includeStats?: boolean;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }) => {
+    const response = await api.get(`/projects/${projectId}/departments`, { params });
+    return response.data;
+  },
+
+  // NEW: Update department for existing project
+  updateProjectDepartment: async (projectId: string, departmentId: string, departmentData: {
+    name?: string;
+    type?: 'MAJOR' | 'MINOR';
+    description?: string;
+    order?: number;
+    isVisible?: boolean;
+  }) => {
+    const response = await api.put(`/projects/${projectId}/departments/${departmentId}`, departmentData);
+    return response.data;
+  },
+
+  // NEW: Delete department for existing project
+  deleteProjectDepartment: async (projectId: string, departmentId: string) => {
+    const response = await api.delete(`/projects/${projectId}/departments/${departmentId}`);
+    return response.data;
   }
 };
 
@@ -429,6 +511,66 @@ export const taskApi = {
   // Get project tasks (legacy support)
   getProjectTasks: async (projectId: string) => {
     const response = await api.get(`/tasks/project/${projectId}`);
+    return response.data;
+  },
+
+  // NEW: Create task for existing project
+  createProjectTask: async (projectId: string, taskData: {
+    title: string;
+    description?: string;
+    priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    departmentId: string;
+    assignedRoleId?: string;
+    status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED';
+  }) => {
+    const response = await api.post(`/projects/${projectId}/tasks`, taskData);
+    return response.data;
+  },
+
+  // NEW: Get all tasks for existing project with filtering
+  getProjectTasksWithFilter: async (projectId: string, params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    priority?: string;
+    departmentId?: string;
+    assignedRoleId?: string;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }) => {
+    const response = await api.get(`/projects/${projectId}/tasks`, { params });
+    return response.data;
+  },
+
+  // NEW: Get specific task for existing project
+  getProjectTask: async (projectId: string, taskId: string) => {
+    const response = await api.get(`/projects/${projectId}/tasks/${taskId}`);
+    return response.data;
+  },
+
+  // NEW: Update task for existing project
+  updateProjectTask: async (projectId: string, taskId: string, taskData: {
+    title?: string;
+    description?: string;
+    status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED';
+    priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    departmentId?: string;
+    assignedRoleId?: string;
+  }) => {
+    const response = await api.put(`/projects/${projectId}/tasks/${taskId}`, taskData);
+    return response.data;
+  },
+
+  // NEW: Delete task for existing project
+  deleteProjectTask: async (projectId: string, taskId: string) => {
+    const response = await api.delete(`/projects/${projectId}/tasks/${taskId}`);
+    return response.data;
+  },
+
+  // NEW: Assign/reassign task for existing project
+  assignProjectTask: async (projectId: string, taskId: string, assignedRoleId: string | null) => {
+    const response = await api.post(`/projects/${projectId}/tasks/${taskId}/assign`, { assignedRoleId });
     return response.data;
   }
 };
