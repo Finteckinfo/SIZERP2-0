@@ -49,7 +49,7 @@
                   +{{ teamMembers.length - 3 }}
                 </div>
               </div>
-              <v-btn variant="outlined" size="small" class="invite-btn">
+              <v-btn variant="outlined" size="small" class="invite-btn" @click="openInvitePanel">
                 <v-icon size="16" class="mr-2">mdi-account-plus</v-icon>
                 Invite
               </v-btn>
@@ -150,7 +150,7 @@
                     variant="tonal" 
                     size="large"
                     class="action-btn"
-                    @click="addTask"
+                    @click="openAddTaskPanel"
                   >
                     <v-icon size="20" class="mr-2">mdi-plus</v-icon>
                     Add Task
@@ -160,7 +160,7 @@
                     variant="tonal" 
                     size="large"
                     class="action-btn"
-                    @click="addMember"
+                    @click="openInvitePanel"
                   >
                     <v-icon size="20" class="mr-2">mdi-account-plus</v-icon>
                     Add Member
@@ -170,7 +170,7 @@
                     variant="tonal" 
                     size="large"
                     class="action-btn"
-                    @click="addDepartment"
+                    @click="openAddDepartmentPanel"
                   >
                     <v-icon size="20" class="mr-2">mdi-folder-plus</v-icon>
                     Add Department/Section
@@ -226,25 +226,92 @@
               </v-card>
             </div>
 
-            <!-- Right Column - Tasks & Sections -->
+            <!-- Right Column - Tasks & Sections / Dynamic Panels -->
             <div class="right-column">
-              <!-- Tasks Header -->
               <div class="tasks-header">
-                <h2 class="section-title">Tasks & Sections</h2>
-                <div class="tasks-actions">
-                  <v-btn :color="'var(--erp-accent-green)'" variant="outlined" size="small">
-                    <v-icon size="16" class="mr-2">mdi-folder-plus</v-icon>
-                    Add Section
-                  </v-btn>
-                  <v-btn :color="'var(--erp-accent-green)'" size="small">
-                    <v-icon size="16" class="mr-2">mdi-plus</v-icon>
-                    Add Task
+                <h2 class="section-title">
+                  {{ activePanel === 'list' ? 'Tasks & Sections' : panelTitle }}
+                </h2>
+                <div class="tasks-actions" v-if="activePanel !== 'list'">
+                  <v-btn variant="text" size="small" @click="resetPanel">
+                    <v-icon size="16" class="mr-2">mdi-arrow-left</v-icon>
+                    Back
                   </v-btn>
                 </div>
               </div>
 
-              <!-- Task Sections -->
-              <div class="task-sections">
+              <!-- Dynamic Panel Content -->
+              <div v-if="activePanel === 'addDepartment'">
+                <v-form ref="addDepartmentForm" v-model="addDepartmentValid">
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-text-field v-model="newDepartment.name" label="Department Name" variant="outlined" :rules="[v=>!!v||'Required']" />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-select v-model="newDepartment.type" :items="departmentTypeOptions" label="Type" variant="outlined" :rules="[v=>!!v||'Required']" />
+                    </v-col>
+                    <v-col cols="12">
+                      <v-textarea v-model="newDepartment.description" label="Description" variant="outlined" rows="3" />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-switch v-model="newDepartment.isVisible" :color="'var(--erp-accent-green)'" label="Visible" />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field v-model.number="newDepartment.order" type="number" min="0" label="Order" variant="outlined" />
+                    </v-col>
+                    <v-col cols="12">
+                      <v-btn :color="'var(--erp-accent-green)'" :loading="submitting" @click="submitNewDepartment">Create Department</v-btn>
+                    </v-col>
+                  </v-row>
+                </v-form>
+              </div>
+
+              <div v-else-if="activePanel === 'addTask'">
+                <v-form ref="addTaskForm" v-model="addTaskValid">
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-text-field v-model="newTask.title" label="Task Title" variant="outlined" :rules="[v=>!!v||'Required']" />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-select v-model="newTask.priority" :items="priorityOptions" label="Priority" variant="outlined" :rules="[v=>!!v||'Required']" />
+                    </v-col>
+                    <v-col cols="12">
+                      <v-textarea v-model="newTask.description" label="Description" variant="outlined" rows="3" />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-select v-model="newTask.departmentId" :items="departmentSelectItems" item-title="name" item-value="id" label="Department" variant="outlined" :rules="[v=>!!v||'Required']" />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-select v-model="newTask.assignedRoleId" :items="roleSelectItems" item-title="label" item-value="id" label="Assign To (optional)" variant="outlined" />
+                    </v-col>
+                    <v-col cols="12">
+                      <v-btn :color="'var(--erp-accent-green)'" :loading="submitting" @click="submitNewTask">Create Task</v-btn>
+                    </v-col>
+                  </v-row>
+                </v-form>
+              </div>
+
+              <div v-else-if="activePanel === 'invite'">
+                <v-form ref="inviteForm" v-model="inviteValid">
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-text-field v-model="invite.email" label="Email" variant="outlined" :rules="[v=>!!v||'Required']" />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-select v-model="invite.role" :items="inviteRoleOptions" label="Role" variant="outlined" :rules="[v=>!!v||'Required']" />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field v-model.number="invite.expiresInDays" type="number" min="1" label="Expires In (days)" variant="outlined" />
+                    </v-col>
+                    <v-col cols="12">
+                      <v-btn :color="'var(--erp-accent-green)'" :loading="submitting" @click="submitInvite">Send Invite</v-btn>
+                    </v-col>
+                  </v-row>
+                </v-form>
+              </div>
+
+              <!-- Default: Sections and tasks list -->
+              <div v-else class="task-sections">
                 <div 
                   v-for="section in projectSections" 
                   :key="section.id"
@@ -330,12 +397,23 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { projectApi, taskApi, departmentApi, userRoleApi, type Project, type Task, type Department, type UserRole } from '@/services/projectApi';
+import { projectApi, taskApi, departmentApi, userRoleApi, projectInviteApi, type Project, type Task, type Department, type UserRole } from '@/services/projectApi';
 import ProjectAccessGate from '@/components/ProjectAccessGate.vue';
 
 const route = useRoute();
 const router = useRouter();
 const projectId = route.params.id as string;
+
+// Panel state
+const activePanel = ref<'list'|'addDepartment'|'addTask'|'invite'>('list');
+const panelTitle = computed(() => {
+  switch (activePanel.value) {
+    case 'addDepartment': return 'Add Department/Section';
+    case 'addTask': return 'Add Task';
+    case 'invite': return 'Invite Member';
+    default: return 'Tasks & Sections';
+  }
+});
 
 // Real project data from API
 const project = ref<Project | null>(null);
@@ -344,6 +422,45 @@ const tasks = ref<Task[]>([]);
 const teamMembers = ref<UserRole[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
+const submitting = ref(false);
+
+// Forms state
+const addDepartmentForm = ref();
+const addTaskForm = ref();
+const inviteForm = ref();
+const addDepartmentValid = ref(false);
+const addTaskValid = ref(false);
+const inviteValid = ref(false);
+
+const newDepartment = ref({
+  name: '',
+  type: 'MAJOR',
+  description: '',
+  isVisible: true,
+  order: 0
+});
+
+const newTask = ref({
+  title: '',
+  description: '',
+  priority: 'MEDIUM',
+  departmentId: '',
+  assignedRoleId: '' as string | undefined
+});
+
+const invite = ref({
+  email: '',
+  role: 'EMPLOYEE',
+  expiresInDays: 7
+});
+
+// Options
+const departmentTypeOptions = ['MAJOR', 'MINOR'];
+const priorityOptions = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+const inviteRoleOptions = ['PROJECT_MANAGER', 'EMPLOYEE'];
+
+const departmentSelectItems = computed(() => departments.value);
+const roleSelectItems = computed(() => teamMembers.value.map(r => ({ id: r.id, label: r.user?.firstName ? `${r.user.firstName} ${r.user.lastName || ''}`.trim() : r.user?.email })));
 
 // Load project data from API
 const loadProjectData = async () => {
@@ -351,20 +468,17 @@ const loadProjectData = async () => {
     loading.value = true;
     error.value = null;
     
-    // Load project details
     const projectResponse = await projectApi.getProject(projectId);
     project.value = projectResponse.project;
     
-    // Load project departments
-    const departmentsResponse = await departmentApi.getProjectDepartments(projectId);
+    const [departmentsResponse, tasksResponse, teamResponse] = await Promise.all([
+      departmentApi.getProjectDepartments(projectId),
+      taskApi.getProjectTasks(projectId),
+      userRoleApi.getProjectUserRoles(projectId)
+    ]);
+
     departments.value = departmentsResponse.departments || [];
-    
-    // Load project tasks
-    const tasksResponse = await taskApi.getProjectTasks(projectId);
     tasks.value = tasksResponse.tasks || [];
-    
-    // Load team members
-          const teamResponse = await userRoleApi.getProjectUserRoles(projectId);
     teamMembers.value = teamResponse.userRoles || [];
   } catch (err) {
     error.value = 'Failed to load project data';
@@ -374,7 +488,67 @@ const loadProjectData = async () => {
   }
 };
 
-// Note: Project data loading is now handled by the access gate
+// Actions to switch panels
+const resetPanel = () => {
+  activePanel.value = 'list';
+};
+const openAddDepartmentPanel = () => {
+  newDepartment.value = { name: '', type: 'MAJOR', description: '', isVisible: true, order: departments.value.length };
+  activePanel.value = 'addDepartment';
+};
+const openAddTaskPanel = () => {
+  newTask.value = { title: '', description: '', priority: 'MEDIUM', departmentId: departments.value[0]?.id || '', assignedRoleId: undefined };
+  activePanel.value = 'addTask';
+};
+const openInvitePanel = () => {
+  invite.value = { email: '', role: 'EMPLOYEE', expiresInDays: 7 };
+  activePanel.value = 'invite';
+};
+
+// Submit handlers
+const submitNewDepartment = async () => {
+  const isValid = await (addDepartmentForm.value as any)?.validate?.();
+  if (isValid === false || addDepartmentValid.value === false) return;
+  submitting.value = true;
+  try {
+    await departmentApi.createProjectDepartment(projectId, newDepartment.value as any);
+    await loadProjectData();
+    resetPanel();
+  } catch (e) {
+    console.error('Failed to create department', e);
+  } finally {
+    submitting.value = false;
+  }
+};
+
+const submitNewTask = async () => {
+  const isValid = await (addTaskForm.value as any)?.validate?.();
+  if (isValid === false || addTaskValid.value === false) return;
+  submitting.value = true;
+  try {
+    await taskApi.createProjectTask(projectId, newTask.value as any);
+    await loadProjectData();
+    resetPanel();
+  } catch (e) {
+    console.error('Failed to create task', e);
+  } finally {
+    submitting.value = false;
+  }
+};
+
+const submitInvite = async () => {
+  const isValid = await (inviteForm.value as any)?.validate?.();
+  if (isValid === false || inviteValid.value === false) return;
+  submitting.value = true;
+  try {
+    await projectInviteApi.sendProjectInvite(projectId, invite.value as any);
+    resetPanel();
+  } catch (e) {
+    console.error('Failed to send invite', e);
+  } finally {
+    submitting.value = false;
+  }
+};
 
 // Computed properties for template
 const projectStats = computed(() => ({
