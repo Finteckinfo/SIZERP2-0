@@ -310,13 +310,40 @@
                 </v-form>
               </div>
 
-              <!-- Default: Sections and tasks list -->
-              <div v-else class="task-sections">
-                <div 
-                  v-for="section in projectSections" 
-                  :key="section.id"
-                  class="task-section"
-                >
+              <!-- Default: Departments first, then divider, then tasks list -->
+              <div v-else>
+                <!-- Departments Summary -->
+                <div class="departments-summary">
+                  <div class="departments-header">
+                    <h3 class="section-title">Departments</h3>
+                  </div>
+                  <div v-if="departments.length === 0" class="text-center py-6">
+                    <v-icon size="28" color="grey-lighten-1" class="mb-2">mdi-domain</v-icon>
+                    <div>No departments created yet</div>
+                  </div>
+                  <div v-else class="departments-chips">
+                    <v-chip
+                      v-for="dept in departments"
+                      :key="dept.id"
+                      :color="dept.type === 'MAJOR' ? 'primary' : 'success'"
+                      variant="tonal"
+                      size="small"
+                      class="mr-2 mb-2"
+                    >
+                      {{ dept.name }} · {{ (tasks.filter(t => t.departmentId === dept.id)).length }} tasks
+                    </v-chip>
+                  </div>
+                </div>
+
+                <v-divider class="my-4" />
+
+                <!-- Tasks grouped by sections -->
+                <div class="task-sections">
+                  <div 
+                    v-for="section in projectSections" 
+                    :key="section.id"
+                    class="task-section"
+                  >
                   <div class="section-header" @click="toggleSection(section.id)">
                     <div class="section-info">
                       <v-icon 
@@ -385,6 +412,7 @@
                     </div>
                   </div>
                 </div>
+              </div>
               </div>
             </div>
           </div>
@@ -1027,6 +1055,18 @@ onMounted(() => {
 .tasks-actions {
   display: flex;
   gap: 12px;
+}
+
+.departments-summary {
+  background: var(--erp-surface);
+  border: 1px solid var(--erp-border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.departments-chips {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .task-sections {
