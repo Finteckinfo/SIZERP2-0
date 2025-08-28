@@ -428,12 +428,12 @@ const loadProjectData = async () => {
 
          // Load team members
      const teamResponse = await userRoleApi.getProjectUserRoles(route.params.id as string);
-     teamMembers.value = teamResponse.userRoles || [];
+     teamMembers.value = Array.isArray(teamResponse) ? teamResponse : (teamResponse.userRoles || []);
 
      // Load project departments
      try {
        const departmentsResponse = await departmentApi.getProjectDepartments(route.params.id as string);
-       departments.value = departmentsResponse.departments || [];
+       departments.value = Array.isArray(departmentsResponse) ? departmentsResponse : (departmentsResponse.departments || []);
      } catch (deptError) {
        console.warn('Failed to load departments:', deptError);
        departments.value = [];

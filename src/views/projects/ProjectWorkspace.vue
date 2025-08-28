@@ -469,7 +469,7 @@ const loadProjectData = async () => {
     error.value = null;
     
     const projectResponse = await projectApi.getProject(projectId);
-    project.value = projectResponse.project;
+    project.value = projectResponse;
     
     const [departmentsResponse, tasksResponse, teamResponse] = await Promise.all([
       departmentApi.getProjectDepartments(projectId),
@@ -477,9 +477,9 @@ const loadProjectData = async () => {
       userRoleApi.getProjectUserRoles(projectId)
     ]);
 
-    departments.value = departmentsResponse.departments || [];
+    departments.value = Array.isArray(departmentsResponse) ? departmentsResponse : (departmentsResponse.departments || []);
     tasks.value = tasksResponse.tasks || [];
-    teamMembers.value = teamResponse.userRoles || [];
+    teamMembers.value = Array.isArray(teamResponse) ? teamResponse : (teamResponse.userRoles || []);
   } catch (err) {
     error.value = 'Failed to load project data';
     console.error('Error loading project data:', err);
