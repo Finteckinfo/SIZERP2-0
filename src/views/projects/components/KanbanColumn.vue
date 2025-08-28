@@ -153,22 +153,22 @@ const formatDate = (dateString: string) => {
 
 <style scoped>
 .kanban-column {
-  background: white;
+  background: var(--erp-card-bg);
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   min-height: 400px;
   display: flex;
   flex-direction: column;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--erp-border);
 }
 
 .column-header {
   padding: 16px 20px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--erp-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #f8fafc;
+  background: var(--erp-surface);
   border-radius: 12px 12px 0 0;
 }
 
@@ -180,13 +180,13 @@ const formatDate = (dateString: string) => {
 
 .column-title h3 {
   margin: 0;
-  color: #1e293b;
+  color: var(--erp-text);
   font-size: 0.875rem;
 }
 
 .task-count {
-  background: #e2e8f0;
-  color: #475569;
+  background: var(--erp-border);
+  color: var(--erp-text);
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 0.75rem;
@@ -228,13 +228,13 @@ const formatDate = (dateString: string) => {
 }
 
 .project-card {
-  background: white;
+  background: var(--erp-card-bg);
   border-radius: 8px;
   padding: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--erp-border);
   position: relative;
   overflow: hidden;
 }
@@ -256,14 +256,15 @@ const formatDate = (dateString: string) => {
 .project-title {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--erp-text);
   margin: 0 0 8px 0;
   line-height: 1.4;
 }
 
 .project-description {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   margin: 0 0 16px 0;
   line-height: 1.5;
 }
@@ -281,7 +282,8 @@ const formatDate = (dateString: string) => {
 }
 
 .project-meta .text-caption {
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   font-size: 0.75rem;
 }
 

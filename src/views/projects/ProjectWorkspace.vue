@@ -75,8 +75,8 @@
         <v-container fluid class="pa-0">
           <!-- Loading State -->
           <div v-if="loading" class="loading-state">
-            <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
-            <p class="mt-4 text-grey">Loading workspace...</p>
+            <v-progress-circular indeterminate :color="'var(--erp-accent-green)'" size="64"></v-progress-circular>
+            <p class="mt-4" :style="{ color: 'var(--erp-text)' }">Loading workspace...</p>
           </div>
 
           <!-- Error State -->
@@ -84,7 +84,7 @@
             <v-alert type="error" class="mb-4">
               {{ error }}
             </v-alert>
-            <v-btn color="primary" @click="loadProjectData">Retry</v-btn>
+            <v-btn :color="'var(--erp-accent-green)'" @click="loadProjectData">Retry</v-btn>
           </div>
 
           <!-- Content -->
@@ -92,7 +92,7 @@
             <!-- Left Column - Project Info & Quick Actions -->
             <div class="left-column">
               <!-- Project Overview Card -->
-              <v-card class="info-card" elevation="0">
+              <v-card class="info-card" elevation="0" :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }">
                 <div class="card-header">
                   <h3 class="card-title">Project Overview</h3>
                   <v-btn icon variant="text" size="small">
@@ -142,11 +142,11 @@
               </v-card>
 
               <!-- Quick Actions Card -->
-              <v-card class="actions-card" elevation="0">
+              <v-card class="actions-card" elevation="0" :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }">
                 <h3 class="card-title">Quick Actions</h3>
                 <div class="actions-grid">
                   <v-btn 
-                    color="primary" 
+                    :color="'var(--erp-accent-green)'" 
                     variant="tonal" 
                     size="large"
                     class="action-btn"
@@ -189,7 +189,7 @@
               </v-card>
 
               <!-- Progress Card -->
-              <v-card class="progress-card" elevation="0">
+              <v-card class="progress-card" elevation="0" :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }">
                 <h3 class="card-title">Project Progress</h3>
                 <div class="progress-content">
                   <div class="progress-circle">
@@ -222,11 +222,11 @@
               <div class="tasks-header">
                 <h2 class="section-title">Tasks & Sections</h2>
                 <div class="tasks-actions">
-                  <v-btn color="primary" variant="outlined" size="small">
+                  <v-btn :color="'var(--erp-accent-green)'" variant="outlined" size="small">
                     <v-icon size="16" class="mr-2">mdi-folder-plus</v-icon>
                     Add Section
                   </v-btn>
-                  <v-btn color="primary" size="small">
+                  <v-btn :color="'var(--erp-accent-green)'" size="small">
                     <v-icon size="16" class="mr-2">mdi-plus</v-icon>
                     Add Task
                   </v-btn>
@@ -569,12 +569,12 @@ onMounted(() => {
 
 <style scoped>
 .project-workspace {
-  background: #f8fafc;
+  background: var(--erp-page-bg);
   min-height: 100vh;
 }
 
 .workspace-header {
-  background: #ffffff;
+  background: var(--erp-header-bg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   padding: 16px 24px;
   display: flex;
@@ -585,7 +585,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   z-index: 10;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--erp-border);
 }
 
 .header-content {
@@ -612,7 +612,7 @@ onMounted(() => {
 .project-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--erp-text);
   margin-right: 12px;
 }
 
@@ -623,7 +623,8 @@ onMounted(() => {
 
 .project-type {
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   margin-left: 8px;
 }
 
@@ -696,8 +697,8 @@ onMounted(() => {
 .progress-card {
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
+  border: 1px solid var(--erp-border);
+  background: var(--erp-card-bg);
   padding: 24px;
 }
 
@@ -711,13 +712,14 @@ onMounted(() => {
 .card-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--erp-text);
   margin: 0;
 }
 
 .project-description {
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   line-height: 1.6;
   margin-bottom: 24px;
 }
@@ -747,13 +749,14 @@ onMounted(() => {
 
 .stat-label {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
 }
 
 .stat-value {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--erp-text);
 }
 
 .actions-grid {
@@ -801,14 +804,15 @@ onMounted(() => {
 .stat-number {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--erp-text);
   display: block;
   margin-bottom: 4px;
 }
 
 .stat-label {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
 }
 
 .right-column {
@@ -827,7 +831,7 @@ onMounted(() => {
 .section-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--erp-text);
   margin: 0;
 }
 
@@ -843,10 +847,10 @@ onMounted(() => {
 }
 
 .task-section {
-  background: #f8fafc;
+  background: var(--erp-surface);
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--erp-border);
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -858,7 +862,7 @@ onMounted(() => {
 
 .section-header {
   padding: 16px 20px;
-  background: #f8fafc;
+  background: var(--erp-surface);
   border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
@@ -877,7 +881,7 @@ onMounted(() => {
 .section-name {
   font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--erp-text);
   margin: 0;
 }
 
@@ -891,9 +895,9 @@ onMounted(() => {
   align-items: center;
   padding: 16px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--erp-border);
   margin-bottom: 12px;
-  background: #ffffff;
+  background: var(--erp-card-bg);
   transition: all 0.3s ease;
 }
 
@@ -903,12 +907,13 @@ onMounted(() => {
 
 .task-item.completed {
   opacity: 0.7;
-  background: #f8fafc;
+  background: var(--erp-surface);
 }
 
 .task-item.completed .task-title {
   text-decoration: line-through;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
 }
 
 .task-content {
@@ -930,7 +935,7 @@ onMounted(() => {
 .task-title {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--erp-text);
   margin: 0;
 }
 
@@ -941,13 +946,15 @@ onMounted(() => {
 }
 
 .task-date {
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   font-size: 0.75rem;
 }
 
 .task-description {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   margin: 0 0 16px 0;
   line-height: 1.5;
 }
@@ -978,7 +985,8 @@ onMounted(() => {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   font-size: 0.875rem;
 }
 

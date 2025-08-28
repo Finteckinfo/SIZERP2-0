@@ -1,10 +1,10 @@
 <template>
-  <v-card elevation="0" class="pa-4 border rounded-lg">
+  <v-card elevation="0" class="pa-4 border rounded-lg" :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }">
     <div class="d-flex align-center justify-space-between mb-4">
       <h3 class="text-h6 font-weight-medium">Project Overview</h3>
       <v-btn 
         v-if="showEditButton"
-        color="primary" 
+        :color="'var(--erp-accent-green)'" 
         variant="outlined" 
         size="small"
         @click="$emit('edit')"
@@ -56,7 +56,7 @@ const emit = defineEmits<{
 
 <style scoped>
 .border {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--erp-border);
 }
 
 .project-stats {
@@ -72,12 +72,13 @@ const emit = defineEmits<{
 }
 
 .stat-label {
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   font-size: 0.875rem;
 }
 
 .stat-value {
-  color: #1e293b;
+  color: var(--erp-text);
   font-weight: 500;
   font-size: 0.875rem;
 }

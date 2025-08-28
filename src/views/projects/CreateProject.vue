@@ -2,12 +2,12 @@
   <div class="kanban-project-creator">
     <v-container fluid class="pa-0">
       <!-- Header -->
-      <v-app-bar elevation="0" color="white" class="px-6 border-b">
+      <v-app-bar elevation="0" class="px-6 border-b erp-header">
         <v-btn icon @click="$router.push('/dashboard/default')" class="mr-4">
           <v-icon>mdi-arrow-left</v-icon>
         </v-btn>
         <div class="flex-grow-1">
-          <h1 class="text-h4 font-weight-bold text-grey-darken-3">New Kanban Board</h1>
+          <h1 class="text-h4 font-weight-bold" :style="{ color: 'var(--erp-text)' }">New Kanban Board</h1>
         </div>
       </v-app-bar>
 
@@ -40,22 +40,22 @@
         <v-container fluid class="fill-height">
           <v-row align="center" justify="center">
             <v-col cols="12" class="text-center">
-              <v-progress-circular indeterminate color="primary" size="64" />
-              <p class="mt-4 text-h6">Loading project configuration...</p>
+              <v-progress-circular indeterminate :color="'var(--erp-accent-green)'" size="64" />
+              <p class="mt-4 text-h6" :style="{ color: 'var(--erp-text)' }">Loading project configuration...</p>
             </v-col>
           </v-row>
         </v-container>
       </div>
 
       <!-- Error/Success Messages -->
-      <v-snackbar :model-value="!!error" color="error" timeout="5000" @update:model-value="error = ''">
+      <v-snackbar :model-value="!!error" :color="'var(--erp-accent-indigo)'" timeout="5000" @update:model-value="error = ''">
         {{ error }}
         <template v-slot:actions>
           <v-btn variant="text" @click="error = ''">Close</v-btn>
         </template>
       </v-snackbar>
 
-      <v-snackbar :model-value="!!success" color="success" timeout="3000" @update:model-value="success = ''">
+      <v-snackbar :model-value="!!success" :color="'var(--erp-accent-green)'" timeout="3000" @update:model-value="success = ''">
         {{ success }}
         <template v-slot:actions>
           <v-btn variant="text" @click="success = ''">Close</v-btn>
@@ -130,17 +130,17 @@
                 </v-col>
                 
                 <v-col cols="12" md="4">
-                  <v-card elevation="0" class="pa-4 border rounded-lg">
-                    <h4 class="text-subtitle-1 font-weight-medium mb-3">Board Visibility</h4>
+                  <v-card elevation="0" class="pa-4 border rounded-lg" :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }">
+                    <h4 class="text-subtitle-1 font-weight-medium mb-3" :style="{ color: 'var(--erp-text)' }">Board Visibility</h4>
                     <v-radio-group v-model="projectData.isPublic" class="mb-4">
-                      <v-radio value="false" label="Private" color="primary" />
-                      <v-radio value="true" label="Public" color="primary" />
+                      <v-radio value="false" label="Private" :color="'var(--erp-accent-green)'" />
+                      <v-radio value="true" label="Public" :color="'var(--erp-accent-green)'" />
                     </v-radio-group>
                     
                     <v-checkbox
                       v-model="projectData.allowGuests"
                       label="Allow Guest"
-                      color="primary"
+                      :color="'var(--erp-accent-green)'"
                     />
                   </v-card>
                 </v-col>
@@ -204,7 +204,7 @@
                       <v-switch
                         v-model="dept.isVisible"
                         label="Visible"
-                        color="primary"
+                        :color="'var(--erp-accent-green)'"
                         density="compact"
                         hide-details
                       />
@@ -223,7 +223,7 @@
               </div>
               
               <v-btn 
-                color="primary" 
+                :color="'var(--erp-accent-green)'" 
                 variant="outlined" 
                 class="mt-4"
                 @click="addDepartment"
@@ -307,7 +307,7 @@
               </div>
               
               <v-btn 
-                color="primary" 
+                :color="'var(--erp-accent-green)'" 
                 variant="outlined" 
                 class="mt-4"
                 @click="addRole"
@@ -419,7 +419,7 @@
               
               <v-btn 
                 v-if="currentStep !== 'settings'"
-                color="primary" 
+                :color="'var(--erp-accent-green)'" 
                 @click="nextStep"
                 :disabled="!canProceedToNext || saving"
                 :loading="saving"
@@ -429,7 +429,7 @@
               
               <v-btn 
                 v-if="currentStep === 'settings'"
-                color="primary" 
+                :color="'var(--erp-accent-green)'" 
                 @click="createProject"
                 :disabled="!canCreateProject || saving"
                 :loading="saving"
@@ -967,7 +967,7 @@ onMounted(async () => {
 <style scoped>
 .kanban-project-creator {
   min-height: 100vh;
-  background: rgb(var(--v-theme-surface));
+  background: var(--erp-page-bg);
 }
 
 .main-content {
@@ -980,10 +980,11 @@ onMounted(async () => {
 
 .step-content {
   animation: fadeIn 0.3s ease-in-out;
-  background: white;
+  background: var(--erp-card-bg);
   border-radius: 8px;
   padding: 24px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--erp-border);
 }
 
 .step-header {
@@ -991,18 +992,19 @@ onMounted(async () => {
 }
 
 .step-header h2 {
-  color: rgb(var(--v-theme-on-surface));
+  color: var(--erp-text);
 }
 
 .step-header p {
-  color: rgb(var(--v-theme-on-surface-variant));
+  color: var(--erp-text);
+  opacity: 0.8;
 }
 
 /* Progress Steps */
 .progress-container {
-  background: white;
+  background: var(--erp-card-bg);
   padding: 24px 32px;
-  border-bottom: 1px solid rgb(var(--v-theme-outline-variant));
+  border-bottom: 1px solid var(--erp-border);
   position: relative;
 }
 
@@ -1012,7 +1014,7 @@ onMounted(async () => {
   top: 50%;
   width: calc(100% - 64px);
   height: 2px;
-  background: rgb(var(--v-theme-outline-variant));
+  background: var(--erp-border);
   transform: translateY(-50%);
   z-index: 1;
 }
@@ -1040,8 +1042,8 @@ onMounted(async () => {
   border-radius: 50%;
   font-weight: bold;
   transition: all 0.3s ease;
-  background: white;
-  color: rgb(var(--v-theme-on-surface-variant));
+  background: var(--erp-card-bg);
+  color: var(--erp-text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1055,33 +1057,33 @@ onMounted(async () => {
   left: 50%;
   width: 100px;
   height: 2px;
-  background: rgb(var(--v-theme-outline-variant));
+  background: var(--erp-border);
   transform: translateX(-50%);
 }
 
 .step-number.completed {
-  background: rgb(var(--v-theme-primary));
+  background: var(--erp-accent-green);
   color: white;
-  border-color: rgb(var(--v-theme-primary));
+  border-color: var(--erp-accent-green);
 }
 
 .step-number.current {
-  background: rgb(var(--v-theme-primary));
+  background: var(--erp-accent-green);
   color: white;
-  border-color: rgb(var(--v-theme-primary));
+  border-color: var(--erp-accent-green);
   box-shadow: 0 0 0 4px rgba(var(--v-theme-primary), 0.2);
 }
 
 .step-number.pending {
-  background: white;
-  color: rgb(var(--v-theme-on-surface-variant));
-  border-color: rgb(var(--v-theme-outline-variant));
+  background: var(--erp-card-bg);
+  color: var(--erp-text);
+  border-color: var(--erp-border);
 }
 
 .step-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: rgb(var(--v-theme-on-surface));
+  color: var(--erp-text);
   text-align: center;
   white-space: nowrap;
 }
@@ -1100,7 +1102,7 @@ onMounted(async () => {
 .department-card {
   transition: all 0.3s ease;
   border: 2px solid transparent;
-  background: rgb(var(--v-theme-surface));
+  background: var(--erp-surface);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -1142,7 +1144,7 @@ onMounted(async () => {
 .role-card {
   transition: all 0.3s ease;
   border: 2px solid transparent;
-  background: rgb(var(--v-theme-surface));
+  background: var(--erp-surface);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -1191,7 +1193,7 @@ onMounted(async () => {
 }
 
 .project-preview h5 {
-  color: rgb(var(--v-theme-on-surface));
+  color: var(--erp-text);
 }
 
 .project-preview p {
@@ -1217,28 +1219,28 @@ onMounted(async () => {
 }
 
 .stat-value {
-  color: rgb(var(--v-theme-on-surface));
+  color: var(--erp-text);
   font-weight: 500;
   font-size: 1rem;
 }
 
 .navigation-footer {
-  background: white;
+  background: var(--erp-card-bg);
   padding: 24px 32px;
-  border-top: 1px solid rgb(var(--v-theme-outline-variant));
+  border-top: 1px solid var(--erp-border);
   margin-top: 32px;
 }
 
 .border {
-  border: 1px solid rgb(var(--v-theme-outline-variant));
+  border: 1px solid var(--erp-border);
 }
 
 .border-b {
-  border-bottom: 1px solid rgb(var(--v-theme-outline-variant));
+  border-bottom: 1px solid var(--erp-border);
 }
 
 .border-t {
-  border-top: 1px solid rgb(var(--v-theme-outline-variant));
+  border-top: 1px solid var(--erp-border);
 }
 
 .space-y-3 > * + * {
@@ -1281,7 +1283,8 @@ onMounted(async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--erp-page-bg);
+  opacity: 0.9;
   z-index: 1000;
 }
 

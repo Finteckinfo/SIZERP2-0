@@ -168,17 +168,17 @@ const formatDate = (dateString: string) => {
 
 <style scoped>
 .task-section {
-  background: white;
+  background: var(--erp-card-bg);
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--erp-border);
   overflow: hidden;
 }
 
 .section-header {
   padding: 16px 20px;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--erp-surface);
+  border-bottom: 1px solid var(--erp-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -186,7 +186,7 @@ const formatDate = (dateString: string) => {
 
 .section-header h4 {
   margin: 0;
-  color: #1e293b;
+  color: var(--erp-text);
   font-size: 1rem;
 }
 
@@ -204,9 +204,9 @@ const formatDate = (dateString: string) => {
   gap: 16px;
   padding: 16px;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--erp-border);
   margin-bottom: 12px;
-  background: white;
+  background: var(--erp-card-bg);
   transition: all 0.3s ease;
 }
 
@@ -216,12 +216,13 @@ const formatDate = (dateString: string) => {
 
 .task-item.completed {
   opacity: 0.7;
-  background: #f8fafc;
+  background: var(--erp-surface);
 }
 
 .task-item.completed .task-title {
   text-decoration: line-through;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
 }
 
 .task-checkbox {
@@ -243,7 +244,7 @@ const formatDate = (dateString: string) => {
 .task-title {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--erp-text);
   margin: 0;
 }
 
@@ -254,13 +255,15 @@ const formatDate = (dateString: string) => {
 }
 
 .task-date {
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   font-size: 0.75rem;
 }
 
 .task-description {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   margin: 0 0 16px 0;
   line-height: 1.5;
 }
@@ -291,7 +294,8 @@ const formatDate = (dateString: string) => {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   font-size: 0.875rem;
 }
 

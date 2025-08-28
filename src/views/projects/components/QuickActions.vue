@@ -1,5 +1,5 @@
 <template>
-  <v-card elevation="0" class="pa-4 border rounded-lg">
+  <v-card elevation="0" class="pa-4 border rounded-lg" :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }">
     <h4 class="text-subtitle-1 font-weight-medium mb-3">{{ title }}</h4>
     <div class="d-flex flex-column gap-2">
       <v-btn 
@@ -41,6 +41,6 @@ const emit = defineEmits<{
 
 <style scoped>
 .border {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--erp-border);
 }
 </style>

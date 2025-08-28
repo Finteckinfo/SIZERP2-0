@@ -44,17 +44,9 @@ export const useTheme = () => {
     if (isDark.value) {
       document.body.classList.add('dark-theme');
       document.documentElement.classList.add('dark-theme');
-      document.documentElement.style.setProperty('--page-background', '#101828');
-      document.documentElement.style.setProperty('--text-color', '#ffffff');
-      document.body.style.backgroundColor = '#101828';
-      document.documentElement.style.backgroundColor = '#101828';
     } else {
       document.body.classList.remove('dark-theme');
       document.documentElement.classList.remove('dark-theme');
-      document.documentElement.style.removeProperty('--page-background');
-      document.documentElement.style.removeProperty('--text-color');
-      document.body.style.backgroundColor = '';
-      document.documentElement.style.backgroundColor = '';
     }
     
     // Force a reflow to ensure CSS changes are applied immediately
@@ -70,17 +62,9 @@ export const useTheme = () => {
     if (isDark.value) {
       document.body.classList.add('dark-theme');
       document.documentElement.classList.add('dark-theme');
-      document.documentElement.style.setProperty('--page-background', '#101828');
-      document.documentElement.style.setProperty('--text-color', '#ffffff');
-      document.body.style.backgroundColor = '#101828';
-      document.documentElement.style.backgroundColor = '#101828';
     } else {
       document.body.classList.remove('dark-theme');
       document.documentElement.classList.remove('dark-theme');
-      document.documentElement.style.removeProperty('--page-background');
-      document.documentElement.style.removeProperty('--text-color');
-      document.body.style.backgroundColor = '';
-      document.documentElement.style.backgroundColor = '';
     }
     
     // Force a reflow to ensure CSS changes are applied immediately
@@ -115,17 +99,9 @@ export const useTheme = () => {
     if (isDark.value) {
       document.body.classList.add('dark-theme');
       document.documentElement.classList.add('dark-theme');
-      document.documentElement.style.setProperty('--page-background', '#101828');
-      document.documentElement.style.setProperty('--text-color', '#ffffff');
-      document.body.style.backgroundColor = '#101828';
-      document.documentElement.style.backgroundColor = '#101828';
     } else {
       document.body.classList.remove('dark-theme');
       document.documentElement.classList.remove('dark-theme');
-      document.documentElement.style.removeProperty('--page-background');
-      document.documentElement.style.removeProperty('--text-color');
-      document.body.style.backgroundColor = '';
-      document.documentElement.style.backgroundColor = '';
     }
   });
 

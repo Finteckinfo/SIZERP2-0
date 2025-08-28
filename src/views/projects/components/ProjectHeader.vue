@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar elevation="0" color="white" class="px-6 border-b">
+  <v-app-bar elevation="0" class="px-6 border-b erp-header">
     <!-- Back Button -->
     <div class="d-flex align-center">
       <v-btn icon @click="goBack" class="mr-4">
@@ -8,8 +8,8 @@
       
       <!-- Project Info -->
       <div class="d-flex align-center">
-        <v-icon color="primary" class="mr-2">mdi-lock</v-icon>
-        <h1 class="text-h5 font-weight-bold text-grey-darken-3">{{ projectName }}</h1>
+        <v-icon :color="'var(--erp-accent-green)'" class="mr-2">mdi-lock</v-icon>
+        <h1 class="text-h5 font-weight-bold" :style="{ color: 'var(--erp-text)' }">{{ projectName }}</h1>
         <v-chip 
           v-if="status"
           :color="getStatusColor(status)" 
@@ -130,7 +130,7 @@ const getAvatarColor = (color: string) => {
 
 <style scoped>
 .border-b {
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--erp-border);
 }
 
 .search-field {

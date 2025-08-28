@@ -14,8 +14,8 @@
       <div class="main-content">
         <!-- Loading State -->
         <div v-if="loading || !user" class="loading-state">
-          <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
-          <p class="mt-4 text-grey">{{ !user ? 'Loading user...' : 'Loading projects...' }}</p>
+          <v-progress-circular indeterminate :color="'var(--erp-accent-green)'" size="64"></v-progress-circular>
+          <p class="mt-4" :style="{ color: 'var(--erp-text)' }">{{ !user ? 'Loading user...' : 'Loading projects...' }}</p>
         </div>
 
         <!-- Error State -->
@@ -23,7 +23,7 @@
           <v-alert type="error" class="mb-4">
             {{ error }}
           </v-alert>
-          <v-btn color="primary" @click="loadProjectData">Retry</v-btn>
+          <v-btn :color="'var(--erp-accent-green)'" @click="loadProjectData">Retry</v-btn>
         </div>
 
         <!-- Content -->
@@ -32,7 +32,7 @@
           <ProjectStats :stats="projectStats" />
 
           <!-- Project Filters -->
-          <div class="project-filters mb-6">
+          <div class="project-filters mb-6" :style="{ background: 'var(--erp-card-bg)', border: '1px solid var(--erp-border)' }">
             <v-row>
               <v-col cols="12" sm="6" md="3">
                 <v-select
@@ -94,6 +94,7 @@
                 <v-card 
                   class="project-card" 
                   elevation="2" 
+                  :style="{ background: 'var(--erp-card-bg)', border: '1px solid var(--erp-border)' }"
                   @click="openProjectDetails(project)"
                 >
                   <v-card-title class="d-flex align-center justify-space-between">
@@ -171,7 +172,7 @@
 
                   <v-card-actions class="pt-0">
                     <v-btn 
-                      color="primary" 
+                      :color="'var(--erp-accent-green)'" 
                       variant="text" 
                       size="small"
                       @click.stop="openProjectDetails(project)"
@@ -180,7 +181,7 @@
                     </v-btn>
                     <v-spacer />
                     <v-btn 
-                      color="secondary" 
+                      :color="'var(--erp-accent-indigo)'" 
                       variant="text" 
                       size="small"
                       @click.stop="openProjectWorkspace(project)"
@@ -206,7 +207,7 @@
               </p>
               <v-btn 
                 v-if="projects.length === 0"
-                color="primary" 
+                :color="'var(--erp-accent-green)'" 
                 class="mt-4"
                 @click="router.push('/projects/create')"
               >
@@ -219,7 +220,7 @@
         <!-- Customize Button -->
         <v-btn
           class="customize-btn"
-          color="primary"
+          :color="'var(--erp-accent-green)'"
           variant="outlined"
           icon
           size="large"
@@ -604,7 +605,7 @@ const openProjectWorkspace = (project: Project) => {
 
 <style scoped>
 .project-view {
-  background: #f8fafc;
+  background: var(--erp-page-bg);
   min-height: 100vh;
 }
 
@@ -614,11 +615,9 @@ const openProjectWorkspace = (project: Project) => {
 }
 
 .project-filters {
-  background: white;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
 }
 
 .projects-grid {
@@ -629,19 +628,17 @@ const openProjectWorkspace = (project: Project) => {
   height: 100%;
   transition: all 0.3s ease;
   cursor: pointer;
-  border: 1px solid #e2e8f0;
-  background: white;
 }
 
 .project-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  border-color: #cbd5e1;
+  border-color: var(--erp-accent-green);
 }
 
 .project-card .v-card-title {
   padding: 16px 16px 8px 16px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--erp-border);
 }
 
 .project-card .v-card-text {
@@ -650,12 +647,12 @@ const openProjectWorkspace = (project: Project) => {
 
 .project-card .v-card-actions {
   padding: 8px 16px 16px 16px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--erp-border);
 }
 
 .project-name {
   font-weight: 600;
-  color: #1e293b;
+  color: var(--erp-text);
 }
 
 .gap-2 {
@@ -664,7 +661,8 @@ const openProjectWorkspace = (project: Project) => {
 
 .project-description {
   line-height: 1.5;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
 }
 
 .project-details {
@@ -677,7 +675,8 @@ const openProjectWorkspace = (project: Project) => {
   display: flex;
   align-items: center;
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
 }
 
 .progress-section {

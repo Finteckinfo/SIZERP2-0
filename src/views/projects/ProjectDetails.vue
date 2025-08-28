@@ -2,14 +2,14 @@
   <div class="project-details">
     <v-container fluid class="pa-0">
       <!-- Header -->
-      <v-app-bar elevation="0" color="white" class="px-6 border-b">
+      <v-app-bar elevation="0" class="px-6 border-b erp-header">
         <div class="d-flex align-center">
           <v-btn icon @click="$router.push('/projects')" class="mr-4">
             <v-icon>mdi-arrow-left</v-icon>
           </v-btn>
           <div class="d-flex align-center">
-            <v-icon color="primary" class="mr-2">mdi-folder</v-icon>
-            <h1 class="text-h5 font-weight-bold text-grey-darken-3">{{ project?.name || 'Loading...' }}</h1>
+            <v-icon :color="'var(--erp-accent-green)'" class="mr-2">mdi-folder</v-icon>
+            <h1 class="text-h5 font-weight-bold" :style="{ color: 'var(--erp-text)' }">{{ project?.name || 'Loading...' }}</h1>
             <v-chip 
               v-if="project"
               :color="getStatusColor(getProjectStatus(project))" 
@@ -25,7 +25,7 @@
         
         <div class="d-flex align-center">
           <v-btn 
-            color="primary" 
+            :color="'var(--erp-accent-green)'" 
             variant="outlined" 
             class="mr-3"
             @click="openWorkspace"
@@ -57,8 +57,8 @@
       <div class="main-content">
         <!-- Loading State -->
         <div v-if="loading" class="loading-state">
-          <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
-          <p class="mt-4 text-grey">Loading project details...</p>
+          <v-progress-circular indeterminate :color="'var(--erp-accent-green)'" size="64"></v-progress-circular>
+          <p class="mt-4" :style="{ color: 'var(--erp-text)' }">Loading project details...</p>
         </div>
 
         <!-- Error State -->
@@ -66,7 +66,7 @@
           <v-alert type="error" class="mb-4">
             {{ error }}
           </v-alert>
-          <v-btn color="primary" @click="loadProjectData">Retry</v-btn>
+          <v-btn :color="'var(--erp-accent-green)'" @click="loadProjectData">Retry</v-btn>
         </div>
 
         <!-- Content -->
@@ -74,7 +74,7 @@
           <!-- Project Overview Section -->
           <v-row class="mb-6">
             <v-col cols="12" md="8">
-              <v-card elevation="0" class="pa-4 border rounded-lg">
+              <v-card elevation="0" class="pa-4 border rounded-lg" :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }">
                 <div class="d-flex align-center justify-space-between mb-4">
                   <h3 class="text-h6 font-weight-medium">Project Overview</h3>
                   <v-chip 
@@ -136,7 +136,7 @@
             </v-col>
 
             <v-col cols="12" md="4">
-              <v-card elevation="0" class="pa-4 border rounded-lg">
+              <v-card elevation="0" class="pa-4 border rounded-lg" :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }">
                 <h4 class="text-h6 font-weight-medium mb-4">Quick Stats</h4>
                 
                 <div class="stats-grid">
@@ -173,11 +173,11 @@
                      <!-- Departments Section -->
            <v-row class="mb-6">
              <v-col cols="12">
-               <v-card elevation="0" class="pa-4 border rounded-lg">
+               <v-card elevation="0" class="pa-4 border rounded-lg" :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }">
                  <div class="d-flex align-center justify-space-between mb-4">
                    <h3 class="text-h6 font-weight-medium">Project Departments</h3>
                    <v-btn 
-                     color="primary" 
+                     :color="'var(--erp-accent-green)'" 
                      variant="outlined" 
                      size="small"
                      @click="addDepartment"
@@ -242,11 +242,11 @@
            <!-- Team Members Section -->
            <v-row class="mb-6">
              <v-col cols="12">
-               <v-card elevation="0" class="pa-4 border rounded-lg">
+               <v-card elevation="0" class="pa-4 border rounded-lg" :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }">
                  <div class="d-flex align-center justify-space-between mb-4">
                    <h3 class="text-h6 font-weight-medium">Team Members</h3>
                    <v-btn 
-                     color="primary" 
+                     :color="'var(--erp-accent-green)'" 
                      variant="outlined" 
                      size="small"
                      @click="inviteTeamMember"
@@ -291,11 +291,11 @@
           <!-- Recent Tasks Section -->
           <v-row class="mb-6">
             <v-col cols="12">
-              <v-card elevation="0" class="pa-4 border rounded-lg">
+              <v-card elevation="0" class="pa-4 border rounded-lg" :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }">
                 <div class="d-flex align-center justify-space-between mb-4">
                   <h3 class="text-h6 font-weight-medium">Recent Tasks</h3>
                   <v-btn 
-                    color="primary" 
+                    :color="'var(--erp-accent-green)'" 
                     variant="outlined" 
                     size="small"
                     @click="viewAllTasks"
@@ -346,7 +346,7 @@
           <!-- Project Timeline Section -->
           <v-row class="mb-6">
             <v-col cols="12">
-              <v-card elevation="0" class="pa-4 border rounded-lg">
+              <v-card elevation="0" class="pa-4 border rounded-lg" :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }">
                 <h3 class="text-h6 font-weight-medium mb-4">Project Timeline</h3>
                 
                 <div class="timeline">
@@ -670,7 +670,7 @@ watch(() => route.params.id, (newId) => {
 
 <style scoped>
 .project-details {
-  background: #f8fafc;
+  background: var(--erp-page-bg);
   min-height: 100vh;
 }
 
@@ -679,11 +679,11 @@ watch(() => route.params.id, (newId) => {
 }
 
 .border {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--erp-border);
 }
 
 .border-b {
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--erp-border);
 }
 
 .loading-state,
@@ -713,13 +713,14 @@ watch(() => route.params.id, (newId) => {
 
 .meta-label {
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   margin-bottom: 4px;
 }
 
 .meta-value {
   font-weight: 500;
-  color: #1e293b;
+  color: var(--erp-text);
 }
 
 .stats-grid {
@@ -731,20 +732,21 @@ watch(() => route.params.id, (newId) => {
 .stat-item {
   text-align: center;
   padding: 16px;
-  background: #f8fafc;
+  background: var(--erp-surface);
   border-radius: 8px;
 }
 
 .stat-value {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--erp-text);
   margin-bottom: 4px;
 }
 
 .stat-label {
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   margin-bottom: 8px;
 }
 
@@ -761,8 +763,8 @@ watch(() => route.params.id, (newId) => {
 }
 
 .department-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--erp-card-bg);
+  border: 1px solid var(--erp-border);
   border-radius: 12px;
   padding: 20px;
   transition: all 0.3s ease;
@@ -785,7 +787,7 @@ watch(() => route.params.id, (newId) => {
   flex-shrink: 0;
   width: 48px;
   height: 48px;
-  background: #f8fafc;
+  background: var(--erp-surface);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -799,13 +801,14 @@ watch(() => route.params.id, (newId) => {
 .department-name {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--erp-text);
   margin: 0 0 8px 0;
 }
 
 .department-description {
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   line-height: 1.5;
   margin: 0 0 12px 0;
 }
@@ -818,7 +821,8 @@ watch(() => route.params.id, (newId) => {
 
 .task-count {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   font-weight: 500;
 }
 
@@ -834,9 +838,9 @@ watch(() => route.params.id, (newId) => {
   display: flex;
   align-items: center;
   padding: 16px;
-  background: #f8fafc;
+  background: var(--erp-surface);
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--erp-border);
 }
 
 .member-avatar {
@@ -849,7 +853,7 @@ watch(() => route.params.id, (newId) => {
 
 .member-name {
   font-weight: 500;
-  color: #1e293b;
+  color: var(--erp-text);
   margin-bottom: 4px;
 }
 
@@ -864,9 +868,9 @@ watch(() => route.params.id, (newId) => {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background: #f8fafc;
+  background: var(--erp-surface);
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--erp-border);
 }
 
 .task-info {
@@ -875,13 +879,14 @@ watch(() => route.params.id, (newId) => {
 
 .task-name {
   font-weight: 500;
-  color: #1e293b;
+  color: var(--erp-text);
   margin-bottom: 4px;
 }
 
 .task-description {
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
 }
 
 .task-meta {
@@ -944,13 +949,14 @@ watch(() => route.params.id, (newId) => {
 
 .timeline-date {
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--erp-text);
+  opacity: 0.7;
   margin-bottom: 4px;
 }
 
 .timeline-title {
   font-weight: 500;
-  color: #1e293b;
+  color: var(--erp-text);
 }
 
 @media (max-width: 768px) {

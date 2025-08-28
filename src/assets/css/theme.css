@@ -5,42 +5,42 @@
   font-family: 'Poppins', sans-serif;
 }
 
-/* Light Mode (Default) */
+/* Light Mode (Default) - using non-conflicting variable names */
 :root {
-  --page-background: #ffffff;
-  --text-color: #212121;
-  --card-background: #ffffff;
-  --border-color: #d0d0d0;
-  --primary-color: #39B84C;
-  --secondary-color: #02124C;
+  --theme-page-bg: #ffffff;
+  --theme-text-color: #212121;
+  --theme-card-bg: #ffffff;
+  --theme-border-color: #d0d0d0;
+  --theme-primary-color: #39B84C;
+  --theme-secondary-color: #02124C;
 }
 
-/* Dark Mode */
+/* Dark Mode - using non-conflicting variable names */
 .dark-theme {
-  --page-background: #101828;
-  --text-color: #ffffff;
-  --card-background: #101828;
-  --border-color: #404040;
-  --primary-color: #2d8a3a;
-  --secondary-color: #010d2e;
+  --theme-page-bg: #101828;
+  --theme-text-color: #ffffff;
+  --theme-card-bg: #101828;
+  --theme-border-color: #404040;
+  --theme-primary-color: #2d8a3a;
+  --theme-secondary-color: #010d2e;
 }
 
 /* Apply theme to body and html */
 html.dark-theme,
 body.dark-theme {
-  background-color: var(--page-background) !important;
-  color: var(--text-color) !important;
+  background-color: var(--theme-page-bg) !important;
+  color: var(--theme-text-color) !important;
 }
 
 /* Ensure blank layout follows theme rules */
 .blank-layout.dark-theme {
-  background-color: var(--page-background) !important;
-  color: var(--text-color) !important;
+  background-color: var(--theme-page-bg) !important;
+  color: var(--theme-text-color) !important;
 }
 
 .blank-layout:not(.dark-theme) {
-  background-color: var(--page-background) !important;
-  color: var(--text-color) !important;
+  background-color: var(--theme-page-bg) !important;
+  color: var(--theme-text-color) !important;
 }
 
 /* Ensure blank layout children inherit theme properly */
@@ -104,13 +104,13 @@ body.dark-theme {
 .dark-theme span:not(.accent-text):not(.banner-title):not(.banner-subtitle),
 .dark-theme label:not(.banner-title):not(.banner-subtitle),
 .dark-theme div:not(.banner-content):not(.banner-overlay):not(.banner-column):not(.banner-box) {
-  color: var(--text-color) !important;
+  color: var(--theme-text-color) !important;
 }
 
 /* Clerk components should have proper backgrounds */
 .clerk-container {
-  background: var(--card-background) !important;
-  background-color: var(--card-background) !important;
+  background: var(--theme-card-bg) !important;
+  background-color: var(--theme-card-bg) !important;
 }
 
 .clerk-container * {

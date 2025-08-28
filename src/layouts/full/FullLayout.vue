@@ -36,7 +36,7 @@ const customizer = useCustomizerStore();
               size="large"
               icon
               variant="flat"
-              color="secondary"
+              :color="'var(--erp-accent-indigo)'"
               @click.stop="customizer.SET_CUSTOMIZER_DRAWER(!customizer.Customizer_drawer)"
             >
               <SettingsIcon class="icon" />
