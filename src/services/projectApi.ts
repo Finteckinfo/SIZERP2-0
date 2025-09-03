@@ -199,6 +199,7 @@ export interface CreateTaskData {
   title: string;
   description?: string;
   departmentId: string;
+  assignedRoleId?: string;
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   estimatedHours?: number;
   dueDate?: string;
@@ -514,18 +515,7 @@ export const taskApi = {
     return response.data;
   },
 
-  // NEW: Create task for existing project
-  createProjectTask: async (projectId: string, taskData: {
-    title: string;
-    description?: string;
-    priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-    departmentId: string;
-    assignedRoleId?: string;
-    status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED';
-  }) => {
-    const response = await api.post(`/projects/${projectId}/tasks`, taskData);
-    return response.data;
-  },
+
 
   // NEW: Get all tasks for existing project with filtering
   getProjectTasksWithFilter: async (projectId: string, params?: {

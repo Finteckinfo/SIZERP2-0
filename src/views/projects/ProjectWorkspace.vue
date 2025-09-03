@@ -554,7 +554,7 @@ const submitNewTask = async () => {
   if (isValid === false || addTaskValid.value === false) return;
   submitting.value = true;
   try {
-    await taskApi.createProjectTask(projectId, newTask.value as any);
+    await taskApi.createTask(newTask.value as any);
     await loadProjectData();
     resetPanel();
   } catch (e) {
