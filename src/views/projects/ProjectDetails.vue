@@ -428,29 +428,70 @@ const loadProjectData = async () => {
     const projectResponse = await projectApi.getProject(route.params.id as string);
     project.value = projectResponse;
 
-    // Load role and permissions first
-    const [roleRes, permRes] = await Promise.all([
-      projectAccessApi.getMyRole(route.params.id as string),
-      projectAccessApi.getPermissions(route.params.id as string)
-    ]);
-    myRole.value = roleRes?.role || null;
-    permissions.value = permRes || {};
+    // Load role and permissions (with fallback to existing endpoints)
+    try {
+      const [roleRes, permRes] = await Promise.all([
+        projectAccessApi.getMyRole(route.params.id as string),
+        projectAccessApi.getPermissions(route.params.id as string)
+      ]);
+      myRole.value = roleRes?.role || null;
+      permissions.value = permRes || {};
+    } catch (error) {
+      console.warn('Role-aware endpoints not available, using fallback:', error);
+      // Fallback: get role from existing endpoint
+      try {
+        const roleResponse = await userRoleApi.getUserRoleInProject(route.params.id as string, user.value.id);
+        myRole.value = roleResponse?.role || null;
+        // Compute basic permissions from role
+        permissions.value = {
+          canCreateTask: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
+          canAssignTask: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
+          canEditTask: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
+          canManageDepartments: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
+          canSchedule: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
+          canReportTime: true // Allow all roles to report for now
+        };
+      } catch (fallbackError) {
+        console.error('Fallback role loading failed:', fallbackError);
+        myRole.value = null;
+        permissions.value = {};
+      }
+    }
 
-    // Load role-aware overview
-    overview.value = await projectApi.getProjectOverview(route.params.id as string);
+    // Load role-aware overview (with fallback)
+    try {
+      overview.value = await projectApi.getProjectOverview(route.params.id as string);
+    } catch (error) {
+      console.warn('Overview endpoint not available, using fallback');
+      overview.value = null;
+    }
 
-    // Load role-aware lists
-    const [tasksResponse, teamResponse, departmentsResponse] = await Promise.all([
-      taskApi.getProjectTasksWithFilter(route.params.id as string, {
-        scope: myRole.value === 'PROJECT_OWNER' ? 'all' : myRole.value === 'PROJECT_MANAGER' ? 'department' : 'assigned_to_me'
-      }),
-      userRoleApi.getAccessibleProjectTeam(route.params.id as string),
-      departmentApi.getAccessibleDepartments(route.params.id as string)
-    ]);
+    // Load role-aware lists (with fallback)
+    try {
+      const [tasksResponse, teamResponse, departmentsResponse] = await Promise.all([
+        taskApi.getProjectTasksWithFilter(route.params.id as string, {
+          scope: myRole.value === 'PROJECT_OWNER' ? 'all' : myRole.value === 'PROJECT_MANAGER' ? 'department' : 'assigned_to_me'
+        }),
+        userRoleApi.getAccessibleProjectTeam(route.params.id as string),
+        departmentApi.getAccessibleDepartments(route.params.id as string)
+      ]);
 
-    tasks.value = tasksResponse?.tasks || [];
-    teamMembers.value = Array.isArray(teamResponse) ? teamResponse : (teamResponse.userRoles || teamResponse.data || []);
-    departments.value = Array.isArray(departmentsResponse) ? departmentsResponse : (departmentsResponse.departments || departmentsResponse.data || []);
+      tasks.value = tasksResponse?.tasks || [];
+      teamMembers.value = Array.isArray(teamResponse) ? teamResponse : (teamResponse.userRoles || teamResponse.data || []);
+      departments.value = Array.isArray(departmentsResponse) ? departmentsResponse : (departmentsResponse.departments || departmentsResponse.data || []);
+    } catch (error) {
+      console.warn('Role-aware endpoints not available, using fallback:', error);
+      // Fallback: use original endpoints
+      const [tasksResponse, teamResponse, departmentsResponse] = await Promise.all([
+        taskApi.getProjectTasks(route.params.id as string),
+        userRoleApi.getProjectUserRoles(route.params.id as string),
+        departmentApi.getProjectDepartments(route.params.id as string)
+      ]);
+
+      tasks.value = tasksResponse?.tasks || [];
+      teamMembers.value = Array.isArray(teamResponse) ? teamResponse : (teamResponse.userRoles || []);
+      departments.value = Array.isArray(departmentsResponse) ? departmentsResponse : (departmentsResponse.departments || []);
+    }
 
   } catch (err: any) {
     console.error('Error loading project data:', err);

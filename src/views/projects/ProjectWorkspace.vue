@@ -509,26 +509,62 @@ const loadProjectData = async () => {
     const projectResponse = await projectApi.getProject(projectId);
     project.value = projectResponse;
     
-    // Load role and permissions
-    const [roleRes, permRes] = await Promise.all([
-      projectAccessApi.getMyRole(projectId),
-      projectAccessApi.getPermissions(projectId)
-    ]);
-    myRole.value = roleRes?.role || null;
-    permissions.value = permRes || {};
+    // Load role and permissions (with fallback to existing endpoints)
+    try {
+      const [roleRes, permRes] = await Promise.all([
+        projectAccessApi.getMyRole(projectId),
+        projectAccessApi.getPermissions(projectId)
+      ]);
+      myRole.value = roleRes?.role || null;
+      permissions.value = permRes || {};
+    } catch (error) {
+      console.warn('Role-aware endpoints not available, using fallback:', error);
+      // Fallback: get role from existing endpoint
+      try {
+        const roleResponse = await userRoleApi.getUserRoleInProject(projectId, window.Clerk?.user?.id || '');
+        myRole.value = roleResponse?.role || null;
+        // Compute basic permissions from role
+        permissions.value = {
+          canCreateTask: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
+          canAssignTask: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
+          canEditTask: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
+          canManageDepartments: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
+          canSchedule: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
+          canReportTime: true // Allow all roles to report for now
+        };
+      } catch (fallbackError) {
+        console.error('Fallback role loading failed:', fallbackError);
+        myRole.value = null;
+        permissions.value = {};
+      }
+    }
 
-    // Fetch accessible departments, scoped tasks, and accessible team
-    const [departmentsResponse, tasksResponse, teamResponse] = await Promise.all([
-      departmentApi.getAccessibleDepartments(projectId),
-      taskApi.getProjectTasksWithFilter(projectId, {
-        scope: myRole.value === 'PROJECT_OWNER' ? 'all' : myRole.value === 'PROJECT_MANAGER' ? 'department' : 'assigned_to_me'
-      }),
-      userRoleApi.getAccessibleProjectTeam(projectId)
-    ]);
+    // Fetch accessible departments, scoped tasks, and accessible team (with fallback)
+    try {
+      const [departmentsResponse, tasksResponse, teamResponse] = await Promise.all([
+        departmentApi.getAccessibleDepartments(projectId),
+        taskApi.getProjectTasksWithFilter(projectId, {
+          scope: myRole.value === 'PROJECT_OWNER' ? 'all' : myRole.value === 'PROJECT_MANAGER' ? 'department' : 'assigned_to_me'
+        }),
+        userRoleApi.getAccessibleProjectTeam(projectId)
+      ]);
 
-    departments.value = Array.isArray(departmentsResponse) ? departmentsResponse : (departmentsResponse.departments || departmentsResponse.data || []);
-    tasks.value = (tasksResponse?.tasks) || [];
-    teamMembers.value = Array.isArray(teamResponse) ? teamResponse : (teamResponse.userRoles || teamResponse.data || []);
+      departments.value = Array.isArray(departmentsResponse) ? departmentsResponse : (departmentsResponse.departments || departmentsResponse.data || []);
+      tasks.value = (tasksResponse?.tasks) || [];
+      teamMembers.value = Array.isArray(teamResponse) ? teamResponse : (teamResponse.userRoles || teamResponse.data || []);
+    } catch (error) {
+      console.warn('Role-aware endpoints not available, using fallback:', error);
+      // Fallback: use original endpoints
+      const [departmentsResponse, tasksResponse, teamResponse] = await Promise.all([
+        departmentApi.getProjectDepartments(projectId),
+        taskApi.getProjectTasks(projectId),
+        userRoleApi.getProjectUserRoles(projectId)
+      ]);
+
+      departments.value = Array.isArray(departmentsResponse) ? departmentsResponse : (departmentsResponse.departments || []);
+      tasks.value = tasksResponse?.tasks || [];
+      teamMembers.value = Array.isArray(teamResponse) ? teamResponse : (teamResponse.userRoles || []);
+    }
   } catch (err) {
     error.value = 'Failed to load project data';
     console.error('Error loading project data:', err);
