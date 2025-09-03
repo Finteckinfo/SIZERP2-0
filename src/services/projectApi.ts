@@ -265,19 +265,19 @@ export const projectApi = {
 
   // NEW: Project overview/stats (role-aware)
   getProjectOverview: async (projectId: string) => {
-    const response = await api.get(`/projects/${projectId}/overview`);
+    const response = await api.get(`/role-aware/projects/${projectId}/overview`);
     return response.data;
   },
 
   // NEW: Project-level stats with optional department drill-down
   getProjectStats: async (projectId: string, params?: { departmentId?: string }) => {
-    const response = await api.get(`/projects/${projectId}/stats`, { params });
+    const response = await api.get(`/role-aware/projects/${projectId}/stats`, { params });
     return response.data;
   },
 
   // NEW: Employee-only quick stats (assigned to me)
   getMyProjectStats: async (projectId: string) => {
-    const response = await api.get(`/projects/${projectId}/my-stats`);
+    const response = await api.get(`/role-aware/projects/${projectId}/my-stats`);
     return response.data;
   }
 };
@@ -286,19 +286,19 @@ export const projectApi = {
 export const projectAccessApi = {
   // Get my role and department scope within a project
   getMyRole: async (projectId: string) => {
-    const response = await api.get(`/projects/${projectId}/my-role`);
+    const response = await api.get(`/role-aware/projects/${projectId}/my-role`);
     return response.data;
   },
 
   // Get resolved permissions/action flags for a project
   getPermissions: async (projectId: string) => {
-    const response = await api.get(`/projects/${projectId}/permissions`);
+    const response = await api.get(`/role-aware/projects/${projectId}/permissions`);
     return response.data;
   },
 
   // Generic access check for a specific action
   checkAccess: async (payload: { projectId: string; action: string; departmentId?: string; taskId?: string }) => {
-    const response = await api.post(`/access/check`, payload);
+    const response = await api.post(`/role-aware/access/check`, payload);
     return response.data;
   }
 };
@@ -440,7 +440,7 @@ export const userRoleApi = {
 
   // NEW: Role-aware team list for a project
   getAccessibleProjectTeam: async (projectId: string) => {
-    const response = await api.get(`/projects/${projectId}/team/accessible`);
+    const response = await api.get(`/role-aware/projects/${projectId}/team/accessible`);
     return response.data;
   }
 };
@@ -523,19 +523,19 @@ export const departmentApi = {
 
   // NEW: Get only departments accessible to the current user in a project
   getAccessibleDepartments: async (projectId: string) => {
-    const response = await api.get(`/projects/${projectId}/departments/accessible`);
+    const response = await api.get(`/role-aware/projects/${projectId}/departments/accessible`);
     return response.data;
   },
 
   // NEW: Get role-aware department stats
   getDepartmentStats: async (departmentId: string) => {
-    const response = await api.get(`/departments/${departmentId}/stats`);
+    const response = await api.get(`/role-aware/departments/${departmentId}/stats`);
     return response.data;
   },
 
   // NEW: Get role-aware department team
   getDepartmentTeam: async (departmentId: string) => {
-    const response = await api.get(`/departments/${departmentId}/team`);
+    const response = await api.get(`/role-aware/departments/${departmentId}/team`);
     return response.data;
   }
 };
@@ -593,7 +593,7 @@ export const taskApi = {
     sortOrder?: 'asc' | 'desc';
     scope?: 'all' | 'department' | 'assigned_to_me';
   }) => {
-    const response = await api.get(`/projects/${projectId}/tasks`, { params });
+    const response = await api.get(`/role-aware/projects/${projectId}/tasks`, { params });
     return response.data;
   },
 
