@@ -151,6 +151,7 @@
                     size="large"
                     class="action-btn"
                     @click="openAddTaskPanel"
+                    v-if="permissions?.canCreateTask"
                   >
                     <v-icon size="20" class="mr-2">mdi-plus</v-icon>
                     Add Task
@@ -161,6 +162,7 @@
                     size="large"
                     class="action-btn"
                     @click="openInvitePanel"
+                    v-if="myRole === 'PROJECT_OWNER' || myRole === 'PROJECT_MANAGER'"
                   >
                     <v-icon size="20" class="mr-2">mdi-account-plus</v-icon>
                     Add Member
@@ -171,6 +173,7 @@
                     size="large"
                     class="action-btn"
                     @click="openAddDepartmentPanel"
+                    v-if="permissions?.canManageDepartments"
                   >
                     <v-icon size="20" class="mr-2">mdi-folder-plus</v-icon>
                     Add Department/Section
@@ -181,6 +184,7 @@
                     size="large"
                     class="action-btn"
                     @click="scheduleMeeting"
+                    v-if="permissions?.canSchedule"
                   >
                     <v-icon size="20" class="mr-2">mdi-calendar</v-icon>
                     Schedule
@@ -191,6 +195,7 @@
                     size="large"
                     class="action-btn"
                     @click="createReport"
+                    v-if="permissions?.canReportTime"
                   >
                     <v-icon size="20" class="mr-2">mdi-file-document</v-icon>
                     Report
@@ -425,7 +430,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { projectApi, taskApi, departmentApi, userRoleApi, projectInviteApi, type Project, type Task, type Department, type UserRole } from '@/services/projectApi';
+import { projectApi, taskApi, departmentApi, userRoleApi, projectInviteApi, projectAccessApi, type Project, type Task, type Department, type UserRole } from '@/services/projectApi';
 import ProjectAccessGate from '@/components/ProjectAccessGate.vue';
 
 const route = useRoute();
@@ -448,6 +453,8 @@ const project = ref<Project | null>(null);
 const departments = ref<Department[]>([]);
 const tasks = ref<Task[]>([]);
 const teamMembers = ref<UserRole[]>([]);
+const myRole = ref<'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE' | null>(null);
+const permissions = ref<any>(null);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const submitting = ref(false);
@@ -499,15 +506,26 @@ const loadProjectData = async () => {
     const projectResponse = await projectApi.getProject(projectId);
     project.value = projectResponse;
     
+    // Load role and permissions
+    const [roleRes, permRes] = await Promise.all([
+      projectAccessApi.getMyRole(projectId),
+      projectAccessApi.getPermissions(projectId)
+    ]);
+    myRole.value = roleRes?.role || null;
+    permissions.value = permRes || {};
+
+    // Fetch accessible departments, scoped tasks, and accessible team
     const [departmentsResponse, tasksResponse, teamResponse] = await Promise.all([
-      departmentApi.getProjectDepartments(projectId),
-      taskApi.getProjectTasks(projectId),
-      userRoleApi.getProjectUserRoles(projectId)
+      departmentApi.getAccessibleDepartments(projectId),
+      taskApi.getProjectTasksWithFilter(projectId, {
+        scope: myRole.value === 'PROJECT_OWNER' ? 'all' : myRole.value === 'PROJECT_MANAGER' ? 'department' : 'assigned_to_me'
+      }),
+      userRoleApi.getAccessibleProjectTeam(projectId)
     ]);
 
-    departments.value = Array.isArray(departmentsResponse) ? departmentsResponse : (departmentsResponse.departments || []);
-    tasks.value = tasksResponse.tasks || [];
-    teamMembers.value = Array.isArray(teamResponse) ? teamResponse : (teamResponse.userRoles || []);
+    departments.value = Array.isArray(departmentsResponse) ? departmentsResponse : (departmentsResponse.departments || departmentsResponse.data || []);
+    tasks.value = (tasksResponse?.tasks) || [];
+    teamMembers.value = Array.isArray(teamResponse) ? teamResponse : (teamResponse.userRoles || teamResponse.data || []);
   } catch (err) {
     error.value = 'Failed to load project data';
     console.error('Error loading project data:', err);

@@ -387,7 +387,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUser } from '@clerk/vue';
-import { projectApi, taskApi, userRoleApi, departmentApi, type Project, type Task, type UserRole, type Department } from '@/services/projectApi';
+import { projectApi, taskApi, userRoleApi, departmentApi, projectAccessApi, type Project, type Task, type UserRole, type Department } from '@/services/projectApi';
 
 const router = useRouter();
 const route = useRoute();
@@ -399,6 +399,9 @@ const tasks = ref<Task[]>([]);
 const teamMembers = ref<UserRole[]>([]);
 const departments = ref<Department[]>([]);
 const userRole = ref<UserRole | null>(null);
+const myRole = ref<'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE' | null>(null);
+const permissions = ref<any>(null);
+const overview = ref<{ totalTasks: number; completedTasks: number; completionPercentage: number; teamMembers: number } | null>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
@@ -422,26 +425,29 @@ const loadProjectData = async () => {
     const projectResponse = await projectApi.getProject(route.params.id as string);
     project.value = projectResponse;
 
-    // Load project tasks
-    const tasksResponse = await taskApi.getProjectTasks(route.params.id as string);
-    tasks.value = tasksResponse.tasks || [];
+    // Load role and permissions first
+    const [roleRes, permRes] = await Promise.all([
+      projectAccessApi.getMyRole(route.params.id as string),
+      projectAccessApi.getPermissions(route.params.id as string)
+    ]);
+    myRole.value = roleRes?.role || null;
+    permissions.value = permRes || {};
 
-         // Load team members
-     const teamResponse = await userRoleApi.getProjectUserRoles(route.params.id as string);
-     teamMembers.value = Array.isArray(teamResponse) ? teamResponse : (teamResponse.userRoles || []);
+    // Load role-aware overview
+    overview.value = await projectApi.getProjectOverview(route.params.id as string);
 
-     // Load project departments
-     try {
-       const departmentsResponse = await departmentApi.getProjectDepartments(route.params.id as string);
-       departments.value = Array.isArray(departmentsResponse) ? departmentsResponse : (departmentsResponse.departments || []);
-     } catch (deptError) {
-       console.warn('Failed to load departments:', deptError);
-       departments.value = [];
-     }
+    // Load role-aware lists
+    const [tasksResponse, teamResponse, departmentsResponse] = await Promise.all([
+      taskApi.getProjectTasksWithFilter(route.params.id as string, {
+        scope: myRole.value === 'PROJECT_OWNER' ? 'all' : myRole.value === 'PROJECT_MANAGER' ? 'department' : 'assigned_to_me'
+      }),
+      userRoleApi.getAccessibleProjectTeam(route.params.id as string),
+      departmentApi.getAccessibleDepartments(route.params.id as string)
+    ]);
 
-    // Get user's role in this project
-    const roleResponse = await userRoleApi.getUserRoleInProject(route.params.id as string, user.value.id);
-    userRole.value = roleResponse;
+    tasks.value = tasksResponse?.tasks || [];
+    teamMembers.value = Array.isArray(teamResponse) ? teamResponse : (teamResponse.userRoles || teamResponse.data || []);
+    departments.value = Array.isArray(departmentsResponse) ? departmentsResponse : (departmentsResponse.departments || departmentsResponse.data || []);
 
   } catch (err: any) {
     console.error('Error loading project data:', err);

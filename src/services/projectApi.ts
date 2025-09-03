@@ -261,6 +261,45 @@ export const projectApi = {
   deleteProject: async (projectId: string) => {
     const response = await api.delete(`/projects/${projectId}`);
     return response.data;
+  },
+
+  // NEW: Project overview/stats (role-aware)
+  getProjectOverview: async (projectId: string) => {
+    const response = await api.get(`/projects/${projectId}/overview`);
+    return response.data;
+  },
+
+  // NEW: Project-level stats with optional department drill-down
+  getProjectStats: async (projectId: string, params?: { departmentId?: string }) => {
+    const response = await api.get(`/projects/${projectId}/stats`, { params });
+    return response.data;
+  },
+
+  // NEW: Employee-only quick stats (assigned to me)
+  getMyProjectStats: async (projectId: string) => {
+    const response = await api.get(`/projects/${projectId}/my-stats`);
+    return response.data;
+  }
+};
+
+// Role and Permissions APIs (role-aware project context)
+export const projectAccessApi = {
+  // Get my role and department scope within a project
+  getMyRole: async (projectId: string) => {
+    const response = await api.get(`/projects/${projectId}/my-role`);
+    return response.data;
+  },
+
+  // Get resolved permissions/action flags for a project
+  getPermissions: async (projectId: string) => {
+    const response = await api.get(`/projects/${projectId}/permissions`);
+    return response.data;
+  },
+
+  // Generic access check for a specific action
+  checkAccess: async (payload: { projectId: string; action: string; departmentId?: string; taskId?: string }) => {
+    const response = await api.post(`/access/check`, payload);
+    return response.data;
   }
 };
 
@@ -397,6 +436,12 @@ export const userRoleApi = {
   assignDepartmentToRole: async (roleId: string, departmentId: string) => {
     const response = await api.post(`/user-roles/${roleId}/departments/${departmentId}`);
     return response.data;
+  },
+
+  // NEW: Role-aware team list for a project
+  getAccessibleProjectTeam: async (projectId: string) => {
+    const response = await api.get(`/projects/${projectId}/team/accessible`);
+    return response.data;
   }
 };
 
@@ -474,6 +519,24 @@ export const departmentApi = {
   deleteProjectDepartment: async (projectId: string, departmentId: string) => {
     const response = await api.delete(`/projects/${projectId}/departments/${departmentId}`);
     return response.data;
+  },
+
+  // NEW: Get only departments accessible to the current user in a project
+  getAccessibleDepartments: async (projectId: string) => {
+    const response = await api.get(`/projects/${projectId}/departments/accessible`);
+    return response.data;
+  },
+
+  // NEW: Get role-aware department stats
+  getDepartmentStats: async (departmentId: string) => {
+    const response = await api.get(`/departments/${departmentId}/stats`);
+    return response.data;
+  },
+
+  // NEW: Get role-aware department team
+  getDepartmentTeam: async (departmentId: string) => {
+    const response = await api.get(`/departments/${departmentId}/team`);
+    return response.data;
   }
 };
 
@@ -528,6 +591,7 @@ export const taskApi = {
     search?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    scope?: 'all' | 'department' | 'assigned_to_me';
   }) => {
     const response = await api.get(`/projects/${projectId}/tasks`, { params });
     return response.data;
