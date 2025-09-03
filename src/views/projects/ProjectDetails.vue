@@ -404,6 +404,7 @@ const permissions = ref<any>(null);
 const overview = ref<{ totalTasks: number; completedTasks: number; completionPercentage: number; teamMembers: number } | null>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
+const loadInFlight = ref(false);
 
 // Computed properties
 const recentTasks = computed(() => {
@@ -418,6 +419,8 @@ const loadProjectData = async () => {
   }
 
   try {
+    if (loadInFlight.value) return;
+    loadInFlight.value = true;
     loading.value = true;
     error.value = null;
 
@@ -454,6 +457,7 @@ const loadProjectData = async () => {
     error.value = `Failed to load project data: ${err.message || 'Unknown error'}`;
   } finally {
     loading.value = false;
+    loadInFlight.value = false;
   }
 };
 

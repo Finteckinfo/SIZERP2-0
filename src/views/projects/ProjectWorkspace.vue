@@ -458,6 +458,7 @@ const permissions = ref<any>(null);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const submitting = ref(false);
+const loadInFlight = ref(false);
 
 // Forms state
 const addDepartmentForm = ref();
@@ -499,7 +500,9 @@ const roleSelectItems = computed(() => teamMembers.value.map(r => ({ id: r.id, l
 
 // Load project data from API
 const loadProjectData = async () => {
+  if (loadInFlight.value) return;
   try {
+    loadInFlight.value = true;
     loading.value = true;
     error.value = null;
     
@@ -531,6 +534,7 @@ const loadProjectData = async () => {
     console.error('Error loading project data:', err);
   } finally {
     loading.value = false;
+    loadInFlight.value = false;
   }
 };
 
