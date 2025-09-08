@@ -168,7 +168,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #f8fafc;
+  background-color: var(--erp-surface);
 }
 
 .calendar-content {
@@ -179,14 +179,14 @@ onMounted(() => {
 
 .sidebar {
   width: 350px;
-  background-color: white;
-  border-right: 1px solid #e2e8f0;
+  background-color: var(--erp-card-bg);
+  border-right: 1px solid var(--erp-border);
   overflow-y: auto;
 }
 
 .calendar-main {
   flex: 1;
-  background-color: white;
+  background-color: var(--erp-card-bg);
   overflow: hidden;
 }
 
@@ -199,7 +199,7 @@ onMounted(() => {
     width: 100%;
     height: 300px;
     border-right: none;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--erp-border);
   }
 }
 </style>

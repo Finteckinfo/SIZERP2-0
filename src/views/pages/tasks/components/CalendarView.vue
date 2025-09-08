@@ -309,15 +309,15 @@ const formatDayDate = (date: Date) => {
 .month-header {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  background-color: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background-color: var(--erp-surface);
+  border-bottom: 1px solid var(--erp-border);
 }
 
 .weekday-header {
   padding: 1rem;
   text-align: center;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--erp-text);
   font-size: 0.875rem;
 }
 
@@ -336,30 +336,32 @@ const formatDayDate = (date: Date) => {
   cursor: pointer;
   transition: background-color 0.2s;
   overflow: hidden;
+  background: var(--erp-card-bg);
 }
 
 .month-day:hover {
-  background-color: #f8fafc;
+  background-color: var(--erp-surface);
 }
 
 .month-day.other-month {
-  background-color: #f9fafb;
-  color: #9ca3af;
+  background-color: var(--erp-surface);
+  opacity: 0.6;
 }
 
 .month-day.today {
-  background-color: #dbeafe;
+  background-color: color-mix(in srgb, var(--erp-accent-indigo) 12%, transparent);
 }
 
 .month-day.selected {
-  background-color: #dbeafe;
-  border-color: #3b82f6;
+  background-color: color-mix(in srgb, var(--erp-accent-indigo) 18%, transparent);
+  border-color: var(--erp-accent-indigo);
 }
 
 .day-number {
   font-weight: 600;
   margin-bottom: 0.25rem;
   font-size: 0.875rem;
+  color: var(--erp-text);
 }
 
 .day-tasks {
@@ -378,14 +380,14 @@ const formatDayDate = (date: Date) => {
 .week-header {
   display: grid;
   grid-template-columns: 60px repeat(7, 1fr);
-  background-color: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background-color: var(--erp-surface);
+  border-bottom: 1px solid var(--erp-border);
 }
 
 .time-column {
   padding: 1rem 0.5rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--erp-text);
   font-size: 0.875rem;
   text-align: center;
 }
@@ -395,25 +397,25 @@ const formatDayDate = (date: Date) => {
   text-align: center;
   cursor: pointer;
   transition: background-color 0.2s;
-  border-right: 1px solid #e2e8f0;
+  border-right: 1px solid var(--erp-border);
 }
 
 .weekday-column:hover {
-  background-color: #f1f5f9;
+  background-color: var(--erp-surface);
 }
 
 .weekday-column.today {
-  background-color: #dbeafe;
+  background-color: color-mix(in srgb, var(--erp-accent-indigo) 12%, transparent);
 }
 
 .weekday-column.selected {
-  background-color: #dbeafe;
-  border-color: #3b82f6;
+  background-color: color-mix(in srgb, var(--erp-accent-indigo) 18%, transparent);
+  border-color: var(--erp-accent-indigo);
 }
 
 .weekday-name {
   font-weight: 600;
-  color: #6b7280;
+  color: var(--erp-text);
   font-size: 0.875rem;
   margin-bottom: 0.25rem;
 }
@@ -421,7 +423,7 @@ const formatDayDate = (date: Date) => {
 .weekday-date {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--erp-text);
 }
 
 .week-grid {
@@ -433,16 +435,16 @@ const formatDayDate = (date: Date) => {
 
 .time-labels {
   background-color: #f8fafc;
-  border-right: 1px solid #e2e8f0;
+  border-right: 1px solid var(--erp-border);
 }
 
 .time-label {
   height: 60px;
   padding: 0.5rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--erp-text);
   text-align: right;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--erp-border);
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -461,7 +463,7 @@ const formatDayDate = (date: Date) => {
 
 .time-slot {
   height: 60px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--erp-border);
   padding: 0.25rem;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -469,7 +471,7 @@ const formatDayDate = (date: Date) => {
 }
 
 .time-slot:hover {
-  background-color: #f8fafc;
+  background-color: var(--erp-surface);
 }
 
 /* Day View */
@@ -482,14 +484,14 @@ const formatDayDate = (date: Date) => {
 .day-header {
   display: grid;
   grid-template-columns: 60px 1fr;
-  background-color: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background-color: var(--erp-surface);
+  border-bottom: 1px solid var(--erp-border);
 }
 
 .day-column {
   padding: 1rem;
   text-align: center;
-  border-right: 1px solid #e2e8f0;
+  border-right: 1px solid var(--erp-border);
 }
 
 .day-info {
@@ -500,14 +502,14 @@ const formatDayDate = (date: Date) => {
 
 .day-name {
   font-weight: 600;
-  color: #6b7280;
+  color: var(--erp-text);
   font-size: 0.875rem;
 }
 
 .day-date {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--erp-text);
 }
 
 .day-grid {

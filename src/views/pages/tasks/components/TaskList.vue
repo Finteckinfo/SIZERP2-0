@@ -270,13 +270,14 @@ const handleTaskDelete = () => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: white;
+  background-color: var(--erp-card-bg);
+  color: var(--erp-text);
 }
 
 .task-list-header {
   padding: 1rem;
-  border-bottom: 1px solid #e2e8f0;
-  background-color: #f8fafc;
+  border-bottom: 1px solid var(--erp-border);
+  background-color: var(--erp-surface);
 }
 
 .list-title {
@@ -294,18 +295,18 @@ const handleTaskDelete = () => {
 .filter-select {
   flex: 1;
   padding: 0.5rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--erp-border);
   border-radius: 0.375rem;
-  background-color: white;
+  background-color: var(--erp-card-bg);
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--erp-text);
   cursor: pointer;
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--erp-accent-indigo);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--erp-accent-indigo) 20%, transparent);
 }
 
 .task-list-content {
@@ -362,14 +363,14 @@ const handleTaskDelete = () => {
 
 .no-tasks-subtext {
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: var(--erp-text);
   margin: 0;
 }
 
 .task-actions {
   padding: 1rem;
-  border-top: 1px solid #e2e8f0;
-  background-color: #f8fafc;
+  border-top: 1px solid var(--erp-border);
+  background-color: var(--erp-surface);
   display: flex;
   gap: 0.5rem;
 }

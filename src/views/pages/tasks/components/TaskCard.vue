@@ -127,7 +127,7 @@ const formatDate = (dateString: string) => {
 <style scoped>
 .task-card {
   background-color: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--erp-border);
   border-radius: 0.5rem;
   padding: 0.75rem;
   cursor: pointer;
@@ -172,19 +172,19 @@ const formatDate = (dateString: string) => {
 
 /* Status colors */
 .task-card.status-pending {
-  background-color: #fef3c7;
+  background-color: color-mix(in srgb, var(--erp-accent-indigo) 12%, transparent);
 }
 
 .task-card.status-in_progress {
-  background-color: #dbeafe;
+  background-color: color-mix(in srgb, var(--erp-accent-indigo) 18%, transparent);
 }
 
 .task-card.status-completed {
-  background-color: #d1fae5;
+  background-color: color-mix(in srgb, var(--erp-accent-green) 18%, transparent);
 }
 
 .task-card.status-approved {
-  background-color: #e0e7ff;
+  background-color: color-mix(in srgb, var(--erp-accent-indigo) 24%, transparent);
 }
 
 .task-header {
@@ -265,23 +265,23 @@ const formatDate = (dateString: string) => {
 }
 
 .status-badge.status-pending {
-  background-color: #fef3c7;
-  color: #92400e;
+  background-color: color-mix(in srgb, var(--erp-accent-indigo) 12%, transparent);
+  color: var(--erp-text);
 }
 
 .status-badge.status-in_progress {
-  background-color: #dbeafe;
-  color: #1e40af;
+  background-color: color-mix(in srgb, var(--erp-accent-indigo) 18%, transparent);
+  color: var(--erp-text);
 }
 
 .status-badge.status-completed {
-  background-color: #d1fae5;
-  color: #065f46;
+  background-color: color-mix(in srgb, var(--erp-accent-green) 18%, transparent);
+  color: var(--erp-text);
 }
 
 .status-badge.status-approved {
-  background-color: #e0e7ff;
-  color: #3730a3;
+  background-color: color-mix(in srgb, var(--erp-accent-indigo) 24%, transparent);
+  color: var(--erp-text);
 }
 
 .task-hours {

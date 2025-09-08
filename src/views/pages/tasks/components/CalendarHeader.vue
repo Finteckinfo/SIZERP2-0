@@ -184,8 +184,8 @@ const handleProjectChange = () => {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
-  background-color: white;
-  border-bottom: 1px solid #e2e8f0;
+  background-color: var(--erp-card-bg);
+  border-bottom: 1px solid var(--erp-border);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
@@ -198,15 +198,16 @@ const handleProjectChange = () => {
 .page-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--erp-text);
   margin: 0;
 }
 
 .view-controls {
   display: flex;
-  background-color: #f3f4f6;
+  background-color: var(--erp-surface);
   border-radius: 0.5rem;
   padding: 0.25rem;
+  border: 1px solid var(--erp-border);
 }
 
 .view-btn {
@@ -216,19 +217,19 @@ const handleProjectChange = () => {
   border-radius: 0.375rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--erp-text);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .view-btn:hover {
-  color: #374151;
-  background-color: #e5e7eb;
+  color: var(--erp-text);
+  background-color: var(--erp-surface);
 }
 
 .view-btn.active {
-  background-color: white;
-  color: #1f2937;
+  background-color: var(--erp-card-bg);
+  color: var(--erp-text);
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
@@ -264,7 +265,7 @@ const handleProjectChange = () => {
 .current-date {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--erp-text);
   margin: 0;
   cursor: pointer;
   padding: 0.5rem 1rem;
@@ -273,7 +274,7 @@ const handleProjectChange = () => {
 }
 
 .current-date:hover {
-  background-color: #f3f4f6;
+  background-color: var(--erp-surface);
 }
 
 .date-picker-modal {
@@ -286,8 +287,8 @@ const handleProjectChange = () => {
 }
 
 .date-picker-content {
-  background-color: white;
-  border: 1px solid #e2e8f0;
+  background-color: var(--erp-card-bg);
+  border: 1px solid var(--erp-border);
   border-radius: 0.5rem;
   padding: 1rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -298,7 +299,7 @@ const handleProjectChange = () => {
 
 .date-input {
   padding: 0.5rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--erp-border);
   border-radius: 0.375rem;
   font-size: 0.875rem;
 }
@@ -331,18 +332,18 @@ const handleProjectChange = () => {
 
 .project-select {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--erp-border);
   border-radius: 0.375rem;
-  background-color: white;
+  background-color: var(--erp-card-bg);
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--erp-text);
   cursor: pointer;
 }
 
 .project-select:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--erp-accent-indigo);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--erp-accent-indigo) 20%, transparent);
 }
 
 .create-task-btn {
@@ -350,8 +351,8 @@ const handleProjectChange = () => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background-color: #3b82f6;
-  color: white;
+  background-color: var(--erp-accent-indigo);
+  color: #fff;
   border: none;
   border-radius: 0.375rem;
   font-size: 0.875rem;
@@ -361,7 +362,7 @@ const handleProjectChange = () => {
 }
 
 .create-task-btn:hover {
-  background-color: #2563eb;
+  filter: brightness(0.95);
 }
 
 /* Responsive design */
