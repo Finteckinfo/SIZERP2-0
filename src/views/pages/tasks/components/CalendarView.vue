@@ -1,7 +1,13 @@
 <template>
   <div class="calendar-view">
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading calendar...</p>
+    </div>
+
     <!-- Month View -->
-    <div v-if="currentView === 'month'" class="month-view">
+    <div v-else-if="currentView === 'month'" class="month-view">
       <div class="month-header">
         <div 
           v-for="day in weekDays" 
@@ -143,32 +149,19 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import TaskCard from './TaskCard.vue'
-
-interface Task {
-  id: string
-  title: string
-  description?: string
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED'
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-  dueDate: string
-  startDate?: string
-  estimatedHours?: number
-  actualHours?: number
-  projectId: string
-  departmentId: string
-  assignedUserId?: string
-  createdAt: string
-  updatedAt: string
-}
+import type { Task } from '@/services/projectApi'
 
 interface Props {
   currentView: 'month' | 'week' | 'day'
   currentDate: Date
   tasks: Task[]
   selectedTask: Task | null
+  loading?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  loading: false
+})
 
 const emit = defineEmits<{
   'task-click': [task: Task]
@@ -237,6 +230,7 @@ const weekDaysData = computed(() => {
 const getTasksForDate = (date: Date) => {
   const dateStr = date.toISOString().split('T')[0]
   return props.tasks.filter(task => {
+    if (!task.dueDate) return false
     const taskDate = new Date(task.dueDate).toISOString().split('T')[0]
     return taskDate === dateStr
   }).slice(0, 3) // Limit to 3 tasks in month view
@@ -245,6 +239,7 @@ const getTasksForDate = (date: Date) => {
 const getTasksForTimeSlot = (date: Date, hour: number) => {
   const dateStr = date.toISOString().split('T')[0]
   return props.tasks.filter(task => {
+    if (!task.dueDate) return false
     const taskDate = new Date(task.dueDate).toISOString().split('T')[0]
     if (taskDate !== dateStr) return false
     
@@ -297,6 +292,32 @@ const formatDayDate = (date: Date) => {
 .calendar-view {
   height: 100%;
   overflow: hidden;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background-color: var(--erp-card-bg);
+  color: var(--erp-text);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--erp-border);
+  border-top: 4px solid var(--erp-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Month View */

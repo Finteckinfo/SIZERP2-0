@@ -22,6 +22,11 @@
     </div>
 
     <div class="task-list-content">
+      <!-- Loading State -->
+      <div v-if="loading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Loading tasks...</p>
+      </div>
       <!-- Today's Tasks -->
       <div v-if="todaysTasks.length > 0" class="task-section">
         <h4 class="section-title">
@@ -144,30 +149,17 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import TaskCard from './TaskCard.vue'
-
-interface Task {
-  id: string
-  title: string
-  description?: string
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED'
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-  dueDate: string
-  startDate?: string
-  estimatedHours?: number
-  actualHours?: number
-  projectId: string
-  departmentId: string
-  assignedUserId?: string
-  createdAt: string
-  updatedAt: string
-}
+import type { Task } from '@/services/projectApi'
 
 interface Props {
   tasks: Task[]
   selectedDate: Date
+  loading?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  loading: false
+})
 
 const emit = defineEmits<{
   'task-select': [task: Task]
@@ -192,6 +184,7 @@ const filteredTasks = computed(() => {
 const todaysTasks = computed(() => {
   const today = new Date()
   return filteredTasks.value.filter(task => {
+    if (!task.dueDate) return false
     const taskDate = new Date(task.dueDate)
     return taskDate.toDateString() === today.toDateString()
   })
@@ -200,6 +193,7 @@ const todaysTasks = computed(() => {
 const overdueTasks = computed(() => {
   const today = new Date()
   return filteredTasks.value.filter(task => {
+    if (!task.dueDate) return false
     const taskDate = new Date(task.dueDate)
     return taskDate < today && task.status !== 'COMPLETED' && task.status !== 'APPROVED'
   })
@@ -211,6 +205,7 @@ const thisWeekTasks = computed(() => {
   endOfWeek.setDate(today.getDate() + (7 - today.getDay()))
   
   return filteredTasks.value.filter(task => {
+    if (!task.dueDate) return false
     const taskDate = new Date(task.dueDate)
     return taskDate > today && taskDate <= endOfWeek && 
            task.status !== 'COMPLETED' && task.status !== 'APPROVED'
@@ -225,6 +220,7 @@ const nextWeekTasks = computed(() => {
   endOfNextWeek.setDate(startOfNextWeek.getDate() + 6)
   
   return filteredTasks.value.filter(task => {
+    if (!task.dueDate) return false
     const taskDate = new Date(task.dueDate)
     return taskDate >= startOfNextWeek && taskDate <= endOfNextWeek &&
            task.status !== 'COMPLETED' && task.status !== 'APPROVED'
@@ -239,6 +235,7 @@ const laterTasks = computed(() => {
   endOfNextWeek.setDate(startOfNextWeek.getDate() + 6)
   
   return filteredTasks.value.filter(task => {
+    if (!task.dueDate) return false
     const taskDate = new Date(task.dueDate)
     return taskDate > endOfNextWeek &&
            task.status !== 'COMPLETED' && task.status !== 'APPROVED'
@@ -313,6 +310,31 @@ const handleTaskDelete = () => {
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--erp-border);
+  border-top: 3px solid var(--erp-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .task-section {

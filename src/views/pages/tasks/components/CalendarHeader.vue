@@ -48,6 +48,7 @@
     </div>
 
     <div class="header-right">
+      <!-- Project Filter -->
       <div class="project-filter">
         <select 
           v-model="selectedProjectId" 
@@ -65,6 +66,90 @@
         </select>
       </div>
 
+      <!-- Role-aware Filters -->
+      <div v-if="selectedProjectId" class="filter-controls">
+        <!-- Scope Filter -->
+        <select 
+          v-model="localFilters.scope" 
+          @change="handleFilterChange"
+          class="filter-select"
+        >
+          <option value="all">All Tasks</option>
+          <option value="department" v-if="myRole === 'PROJECT_OWNER' || myRole === 'PROJECT_MANAGER'">My Department</option>
+          <option value="assigned_to_me">My Tasks</option>
+          <option value="user" v-if="myRole === 'PROJECT_OWNER' || myRole === 'PROJECT_MANAGER'">Specific User</option>
+        </select>
+
+        <!-- User Filter (only for owners/managers) -->
+        <select 
+          v-if="localFilters.scope === 'user' && (myRole === 'PROJECT_OWNER' || myRole === 'PROJECT_MANAGER')"
+          v-model="localFilters.userRoleId" 
+          @change="handleFilterChange"
+          class="filter-select"
+        >
+          <option value="">Select User</option>
+          <option 
+            v-for="member in teamMembers" 
+            :key="member.id" 
+            :value="member.id"
+          >
+            {{ member.user?.firstName }} {{ member.user?.lastName }} ({{ member.role }})
+          </option>
+        </select>
+
+        <!-- Department Filter (only for owners/managers) -->
+        <select 
+          v-if="myRole === 'PROJECT_OWNER' || myRole === 'PROJECT_MANAGER'"
+          v-model="localFilters.departmentId" 
+          @change="handleFilterChange"
+          class="filter-select"
+        >
+          <option value="">All Departments</option>
+          <option 
+            v-for="dept in departments" 
+            :key="dept.id" 
+            :value="dept.id"
+          >
+            {{ dept.name }}
+          </option>
+        </select>
+
+        <!-- Status Filter -->
+        <select 
+          v-model="localFilters.status" 
+          @change="handleFilterChange"
+          class="filter-select"
+          multiple
+        >
+          <option value="PENDING">Pending</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="APPROVED">Approved</option>
+        </select>
+
+        <!-- Priority Filter -->
+        <select 
+          v-model="localFilters.priority" 
+          @change="handleFilterChange"
+          class="filter-select"
+          multiple
+        >
+          <option value="LOW">Low</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="HIGH">High</option>
+          <option value="CRITICAL">Critical</option>
+        </select>
+
+        <!-- Search -->
+        <input 
+          v-model="localFilters.search" 
+          @input="handleFilterChange"
+          type="text" 
+          placeholder="Search tasks..."
+          class="search-input"
+        />
+      </div>
+
       <button class="create-task-btn" @click="$emit('create-task')">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -76,22 +161,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-
-interface Project {
-  id: string
-  name: string
-  description?: string
-  startDate: string
-  endDate: string
-  color: string
-}
+import { ref, computed, watch } from 'vue'
+import type { Project, Department, UserRole } from '@/services/projectApi'
 
 interface Props {
   currentView: 'month' | 'week' | 'day'
   currentDate: Date
   selectedProject: string | null
   projects: Project[]
+  departments: Department[]
+  teamMembers: UserRole[]
+  myRole: string | null
+  filters: {
+    scope: 'all' | 'department' | 'assigned_to_me' | 'user'
+    userRoleId: string | null
+    departmentId: string | null
+    status: string[]
+    priority: string[]
+    search: string
+  }
 }
 
 const props = defineProps<Props>()
@@ -100,6 +188,7 @@ const emit = defineEmits<{
   'view-change': [view: 'month' | 'week' | 'day']
   'date-change': [date: Date]
   'project-change': [projectId: string | null]
+  'filter-change': [filters: any]
   'create-task': []
 }>()
 
@@ -107,6 +196,28 @@ const views = ['month', 'week', 'day'] as const
 const showDatePicker = ref(false)
 const selectedDate = ref('')
 const selectedProjectId = ref(props.selectedProject || '')
+
+// Local filter state
+const localFilters = ref({
+  scope: props.filters.scope,
+  userRoleId: props.filters.userRoleId,
+  departmentId: props.filters.departmentId,
+  status: [...props.filters.status],
+  priority: [...props.filters.priority],
+  search: props.filters.search
+})
+
+// Watch for prop changes
+watch(() => props.filters, (newFilters) => {
+  localFilters.value = {
+    scope: newFilters.scope,
+    userRoleId: newFilters.userRoleId,
+    departmentId: newFilters.departmentId,
+    status: [...newFilters.status],
+    priority: [...newFilters.priority],
+    search: newFilters.search
+  }
+}, { deep: true })
 
 const formattedDate = computed(() => {
   const date = props.currentDate
@@ -175,6 +286,17 @@ const goToToday = () => {
 
 const handleProjectChange = () => {
   emit('project-change', selectedProjectId.value || null)
+}
+
+const handleFilterChange = () => {
+  emit('filter-change', {
+    scope: localFilters.value.scope,
+    userRoleId: localFilters.value.userRoleId,
+    departmentId: localFilters.value.departmentId,
+    status: localFilters.value.status,
+    priority: localFilters.value.priority,
+    search: localFilters.value.search
+  })
 }
 </script>
 
@@ -323,6 +445,7 @@ const handleProjectChange = () => {
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .project-filter {
@@ -344,6 +467,50 @@ const handleProjectChange = () => {
   outline: none;
   border-color: var(--erp-accent-indigo);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--erp-accent-indigo) 20%, transparent);
+}
+
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--erp-border);
+  border-radius: 0.25rem;
+  background-color: var(--erp-card-bg);
+  font-size: 0.75rem;
+  color: var(--erp-text);
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--erp-accent-indigo);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--erp-accent-indigo) 20%, transparent);
+}
+
+.search-input {
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--erp-border);
+  border-radius: 0.25rem;
+  background-color: var(--erp-card-bg);
+  font-size: 0.75rem;
+  color: var(--erp-text);
+  min-width: 150px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--erp-accent-indigo);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--erp-accent-indigo) 20%, transparent);
+}
+
+.search-input::placeholder {
+  color: var(--erp-text-muted);
 }
 
 .create-task-btn {
@@ -392,6 +559,20 @@ const handleProjectChange = () => {
   
   .header-right {
     justify-content: space-between;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .filter-controls {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .filter-select,
+  .search-input {
+    min-width: 100px;
+    flex: 1;
   }
 }
 </style>

@@ -133,8 +133,16 @@ export interface Task {
   estimatedHours?: number;
   actualHours?: number;
   dueDate?: string;
+  startDate?: string;
   createdAt: string;
   updatedAt: string;
+  // Additional fields for role-aware responses
+  department?: Department;
+  assignedRole?: UserRole;
+  canView?: boolean;
+  canEdit?: boolean;
+  canAssign?: boolean;
+  canReport?: boolean;
 }
 
 export interface UserRole {
@@ -635,6 +643,40 @@ export const taskApi = {
   // NEW: Assign/reassign task for existing project
   assignProjectTask: async (projectId: string, taskId: string, assignedRoleId: string | null) => {
     const response = await api.post(`/projects/${projectId}/tasks/${taskId}/assign`, { assignedRoleId });
+    return response.data;
+  },
+
+  // Role-aware task APIs for calendar
+  getRoleAwareTasks: async (projectId: string, params?: {
+    scope?: 'all' | 'department' | 'assigned_to_me' | 'user';
+    userRoleId?: string;
+    departmentId?: string;
+    status?: string | string[];
+    priority?: string | string[];
+    dateFrom?: string;
+    dateTo?: string;
+    search?: string;
+    fields?: 'minimal' | 'full';
+    page?: number;
+    limit?: number;
+    sortBy?: 'dueDate' | 'priority' | 'createdAt' | 'title';
+    sortOrder?: 'asc' | 'desc';
+  }) => {
+    const response = await api.get(`/role-aware/projects/${projectId}/tasks`, { params });
+    return response.data;
+  },
+
+  // Calendar aggregation endpoint
+  getCalendarTasks: async (projectId: string, params?: {
+    start: string;
+    end: string;
+    granularity?: 'day' | 'week';
+    status?: string | string[];
+    priority?: string | string[];
+    departmentId?: string;
+    userRoleId?: string;
+  }) => {
+    const response = await api.get(`/role-aware/projects/${projectId}/tasks/calendar`, { params });
     return response.data;
   }
 };

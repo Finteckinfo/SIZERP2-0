@@ -161,6 +161,25 @@
               placeholder="0"
             />
           </div>
+
+          <!-- Assigned User (only for owners/managers) -->
+          <div v-if="myRole === 'PROJECT_OWNER' || myRole === 'PROJECT_MANAGER'" class="form-group">
+            <label for="assignedRoleId" class="form-label">Assign To</label>
+            <select
+              id="assignedRoleId"
+              v-model="formData.assignedRoleId"
+              class="form-select"
+            >
+              <option value="">Unassigned</option>
+              <option
+                v-for="member in filteredTeamMembers"
+                :key="member.id"
+                :value="member.id"
+              >
+                {{ member.user?.firstName }} {{ member.user?.lastName }} ({{ member.role }})
+              </option>
+            </select>
+          </div>
         </div>
 
         <!-- Form Actions -->
@@ -179,44 +198,14 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-
-interface Task {
-  id: string
-  title: string
-  description?: string
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED'
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-  dueDate: string
-  startDate?: string
-  estimatedHours?: number
-  actualHours?: number
-  projectId: string
-  departmentId: string
-  assignedUserId?: string
-  createdAt: string
-  updatedAt: string
-}
-
-interface Project {
-  id: string
-  name: string
-  description?: string
-  startDate: string
-  endDate: string
-  color: string
-}
-
-interface Department {
-  id: string
-  name: string
-  projectId: string
-  color: string
-}
+import type { Task, Project, Department, UserRole } from '@/services/projectApi'
 
 interface Props {
   task?: Task | null
   projects: Project[]
   departments: Department[]
+  teamMembers: UserRole[]
+  myRole: string | null
 }
 
 const props = defineProps<Props>()
@@ -238,12 +227,20 @@ const formData = ref({
   dueDate: '',
   startDate: '',
   estimatedHours: undefined as number | undefined,
-  actualHours: undefined as number | undefined
+  actualHours: undefined as number | undefined,
+  assignedRoleId: ''
 })
 
 const filteredDepartments = computed(() => {
   if (!formData.value.projectId) return []
   return props.departments.filter(dept => dept.projectId === formData.value.projectId)
+})
+
+const filteredTeamMembers = computed(() => {
+  if (!formData.value.departmentId) return props.teamMembers
+  return props.teamMembers.filter(member => 
+    member.accessibleDepartments?.some(dept => dept.id === formData.value.departmentId)
+  )
 })
 
 const isFormValid = computed(() => {
@@ -263,10 +260,11 @@ onMounted(() => {
       departmentId: props.task.departmentId,
       priority: props.task.priority,
       status: props.task.status,
-      dueDate: props.task.dueDate.split('T')[0],
+      dueDate: props.task.dueDate ? props.task.dueDate.split('T')[0] : '',
       startDate: props.task.startDate ? props.task.startDate.split('T')[0] : '',
       estimatedHours: props.task.estimatedHours,
-      actualHours: props.task.actualHours
+      actualHours: props.task.actualHours,
+      assignedRoleId: props.task.assignedRoleId || ''
     }
   } else {
     // Set default due date to tomorrow
@@ -294,10 +292,11 @@ const handleSubmit = () => {
     departmentId: formData.value.departmentId,
     priority: formData.value.priority,
     status: formData.value.status,
-    dueDate: new Date(formData.value.dueDate).toISOString(),
+    dueDate: formData.value.dueDate ? new Date(formData.value.dueDate).toISOString() : undefined,
     startDate: formData.value.startDate ? new Date(formData.value.startDate).toISOString() : undefined,
     estimatedHours: formData.value.estimatedHours,
-    actualHours: formData.value.actualHours
+    actualHours: formData.value.actualHours,
+    assignedRoleId: formData.value.assignedRoleId || undefined
   }
 
   emit('save', taskData)
@@ -328,7 +327,7 @@ const handleOverlayClick = () => {
 }
 
 .modal-content {
-  background-color: white;
+  background-color: var(--erp-card-bg);
   border-radius: 0.5rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   width: 100%;
@@ -342,13 +341,13 @@ const handleOverlayClick = () => {
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--erp-border);
 }
 
 .modal-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--erp-text);
   margin: 0;
 }
 
@@ -360,15 +359,15 @@ const handleOverlayClick = () => {
   height: 2rem;
   border: none;
   background: none;
-  color: #6b7280;
+  color: var(--erp-text-muted);
   cursor: pointer;
   border-radius: 0.375rem;
   transition: all 0.2s;
 }
 
 .close-btn:hover {
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: var(--erp-surface);
+  color: var(--erp-text);
 }
 
 .modal-form {
@@ -394,7 +393,7 @@ const handleOverlayClick = () => {
 .form-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--erp-text);
   margin-bottom: 0.5rem;
 }
 
@@ -402,11 +401,11 @@ const handleOverlayClick = () => {
 .form-select,
 .form-textarea {
   padding: 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--erp-border);
   border-radius: 0.375rem;
   font-size: 0.875rem;
-  color: #374151;
-  background-color: white;
+  color: var(--erp-text);
+  background-color: var(--erp-card-bg);
   transition: all 0.2s;
 }
 
@@ -414,8 +413,8 @@ const handleOverlayClick = () => {
 .form-select:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--erp-accent-indigo);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--erp-accent-indigo) 20%, transparent);
 }
 
 .form-textarea {
@@ -428,7 +427,7 @@ const handleOverlayClick = () => {
   justify-content: flex-end;
   gap: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--erp-border);
 }
 
 .btn-primary,
@@ -443,27 +442,27 @@ const handleOverlayClick = () => {
 }
 
 .btn-primary {
-  background-color: #3b82f6;
+  background-color: var(--erp-accent-indigo);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #2563eb;
+  filter: brightness(0.95);
 }
 
 .btn-primary:disabled {
-  background-color: #9ca3af;
+  background-color: var(--erp-text-muted);
   cursor: not-allowed;
 }
 
 .btn-secondary {
-  background-color: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background-color: var(--erp-surface);
+  color: var(--erp-text);
+  border: 1px solid var(--erp-border);
 }
 
 .btn-secondary:hover {
-  background-color: #e5e7eb;
+  background-color: var(--erp-card-bg);
 }
 
 /* Responsive design */
