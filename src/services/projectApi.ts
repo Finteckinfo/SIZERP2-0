@@ -185,6 +185,8 @@ export interface CreateInviteData {
   email: string;
   role: 'PROJECT_MANAGER' | 'EMPLOYEE';
   departmentId?: string;
+  // New optional expiry support for v2 API
+  expiresAt?: string;
 }
 
 export interface CreateDepartmentData {
@@ -323,9 +325,17 @@ export const projectInviteApi = {
     return response.data;
   },
 
-  // Create invite
+  // Create invite (POST /api/invites) - supports optional expiresAt when provided
   createInvite: async (inviteData: CreateInviteData) => {
-    const response = await api.post('/invites', inviteData);
+    // Ensure we include projectId, email, role, and optional expiresAt as per spec
+    const payload: any = {
+      projectId: inviteData.projectId,
+      email: inviteData.email,
+      role: inviteData.role
+    };
+    if (inviteData.expiresAt) payload.expiresAt = inviteData.expiresAt;
+    if (inviteData.departmentId) payload.departmentId = inviteData.departmentId;
+    const response = await api.post('/invites', payload);
     return response.data;
   },
 

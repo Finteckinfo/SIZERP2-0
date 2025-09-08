@@ -165,7 +165,7 @@
                     v-if="myRole === 'PROJECT_OWNER' || myRole === 'PROJECT_MANAGER'"
                   >
                     <v-icon size="20" class="mr-2">mdi-account-plus</v-icon>
-                    Add Member
+                    Invite User
                   </v-btn>
                   <v-btn 
                     color="primary" 
@@ -173,7 +173,7 @@
                     size="large"
                     class="action-btn"
                     @click="openAddDepartmentPanel"
-                    v-if="permissions?.canManageDepartments"
+                    v-if="myRole === 'PROJECT_OWNER'"
                   >
                     <v-icon size="20" class="mr-2">mdi-folder-plus</v-icon>
                     Add Department/Section
@@ -300,15 +300,16 @@
                 <v-form ref="inviteForm" v-model="inviteValid">
                   <v-row>
                     <v-col cols="12" md="6">
-                      <v-text-field v-model="invite.email" label="Email" variant="outlined" :rules="[v=>!!v||'Required']" />
+                      <v-text-field v-model="invite.email" label="Invitee Email" variant="outlined" :rules="emailRules" />
                     </v-col>
                     <v-col cols="12" md="6">
                       <v-select v-model="invite.role" :items="inviteRoleOptions" label="Role" variant="outlined" :rules="[v=>!!v||'Required']" />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-text-field v-model.number="invite.expiresInDays" type="number" min="1" label="Expires In (days)" variant="outlined" />
+                      <v-text-field v-model="invite.expiresAtDisplay" type="datetime-local" label="Expires At" variant="outlined" :rules="[v=>!!v||'Required']" />
                     </v-col>
                     <v-col cols="12">
+                      <v-alert v-if="inviteError" type="error" variant="tonal" class="mb-3">{{ inviteError }}</v-alert>
                       <v-btn :color="'var(--erp-accent-green)'" :loading="submitting" @click="submitInvite">Send Invite</v-btn>
                     </v-col>
                   </v-row>
@@ -487,13 +488,22 @@ const newTask = ref({
 const invite = ref({
   email: '',
   role: 'EMPLOYEE',
-  expiresInDays: 7
+  expiresAtDisplay: '' // datetime-local input value
 });
+const inviteError = ref<string | null>(null);
 
 // Options
 const departmentTypeOptions = ['MAJOR', 'MINOR'];
 const priorityOptions = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
-const inviteRoleOptions = ['PROJECT_MANAGER', 'EMPLOYEE'];
+const inviteRoleOptions = computed(() => {
+  if (myRole.value === 'PROJECT_OWNER') return ['PROJECT_MANAGER', 'EMPLOYEE'];
+  if (myRole.value === 'PROJECT_MANAGER') return ['EMPLOYEE'];
+  return [];
+});
+const emailRules = [
+  (v: string) => !!v || 'Required',
+  (v: string) => /.+@.+\..+/.test(v) || 'Invalid email'
+];
 
 const departmentSelectItems = computed(() => departments.value);
 const roleSelectItems = computed(() => teamMembers.value.map(r => ({ id: r.id, label: r.user?.firstName ? `${r.user.firstName} ${r.user.lastName || ''}`.trim() : r.user?.email })));
@@ -528,7 +538,7 @@ const loadProjectData = async () => {
           canCreateTask: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
           canAssignTask: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
           canEditTask: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
-          canManageDepartments: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
+          canManageDepartments: myRole.value === 'PROJECT_OWNER',
           canSchedule: myRole.value === 'PROJECT_OWNER' || myRole.value === 'PROJECT_MANAGER',
           canReportTime: true // Allow all roles to report for now
         };
@@ -587,7 +597,13 @@ const openAddTaskPanel = () => {
   activePanel.value = 'addTask';
 };
 const openInvitePanel = () => {
-  invite.value = { email: '', role: 'EMPLOYEE', expiresInDays: 7 };
+  const defaultExpiry = new Date();
+  defaultExpiry.setDate(defaultExpiry.getDate() + 7);
+  // Convert to datetime-local format (YYYY-MM-DDTHH:mm)
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const dtl = `${defaultExpiry.getFullYear()}-${pad(defaultExpiry.getMonth()+1)}-${pad(defaultExpiry.getDate())}T${pad(defaultExpiry.getHours())}:${pad(defaultExpiry.getMinutes())}`;
+  invite.value = { email: '', role: 'EMPLOYEE', expiresAtDisplay: dtl };
+  inviteError.value = null;
   activePanel.value = 'invite';
 };
 
@@ -627,10 +643,28 @@ const submitInvite = async () => {
   if (isValid === false || inviteValid.value === false) return;
   submitting.value = true;
   try {
-    await projectInviteApi.sendProjectInvite(projectId, invite.value as any);
+    inviteError.value = null;
+    // Ensure ISO string for expiresAt
+    const expiresAtIso = new Date(invite.value.expiresAtDisplay).toISOString();
+    await projectInviteApi.createInvite({
+      projectId,
+      email: invite.value.email.trim(),
+      role: invite.value.role as any,
+      expiresAt: expiresAtIso
+    });
+    await loadProjectData();
     resetPanel();
-  } catch (e) {
+  } catch (e: any) {
     console.error('Failed to send invite', e);
+    const status = e?.response?.status;
+    const msg = e?.response?.data?.message || '';
+    if (status === 400) {
+      inviteError.value = msg || 'Validation error or duplicate pending invite.';
+    } else if (status === 403) {
+      inviteError.value = 'Insufficient permissions to invite this role.';
+    } else {
+      inviteError.value = 'Server error. Please try again.';
+    }
   } finally {
     submitting.value = false;
   }
