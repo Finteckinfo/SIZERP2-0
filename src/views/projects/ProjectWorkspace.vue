@@ -525,7 +525,8 @@ const loadProjectData = async () => {
         projectAccessApi.getMyRole(projectId),
         projectAccessApi.getPermissions(projectId)
       ]);
-      myRole.value = roleRes?.role || null;
+      // Support both legacy { role } and new role-aware { primaryRole, roles }
+      myRole.value = (roleRes?.primaryRole || roleRes?.role || null) as any;
       permissions.value = permRes || {};
     } catch (error) {
       console.warn('Role-aware endpoints not available, using fallback:', error);
