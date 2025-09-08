@@ -285,7 +285,7 @@ watch(() => formData.value.projectId, (newProjectId) => {
 const handleSubmit = () => {
   if (!isFormValid.value) return
 
-  const taskData: Partial<Task> = {
+  const taskData: any = {
     title: formData.value.title.trim(),
     description: formData.value.description.trim() || undefined,
     projectId: formData.value.projectId,

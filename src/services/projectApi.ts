@@ -127,6 +127,7 @@ export interface Task {
   title: string;
   description?: string;
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED';
+  projectId: string;
   departmentId: string;
   assignedRoleId?: string;
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';

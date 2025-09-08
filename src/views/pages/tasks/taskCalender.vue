@@ -103,8 +103,8 @@ const myRole = ref<string | null>(null)
 // Filters
 const filters = ref({
   scope: 'all' as 'all' | 'department' | 'assigned_to_me' | 'user',
-  userRoleId: null as string | null,
-  departmentId: null as string | null,
+  userRoleId: undefined as string | undefined,
+  departmentId: undefined as string | undefined,
   status: [] as string[],
   priority: [] as string[],
   search: ''

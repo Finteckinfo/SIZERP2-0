@@ -174,8 +174,8 @@ interface Props {
   myRole: string | null
   filters: {
     scope: 'all' | 'department' | 'assigned_to_me' | 'user'
-    userRoleId: string | null
-    departmentId: string | null
+    userRoleId: string | undefined
+    departmentId: string | undefined
     status: string[]
     priority: string[]
     search: string

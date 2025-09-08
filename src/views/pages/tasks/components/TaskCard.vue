@@ -56,23 +56,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-
-interface Task {
-  id: string
-  title: string
-  description?: string
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED'
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-  dueDate: string
-  startDate?: string
-  estimatedHours?: number
-  actualHours?: number
-  projectId: string
-  departmentId: string
-  assignedUserId?: string
-  createdAt: string
-  updatedAt: string
-}
+import type { Task } from '@/services/projectApi'
 
 interface Project {
   id: string
@@ -105,7 +89,9 @@ const formatStatus = (status: string) => {
   return statusMap[status as keyof typeof statusMap] || status
 }
 
-const formatDate = (dateString: string) => {
+const formatDate = (dateString?: string) => {
+  if (!dateString) return 'No due date'
+  
   const date = new Date(dateString)
   const now = new Date()
   const diffTime = date.getTime() - now.getTime()
