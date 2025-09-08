@@ -61,7 +61,7 @@ const sidebarItem: menu[] = [
   {
     title: 'Task Calendar',
     icon: CalendarIcon,
-    to: ''
+    to: '/tasks/calendar'
   },
   {
     title: 'Kanban Board',
