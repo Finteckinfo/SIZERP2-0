@@ -290,7 +290,7 @@
                       <v-select v-model="newTask.assignedRoleId" :items="roleSelectItems" item-title="label" item-value="id" label="Assign To (optional)" variant="outlined" />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-text-field v-model="newTask.dueDate" type="datetime-local" label="Due Date" variant="outlined" :rules="[v=>!!v||'Required']" />
+                      <v-text-field v-model="newTask.dueDate" type="date" label="Due Date" variant="outlined" :rules="[v=>!!v||'Required']" />
                     </v-col>
                     <v-col cols="12">
                       <v-btn :color="'var(--erp-accent-green)'" :loading="submitting" @click="submitNewTask">Create Task</v-btn>
@@ -636,10 +636,10 @@ const submitNewTask = async () => {
   if (isValid === false || addTaskValid.value === false) return;
   submitting.value = true;
   try {
-    // Convert datetime-local to ISO string for API
+    // Convert date to ISO string with 12:00 PM time for API
     const taskData = {
       ...newTask.value,
-      dueDate: newTask.value.dueDate ? new Date(newTask.value.dueDate).toISOString() : undefined
+      dueDate: newTask.value.dueDate ? new Date(newTask.value.dueDate + 'T12:00:00').toISOString() : undefined
     };
     await taskApi.createProjectTaskRoleAware(projectId, taskData as any);
     await loadProjectData();
