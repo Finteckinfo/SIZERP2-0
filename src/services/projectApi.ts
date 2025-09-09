@@ -597,6 +597,40 @@ export const taskApi = {
     return response.data;
   },
 
+  // ROLE-SPECIFIC APIs
+  // PROJECT_OWNER - All Project Tasks
+  getProjectOwnerTasks: async (projectId: string, params?: {
+    status?: string;
+    departmentId?: string;
+    assignedTo?: string;
+    page?: number;
+    limit?: number;
+  }) => {
+    const response = await api.get(`/tasks/project/${projectId}`, { params });
+    return response.data;
+  },
+
+  // PROJECT_MANAGER - Department Tasks (uses existing getDepartmentTasks)
+  // This method is already available above
+
+  // EMPLOYEE - Assigned Tasks (using role-aware API)
+  getEmployeeTasks: async (projectId: string, params?: {
+    status?: string | string[];
+    priority?: string | string[];
+    dateFrom?: string;
+    dateTo?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: 'dueDate' | 'priority' | 'createdAt' | 'title';
+    sortOrder?: 'asc' | 'desc';
+  }) => {
+    const response = await api.get(`/role-aware/projects/${projectId}/tasks`, { 
+      params: { ...params, scope: 'assigned_to_me' }
+    });
+    return response.data;
+  },
+
 
 
   // NEW: Get all tasks for existing project with filtering

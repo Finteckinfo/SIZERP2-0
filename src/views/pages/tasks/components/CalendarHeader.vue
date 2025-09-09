@@ -69,27 +69,27 @@
       <!-- Role-aware Filters -->
       <div v-if="selectedProjectId" class="filter-controls">
         <!-- Scope Filter -->
-        <select 
-          v-model="localFilters.scope" 
+        <select
+          v-model="localFilters.scope"
           @change="handleFilterChange"
           class="filter-select"
         >
           <option value="all">All Tasks</option>
-          <option value="department" v-if="myRole === 'PROJECT_OWNER' || myRole === 'PROJECT_MANAGER'">My Department</option>
+          <option value="department" v-if="canUseDepartmentScope">My Department</option>
           <option value="assigned_to_me">My Tasks</option>
-          <option value="user" v-if="myRole === 'PROJECT_OWNER' || myRole === 'PROJECT_MANAGER'">Specific User</option>
+          <option value="user" v-if="canUseUserScope">Specific User</option>
         </select>
 
         <!-- User Filter (only for owners/managers) -->
         <select 
-          v-if="localFilters.scope === 'user' && (myRole === 'PROJECT_OWNER' || myRole === 'PROJECT_MANAGER')"
+          v-if="localFilters.scope === 'user' && canFilterByUser"
           v-model="localFilters.userRoleId" 
           @change="handleFilterChange"
           class="filter-select"
         >
           <option value="">Select User</option>
           <option 
-            v-for="member in teamMembers" 
+            v-for="member in filteredTeamMembers" 
             :key="member.id" 
             :value="member.id"
           >
@@ -99,7 +99,7 @@
 
         <!-- Department Filter (only for owners/managers) -->
         <select 
-          v-if="myRole === 'PROJECT_OWNER' || myRole === 'PROJECT_MANAGER'"
+          v-if="canFilterByDepartment"
           v-model="localFilters.departmentId" 
           @change="handleFilterChange"
           class="filter-select"
@@ -172,6 +172,7 @@ interface Props {
   departments: Department[]
   teamMembers: UserRole[]
   myRole: string | null
+  manageableDepartmentIds?: string[]
   filters: {
     scope: 'all' | 'department' | 'assigned_to_me' | 'user'
     userRoleId: string | undefined
@@ -246,6 +247,41 @@ const formattedDate = computed(() => {
   } else {
     return date.toLocaleDateString('en-US', options)
   }
+})
+
+// Role-based filter visibility
+const canFilterByUser = computed(() => {
+  return props.myRole === 'PROJECT_OWNER' || props.myRole === 'PROJECT_MANAGER'
+})
+
+const canFilterByDepartment = computed(() => {
+  return props.myRole === 'PROJECT_OWNER' || props.myRole === 'PROJECT_MANAGER'
+})
+
+const canUseDepartmentScope = computed(() => {
+  return props.myRole === 'PROJECT_OWNER' || props.myRole === 'PROJECT_MANAGER'
+})
+
+const canUseUserScope = computed(() => {
+  return props.myRole === 'PROJECT_OWNER' || props.myRole === 'PROJECT_MANAGER'
+})
+
+const filteredTeamMembers = computed(() => {
+  if (!props.teamMembers) return []
+  
+  // Filter team members based on user role and department access
+  if (props.myRole === 'PROJECT_OWNER') {
+    return props.teamMembers
+  } else if (props.myRole === 'PROJECT_MANAGER') {
+    // Managers can only see team members in their manageable departments
+    return props.teamMembers.filter(member => 
+      member.accessibleDepartments.some(dept => 
+        props.manageableDepartmentIds?.includes(dept.id)
+      )
+    )
+  }
+  
+  return []
 })
 
 const previousPeriod = () => {

@@ -23,6 +23,7 @@
         :departments="departments"
         :team-members="teamMembers"
         :my-role="myRole"
+        :manageable-department-ids="manageableDepartmentIds"
         :filters="filters"
         @view-change="handleViewChange"
         @date-change="handleDateChange"
@@ -99,6 +100,7 @@ const projects = ref<Project[]>([])
 const departments = ref<Department[]>([])
 const teamMembers = ref<UserRole[]>([])
 const myRole = ref<string | null>(null)
+const manageableDepartmentIds = ref<string[]>([])
 
 // Filters
 const filters = ref({
@@ -176,6 +178,7 @@ const loadProjectData = async (projectId: string) => {
     myRole.value = roleRes?.primaryRole || roleRes?.role || null
     departments.value = deptRes.departments || []
     teamMembers.value = teamRes.team || []
+    manageableDepartmentIds.value = roleRes?.manageableDepartmentIds || []
     
     // Load tasks
     await loadTasks()
@@ -188,7 +191,7 @@ const loadProjectData = async (projectId: string) => {
 }
 
 const loadTasks = async () => {
-  if (!selectedProject.value) return
+  if (!selectedProject.value || !myRole.value) return
   
   try {
     loading.value = true
@@ -196,15 +199,65 @@ const loadTasks = async () => {
     
     const dateRange = getDateRange(currentView.value, currentDate.value)
     
-    const params = {
+    const baseParams: any = {
       ...filters.value,
       dateFrom: dateRange.start,
       dateTo: dateRange.end,
       fields: 'full' as const,
       limit: 1000
     }
+
+    // Remove null/undefined values
+    Object.keys(baseParams).forEach(key => {
+      if (baseParams[key] === null || baseParams[key] === undefined || 
+          (Array.isArray(baseParams[key]) && baseParams[key].length === 0)) {
+        delete baseParams[key]
+      }
+    })
+
+    let response
+
+    // Use role-specific APIs based on user role
+    switch (myRole.value) {
+      case 'PROJECT_OWNER':
+        // Use project owner API - gets all project tasks
+        response = await taskApi.getProjectOwnerTasks(selectedProject.value, {
+          status: Array.isArray(baseParams.status) ? baseParams.status[0] : baseParams.status,
+          departmentId: baseParams.departmentId,
+          assignedTo: baseParams.userRoleId,
+          page: 1,
+          limit: baseParams.limit
+        })
+        break
+
+      case 'PROJECT_MANAGER':
+        // Use role-aware API with department scope
+        response = await taskApi.getRoleAwareTasks(selectedProject.value, {
+          ...baseParams,
+          scope: 'department'
+        })
+        break
+
+      case 'EMPLOYEE':
+        // Use employee API - gets only assigned tasks
+        response = await taskApi.getEmployeeTasks(selectedProject.value, {
+          status: baseParams.status,
+          priority: baseParams.priority,
+          dateFrom: baseParams.dateFrom,
+          dateTo: baseParams.dateTo,
+          search: baseParams.search,
+          page: 1,
+          limit: baseParams.limit,
+          sortBy: baseParams.sortBy || 'dueDate',
+          sortOrder: baseParams.sortOrder || 'asc'
+        })
+        break
+
+      default:
+        // Fallback to role-aware API
+        response = await taskApi.getRoleAwareTasks(selectedProject.value, baseParams)
+    }
     
-    const response = await taskApi.getRoleAwareTasks(selectedProject.value, params)
     tasks.value = response.tasks || []
   } catch (err) {
     console.error('Failed to load tasks:', err)
