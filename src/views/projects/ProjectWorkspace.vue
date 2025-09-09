@@ -289,6 +289,9 @@
                     <v-col cols="12" md="6">
                       <v-select v-model="newTask.assignedRoleId" :items="roleSelectItems" item-title="label" item-value="id" label="Assign To (optional)" variant="outlined" />
                     </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field v-model="newTask.dueDate" type="datetime-local" label="Due Date" variant="outlined" :rules="[v=>!!v||'Required']" />
+                    </v-col>
                     <v-col cols="12">
                       <v-btn :color="'var(--erp-accent-green)'" :loading="submitting" @click="submitNewTask">Create Task</v-btn>
                     </v-col>
@@ -482,7 +485,8 @@ const newTask = ref({
   description: '',
   priority: 'MEDIUM',
   departmentId: '',
-  assignedRoleId: '' as string | undefined
+  assignedRoleId: '' as string | undefined,
+  dueDate: ''
 });
 
 const invite = ref({
@@ -597,7 +601,7 @@ const openAddDepartmentPanel = () => {
   activePanel.value = 'addDepartment';
 };
 const openAddTaskPanel = () => {
-  newTask.value = { title: '', description: '', priority: 'MEDIUM', departmentId: departments.value[0]?.id || '', assignedRoleId: undefined };
+  newTask.value = { title: '', description: '', priority: 'MEDIUM', departmentId: departments.value[0]?.id || '', assignedRoleId: undefined, dueDate: '' };
   activePanel.value = 'addTask';
 };
 const openInvitePanel = () => {
@@ -632,7 +636,12 @@ const submitNewTask = async () => {
   if (isValid === false || addTaskValid.value === false) return;
   submitting.value = true;
   try {
-    await taskApi.createProjectTaskRoleAware(projectId, newTask.value as any);
+    // Convert datetime-local to ISO string for API
+    const taskData = {
+      ...newTask.value,
+      dueDate: newTask.value.dueDate ? new Date(newTask.value.dueDate).toISOString() : undefined
+    };
+    await taskApi.createProjectTaskRoleAware(projectId, taskData as any);
     await loadProjectData();
     resetPanel();
   } catch (e) {
