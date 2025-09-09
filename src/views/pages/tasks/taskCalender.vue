@@ -191,14 +191,13 @@ const loadProjectData = async (projectId: string) => {
 }
 
 const loadTasks = async () => {
-  if (!selectedProject.value || !myRole.value) return
-  
+  // In all-projects mode (no selected project), we don't require myRole
   try {
     loading.value = true
     error.value = null
-    
+
     const dateRange = getDateRange(currentView.value, currentDate.value)
-    
+
     const baseParams: any = {
       ...filters.value,
       dateFrom: dateRange.start,
@@ -209,7 +208,7 @@ const loadTasks = async () => {
 
     // Remove null/undefined values
     Object.keys(baseParams).forEach(key => {
-      if (baseParams[key] === null || baseParams[key] === undefined || 
+      if (baseParams[key] === null || baseParams[key] === undefined ||
           (Array.isArray(baseParams[key]) && baseParams[key].length === 0)) {
         delete baseParams[key]
       }
@@ -217,47 +216,66 @@ const loadTasks = async () => {
 
     let response
 
-    // Use role-specific APIs based on user role
-    switch (myRole.value) {
-      case 'PROJECT_OWNER':
-        // Use project owner API - gets all project tasks
-        response = await taskApi.getProjectOwnerTasks(selectedProject.value, {
-          status: Array.isArray(baseParams.status) ? baseParams.status[0] : baseParams.status,
-          departmentId: baseParams.departmentId,
-          assignedTo: baseParams.userRoleId,
-          page: 1,
-          limit: baseParams.limit
-        })
-        break
+    if (!selectedProject.value) {
+      // All-projects view: use role-aware my-tasks endpoint
+      response = await taskApi.getMyTasks({
+        scope: baseParams.scope,
+        status: baseParams.status,
+        priority: baseParams.priority,
+        dateFrom: baseParams.dateFrom,
+        dateTo: baseParams.dateTo,
+        search: baseParams.search,
+        page: 1,
+        limit: baseParams.limit,
+        sortBy: baseParams.sortBy || 'dueDate',
+        sortOrder: baseParams.sortOrder || 'asc'
+      })
+    } else {
+      // Project-scoped behavior based on my role
+      if (!myRole.value) {
+        // If role not loaded yet for the selected project, load project data first
+        await loadProjectData(selectedProject.value)
+        // loadProjectData will re-call loadTasks, so return here to avoid duplicate
+        return
+      }
 
-      case 'PROJECT_MANAGER':
-        // Use role-aware API with department scope
-        response = await taskApi.getRoleAwareTasks(selectedProject.value, {
-          ...baseParams,
-          scope: 'department'
-        })
-        break
+      switch (myRole.value) {
+        case 'PROJECT_OWNER':
+          response = await taskApi.getProjectOwnerTasks(selectedProject.value, {
+            status: Array.isArray(baseParams.status) ? baseParams.status[0] : baseParams.status,
+            departmentId: baseParams.departmentId,
+            assignedTo: baseParams.userRoleId,
+            page: 1,
+            limit: baseParams.limit
+          })
+          break
 
-      case 'EMPLOYEE':
-        // Use employee API - gets only assigned tasks
-        response = await taskApi.getEmployeeTasks(selectedProject.value, {
-          status: baseParams.status,
-          priority: baseParams.priority,
-          dateFrom: baseParams.dateFrom,
-          dateTo: baseParams.dateTo,
-          search: baseParams.search,
-          page: 1,
-          limit: baseParams.limit,
-          sortBy: baseParams.sortBy || 'dueDate',
-          sortOrder: baseParams.sortOrder || 'asc'
-        })
-        break
+        case 'PROJECT_MANAGER':
+          response = await taskApi.getRoleAwareTasks(selectedProject.value, {
+            ...baseParams,
+            scope: 'department'
+          })
+          break
 
-      default:
-        // Fallback to role-aware API
-        response = await taskApi.getRoleAwareTasks(selectedProject.value, baseParams)
+        case 'EMPLOYEE':
+          response = await taskApi.getEmployeeTasks(selectedProject.value, {
+            status: baseParams.status,
+            priority: baseParams.priority,
+            dateFrom: baseParams.dateFrom,
+            dateTo: baseParams.dateTo,
+            search: baseParams.search,
+            page: 1,
+            limit: baseParams.limit,
+            sortBy: baseParams.sortBy || 'dueDate',
+            sortOrder: baseParams.sortOrder || 'asc'
+          })
+          break
+
+        default:
+          response = await taskApi.getRoleAwareTasks(selectedProject.value, baseParams)
+      }
     }
-    
+
     tasks.value = response.tasks || []
   } catch (err) {
     console.error('Failed to load tasks:', err)
@@ -283,10 +301,12 @@ const handleProjectChange = (projectId: string | null) => {
   if (projectId) {
     loadProjectData(projectId)
   } else {
+    // All-projects mode: clear project-specific context and load my-tasks
     tasks.value = []
     departments.value = []
     teamMembers.value = []
     myRole.value = null
+    loadTasks()
   }
 }
 

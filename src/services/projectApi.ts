@@ -631,7 +631,42 @@ export const taskApi = {
     return response.data;
   },
 
+  // NEW: All-projects role-aware tasks for the current user
+  getMyTasks: async (params?: {
+    scope?: 'all' | 'department' | 'assigned_to_me' | 'user';
+    projectId?: string | string[];
+    departmentId?: string | string[];
+    userRoleId?: string;
+    status?: string | string[];
+    priority?: string | string[];
+    dateFrom?: string;
+    dateTo?: string;
+    search?: string;
+    fields?: 'minimal' | 'full';
+    page?: number;
+    limit?: number;
+    sortBy?: 'dueDate' | 'priority' | 'createdAt' | 'title';
+    sortOrder?: 'asc' | 'desc';
+  }) => {
+    const response = await api.get(`/role-aware/my-tasks`, { params });
+    return response.data;
+  },
 
+  // NEW: All-projects calendar aggregation for the current user
+  getMyTasksCalendar: async (params: {
+    start: string;
+    end: string;
+    granularity?: 'day' | 'week';
+    projectId?: string | string[];
+    departmentId?: string | string[];
+    userRoleId?: string;
+    status?: string | string[];
+    priority?: string | string[];
+    search?: string;
+  }) => {
+    const response = await api.get(`/role-aware/my-tasks/calendar`, { params });
+    return response.data;
+  },
 
   // NEW: Get all tasks for existing project with filtering
   getProjectTasksWithFilter: async (projectId: string, params?: {
