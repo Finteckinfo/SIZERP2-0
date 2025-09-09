@@ -383,8 +383,26 @@ watch(selectedProject, (newProjectId) => {
   }
 })
 
+// Helper: wait for Clerk to be ready before making API calls
+const waitForAuthReady = async (timeoutMs = 8000) => {
+  const start = Date.now()
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const clerk = (window as any).Clerk
+    if (clerk?.session && clerk?.user) return
+    if (Date.now() - start > timeoutMs) throw new Error('Authentication not ready')
+    await new Promise((r) => setTimeout(r, 50))
+  }
+}
+
 // Lifecycle
 onMounted(async () => {
+  try {
+    // Ensure auth is ready to avoid axios interceptor throwing
+    await waitForAuthReady()
+  } catch (e) {
+    console.warn('Auth not ready in time, delaying project load until next tick')
+  }
   await loadProjects()
 })
 </script>
