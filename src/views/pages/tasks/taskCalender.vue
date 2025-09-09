@@ -202,7 +202,9 @@ const loadTasks = async () => {
       ...filters.value,
       dateFrom: dateRange.start,
       dateTo: dateRange.end,
-      fields: 'full' as const,
+      fields: 'minimal' as const,
+      sortBy: 'dueDate' as const,
+      sortOrder: 'asc' as const,
       limit: 1000
     }
 
@@ -276,7 +278,12 @@ const loadTasks = async () => {
       }
     }
 
-    tasks.value = response.tasks || []
+    // Assign tasks with fallback dates so tasks without dueDate still render
+    const rawTasks = (response?.tasks || []) as Task[]
+    tasks.value = rawTasks.map((t) => ({
+      ...t,
+      dueDate: t.dueDate || t.startDate || t.createdAt
+    }))
   } catch (err) {
     console.error('Failed to load tasks:', err)
     error.value = 'Failed to load tasks'
@@ -326,9 +333,20 @@ const selectTask = (task: Task) => {
   selectedTask.value = task
 }
 
-const editTask = (task: Task) => {
-  editingTask.value = task
-  showTaskModal.value = true
+const editTask = async (task: Task) => {
+  // Fetch full details if minimal
+  try {
+    let fullTask = task
+    if (selectedProject.value) {
+      const res = await taskApi.getProjectTask(selectedProject.value, task.id)
+      fullTask = res?.task || task
+    }
+    editingTask.value = fullTask
+    showTaskModal.value = true
+  } catch (e) {
+    editingTask.value = task
+    showTaskModal.value = true
+  }
 }
 
 const deleteTask = async (taskId: string) => {

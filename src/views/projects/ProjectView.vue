@@ -318,7 +318,13 @@ const loadProjectData = async () => {
     const allTasks: Task[] = [];
     for (const project of projects.value) {
       try {
-        const tasksResponse = await taskApi.getProjectTasks(project.id);
+        const tasksResponse = await taskApi.getProjectTasksWithFilter(project.id, {
+          scope: 'all',
+          fields: 'minimal',
+          sortBy: 'dueDate',
+          sortOrder: 'asc',
+          limit: 100
+        });
         allTasks.push(...(tasksResponse.tasks || []));
       } catch (err) {
         console.warn(`Failed to load tasks for project ${project.id}:`, err);

@@ -115,6 +115,7 @@ export interface Department {
   order: number;
   isVisible: boolean;
   projectId: string;
+  color?: string;
   managers: UserRole[];
   accessibleRoles: UserRole[];
   tasks: Task[];
@@ -135,6 +136,13 @@ export interface Task {
   actualHours?: number;
   dueDate?: string;
   startDate?: string;
+  endDate?: string;
+  isAllDay?: boolean;
+  timeZone?: string;
+  progress?: number;
+  checklistCount?: number;
+  checklistCompleted?: number;
+  createdByRoleId?: string;
   createdAt: string;
   updatedAt: string;
   // Additional fields for role-aware responses
@@ -214,6 +222,13 @@ export interface CreateTaskData {
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   estimatedHours?: number;
   dueDate?: string;
+  startDate?: string;
+  endDate?: string;
+  isAllDay?: boolean;
+  timeZone?: string;
+  progress?: number;
+  checklistCount?: number;
+  checklistCompleted?: number;
 }
 
 // Project Management APIs
@@ -680,6 +695,7 @@ export const taskApi = {
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
     scope?: 'all' | 'department' | 'assigned_to_me';
+    fields?: 'minimal' | 'full';
   }) => {
     const response = await api.get(`/role-aware/projects/${projectId}/tasks`, { params });
     return response.data;
@@ -747,6 +763,12 @@ export const taskApi = {
     userRoleId?: string;
   }) => {
     const response = await api.get(`/role-aware/projects/${projectId}/tasks/calendar`, { params });
+    return response.data;
+  },
+
+  // NEW: Role-aware create task within a specific project
+  createProjectTaskRoleAware: async (projectId: string, taskData: CreateTaskData) => {
+    const response = await api.post(`/role-aware/projects/${projectId}/tasks`, taskData);
     return response.data;
   }
 };

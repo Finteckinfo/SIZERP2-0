@@ -555,7 +555,10 @@ const loadProjectData = async () => {
       const [departmentsResponse, tasksResponse, teamResponse] = await Promise.all([
         departmentApi.getAccessibleDepartments(projectId),
         taskApi.getProjectTasksWithFilter(projectId, {
-          scope: myRole.value === 'PROJECT_OWNER' ? 'all' : myRole.value === 'PROJECT_MANAGER' ? 'department' : 'assigned_to_me'
+          scope: myRole.value === 'PROJECT_OWNER' ? 'all' : myRole.value === 'PROJECT_MANAGER' ? 'department' : 'assigned_to_me',
+          fields: 'minimal',
+          sortBy: 'dueDate',
+          sortOrder: 'asc'
         }),
         userRoleApi.getAccessibleProjectTeam(projectId)
       ]);
@@ -629,7 +632,7 @@ const submitNewTask = async () => {
   if (isValid === false || addTaskValid.value === false) return;
   submitting.value = true;
   try {
-    await taskApi.createTask(newTask.value as any);
+    await taskApi.createProjectTaskRoleAware(projectId, newTask.value as any);
     await loadProjectData();
     resetPanel();
   } catch (e) {

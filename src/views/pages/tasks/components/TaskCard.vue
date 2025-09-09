@@ -43,12 +43,12 @@
         <span>{{ formatDate(task.dueDate) }}</span>
       </div>
       
-      <div v-if="project" class="task-project">
+      <div v-if="task.department" class="task-project">
         <div 
           class="project-color" 
-          :style="{ backgroundColor: project.color }"
+          :style="{ backgroundColor: task.department?.color || '#64748b' }"
         ></div>
-        <span>{{ project.name }}</span>
+        <span>{{ task.department?.name }}</span>
       </div>
     </div>
   </div>
