@@ -40,7 +40,9 @@ const app = createApp(App);
 
 // ---- Clerk Authentication ----
 console.log('[main.ts] Initializing Clerk plugin');
-app.use(clerkPlugin, {
+
+// Satellite domain configuration
+const clerkConfig: any = {
   publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
   appearance: {
     baseTheme: dark,
@@ -50,7 +52,22 @@ app.use(clerkPlugin, {
       colorInputBackground: 'transparent',
     },
   },
-});
+};
+
+// Add satellite domain configuration if enabled
+if (import.meta.env.VITE_CLERK_IS_SATELLITE === 'true') {
+  console.log('[main.ts] Configuring as Clerk satellite domain');
+  console.log('[main.ts] Satellite domain:', import.meta.env.VITE_CLERK_DOMAIN);
+  console.log('[main.ts] Primary sign-in URL:', import.meta.env.VITE_CLERK_SIGN_IN_URL);
+  console.log('[main.ts] Primary sign-up URL:', import.meta.env.VITE_CLERK_SIGN_UP_URL);
+  
+  clerkConfig.isSatellite = true;
+  clerkConfig.domain = import.meta.env.VITE_CLERK_DOMAIN;
+  clerkConfig.signInUrl = import.meta.env.VITE_CLERK_SIGN_IN_URL;
+  clerkConfig.signUpUrl = import.meta.env.VITE_CLERK_SIGN_UP_URL;
+}
+
+app.use(clerkPlugin, clerkConfig);
 
 // Add global Clerk readiness check
 app.config.globalProperties.$clerkReady = false;
