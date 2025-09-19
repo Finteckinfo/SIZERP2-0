@@ -98,35 +98,6 @@ const sidebarItem: menu[] = [
     to: ''
   },
   { divider: true },
-  { header: 'Business Operations' },
-  {
-    title: 'CRM',
-    icon: UsersIcon,
-    to: ''
-  },
-  {
-    title: 'Inventory',
-    icon: ShoppingCartIcon,
-    to: ''
-  },
-  {
-    title: 'Finance',
-    icon: CreditCardIcon,
-    to: ''
-  },
-  {
-    title: 'HR Management',
-    icon: BuildingIcon,
-    to: ''
-  },
-  { divider: true },
-  { divider: true },
-  {
-    title: 'Sample Page',
-    icon: BrandChromeIcon,
-    to: '/starter'
-  },
-  { divider: true },
   { header: 'System' },
   {
     title: 'Settings',
