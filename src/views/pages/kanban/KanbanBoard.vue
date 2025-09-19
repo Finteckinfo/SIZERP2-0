@@ -104,7 +104,7 @@
           v-for="column in columnConfigs"
           :key="column.id"
           :column="column"
-          :tasks="columns[column.status] || []"
+          :tasks="(columns as any)[column.status] || []"
           :selected-tasks="selectedTasks"
           :user-permissions="userPermissions"
           @task-click="handleTaskClick"

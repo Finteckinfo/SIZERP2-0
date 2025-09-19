@@ -41,18 +41,19 @@ export function useKanban(projectId: string) {
   });
 
   const filteredColumns = computed(() => {
-    if (!columns.value) return {};
+    if (!kanbanData.value?.columns) return {};
     
-    const filtered: typeof columns.value = {};
+    const filtered: Record<string, KanbanTask[]> = {};
+    const cols = kanbanData.value.columns;
     
-    Object.keys(columns.value).forEach(status => {
-      const tasks = columns.value[status as keyof typeof columns.value];
+    Object.keys(cols).forEach(status => {
+      const tasks = cols[status as keyof typeof cols] || [];
       
       // Apply search filter
-      let filteredTasks = tasks;
+      let filteredTasks: KanbanTask[] = [...tasks];
       if (filters.value.search) {
         const searchLower = filters.value.search.toLowerCase();
-        filteredTasks = tasks.filter(task => 
+        filteredTasks = filteredTasks.filter((task: KanbanTask) => 
           task.title.toLowerCase().includes(searchLower) ||
           task.description?.toLowerCase().includes(searchLower) ||
           task.assignedUser?.email.toLowerCase().includes(searchLower) ||
@@ -63,7 +64,7 @@ export function useKanban(projectId: string) {
       // Apply due date filter
       if (filters.value.dueDateRange) {
         const { start, end } = filters.value.dueDateRange;
-        filteredTasks = filteredTasks.filter(task => {
+        filteredTasks = filteredTasks.filter((task: KanbanTask) => {
           if (!task.dueDate) return false;
           const dueDate = new Date(task.dueDate);
           const startDate = new Date(start);
@@ -72,7 +73,7 @@ export function useKanban(projectId: string) {
         });
       }
       
-      filtered[status as keyof typeof filtered] = filteredTasks;
+      filtered[status] = filteredTasks;
     });
     
     return filtered;

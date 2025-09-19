@@ -94,6 +94,23 @@ export interface TaskPosition {
   departmentId?: string;
 }
 
+export interface CreateTaskData {
+  title: string;
+  description?: string;
+  departmentId: string;
+  assignedRoleId?: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  estimatedHours?: number;
+  dueDate?: string;
+  startDate?: string;
+  endDate?: string;
+  isAllDay?: boolean;
+  timeZone?: string;
+  progress?: number;
+  checklistCount?: number;
+  checklistCompleted?: number;
+}
+
 export interface BulkTaskUpdate {
   taskIds: string[];
   updates: {

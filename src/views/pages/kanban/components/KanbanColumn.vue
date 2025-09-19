@@ -246,7 +246,9 @@ const handleDragOver = (event: DragEvent) => {
 
 const handleDragLeave = (event: DragEvent) => {
   // Only clear drag over if leaving the column entirely
-  if (!event.currentTarget?.contains(event.relatedTarget as Node)) {
+  const currentTarget = event.currentTarget as HTMLElement;
+  const relatedTarget = event.relatedTarget as Node;
+  if (currentTarget && !currentTarget.contains(relatedTarget)) {
     isDragOver.value = false;
   }
 };

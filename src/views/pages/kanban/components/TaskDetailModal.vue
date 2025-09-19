@@ -568,7 +568,20 @@ const saveChanges = async () => {
   try {
     saving.value = true;
     
-    const updatedTask = await taskApi.updateTask(props.task.id, editableTask.value);
+    // Only send the fields that can be updated
+    const updateData = {
+      title: editableTask.value.title,
+      description: editableTask.value.description,
+      status: editableTask.value.status,
+      priority: editableTask.value.priority,
+      assignedRoleId: editableTask.value.assignedRoleId,
+      dueDate: editableTask.value.dueDate,
+      progress: editableTask.value.progress,
+      estimatedHours: editableTask.value.estimatedHours,
+      actualHours: editableTask.value.actualHours
+    };
+    
+    const updatedTask = await taskApi.updateTask(props.task.id, updateData);
     
     emit('task-updated', { ...props.task, ...updatedTask });
     editMode.value = false;

@@ -135,22 +135,22 @@
               <v-row>
                 <v-col cols="6">
                   <v-text-field
-                    v-model="localFilters.dueDateRange?.start"
+                    :model-value="localFilters.dueDateRange?.start"
                     type="date"
                     variant="outlined"
                     density="compact"
                     hide-details
-                    @update:model-value="updateDateRange"
+                    @update:model-value="(value) => updateDateRangeStart(value)"
                   />
                 </v-col>
                 <v-col cols="6">
                   <v-text-field
-                    v-model="localFilters.dueDateRange?.end"
+                    :model-value="localFilters.dueDateRange?.end"
                     type="date"
                     variant="outlined"
                     density="compact"
                     hide-details
-                    @update:model-value="updateDateRange"
+                    @update:model-value="(value) => updateDateRangeEnd(value)"
                   />
                 </v-col>
               </v-row>
@@ -346,6 +346,22 @@ const clearFilter = (filterKey: keyof KanbanFilters) => {
       break;
   }
   updateFilters();
+};
+
+const updateDateRangeStart = (value: string) => {
+  if (!localFilters.value.dueDateRange) {
+    localFilters.value.dueDateRange = { start: '', end: '' };
+  }
+  localFilters.value.dueDateRange.start = value;
+  updateDateRange();
+};
+
+const updateDateRangeEnd = (value: string) => {
+  if (!localFilters.value.dueDateRange) {
+    localFilters.value.dueDateRange = { start: '', end: '' };
+  }
+  localFilters.value.dueDateRange.end = value;
+  updateDateRange();
 };
 
 const updateDateRange = () => {

@@ -285,9 +285,20 @@ const results = ref<BulkUpdateResult>({
   summary: { total: 0, successful: 0, failed: 0 }
 });
 
-const bulkUpdate = ref<BulkTaskUpdate>({
+const bulkUpdate = ref<BulkTaskUpdate & {
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED';
+  assignedRoleId?: string;
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  dueDate?: string;
+  progress?: number;
+}>({
   taskIds: props.taskIds,
-  updates: {}
+  updates: {},
+  status: undefined,
+  assignedRoleId: undefined,
+  priority: undefined,
+  dueDate: undefined,
+  progress: undefined
 });
 
 // Options
@@ -318,15 +329,15 @@ const isValidUpdate = computed(() => {
   
   switch (selectedAction.value) {
     case 'status':
-      return !!bulkUpdate.value.updates.status;
+      return !!bulkUpdate.value.status;
     case 'assignee':
-      return bulkUpdate.value.updates.assignedRoleId !== undefined;
+      return bulkUpdate.value.assignedRoleId !== undefined;
     case 'priority':
-      return !!bulkUpdate.value.updates.priority;
+      return !!bulkUpdate.value.priority;
     case 'due-date':
-      return !!bulkUpdate.value.updates.dueDate;
+      return !!bulkUpdate.value.dueDate;
     case 'progress':
-      return bulkUpdate.value.updates.progress !== undefined;
+      return bulkUpdate.value.progress !== undefined;
     default:
       return false;
   }
@@ -352,19 +363,19 @@ const getPreviewText = () => {
   
   switch (selectedAction.value) {
     case 'status':
-      const statusTitle = statusOptions.find(s => s.value === bulkUpdate.value.updates.status)?.title;
+      const statusTitle = statusOptions.find(s => s.value === bulkUpdate.value.status)?.title;
       return `Change status of ${count} tasks to "${statusTitle}"`;
     case 'assignee':
-      const assigneeName = assigneeOptions.value.find(a => a.value === bulkUpdate.value.updates.assignedRoleId)?.title;
+      const assigneeName = assigneeOptions.value.find(a => a.value === bulkUpdate.value.assignedRoleId)?.title;
       return `Assign ${count} tasks to "${assigneeName}"`;
     case 'priority':
-      const priorityTitle = priorityOptions.find(p => p.value === bulkUpdate.value.updates.priority)?.title;
+      const priorityTitle = priorityOptions.find(p => p.value === bulkUpdate.value.priority)?.title;
       return `Change priority of ${count} tasks to "${priorityTitle}"`;
     case 'due-date':
-      const dueDate = new Date(bulkUpdate.value.updates.dueDate!).toLocaleDateString();
+      const dueDate = new Date(bulkUpdate.value.dueDate!).toLocaleDateString();
       return `Set due date of ${count} tasks to ${dueDate}`;
     case 'progress':
-      return `Update progress of ${count} tasks to ${bulkUpdate.value.updates.progress}%`;
+      return `Update progress of ${count} tasks to ${bulkUpdate.value.progress}%`;
     default:
       return '';
   }
@@ -380,9 +391,17 @@ const executeBulkAction = async () => {
       updates: bulkUpdate.value.updates
     });
     
+    // Sync the form values to the updates object
+    const updates: any = {};
+    if (bulkUpdate.value.status) updates.status = bulkUpdate.value.status;
+    if (bulkUpdate.value.assignedRoleId !== undefined) updates.assignedRoleId = bulkUpdate.value.assignedRoleId;
+    if (bulkUpdate.value.priority) updates.priority = bulkUpdate.value.priority;
+    if (bulkUpdate.value.dueDate) updates.dueDate = bulkUpdate.value.dueDate;
+    if (bulkUpdate.value.progress !== undefined) updates.progress = bulkUpdate.value.progress;
+    
     const result = await kanbanApi.bulkUpdateTasks({
       taskIds: props.taskIds,
-      updates: bulkUpdate.value.updates
+      updates: updates
     });
     
     results.value = result;

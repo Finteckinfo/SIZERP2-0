@@ -32,7 +32,7 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     try {
-      const token = await authService.getToken();
+      const token = await authService.getJWTToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -188,7 +188,7 @@ export const kanbanApi = {
       const wsUrl = API_BASE_URL.replace('http', 'ws').replace('https', 'wss');
       
       // Get auth token for WebSocket connection
-      authService.getToken().then(token => {
+      authService.getJWTToken().then((token: string | null) => {
         if (!token) {
           console.error('[kanbanApi] No auth token available for WebSocket connection');
           return;
@@ -219,7 +219,7 @@ export const kanbanApi = {
         };
         
         return ws;
-      }).catch(error => {
+      }).catch((error: any) => {
         console.error('[kanbanApi] Failed to get auth token for WebSocket:', error);
       });
       
