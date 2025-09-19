@@ -66,7 +66,7 @@ const sidebarItem: menu[] = [
   {
     title: 'Kanban Board',
     icon: BrandChromeIcon,
-    to: ''
+    to: '/kanban'
   },
   { divider: true },
   { header: 'Communication' },

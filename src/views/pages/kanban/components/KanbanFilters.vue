@@ -1,0 +1,455 @@
+<template>
+  <div class="kanban-filters">
+    <v-card variant="outlined" class="filter-card">
+      <v-card-text class="pa-4">
+        <v-row align="center">
+          <!-- Search -->
+          <v-col cols="12" md="3">
+            <v-text-field
+              v-model="localFilters.search"
+              placeholder="Search tasks..."
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              @input="debouncedUpdate"
+            />
+          </v-col>
+
+          <!-- Department Filter -->
+          <v-col cols="12" md="2">
+            <v-select
+              v-model="localFilters.departmentId"
+              :items="departmentOptions"
+              placeholder="All Departments"
+              prepend-inner-icon="mdi-office-building"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              @update:model-value="updateFilters"
+            />
+          </v-col>
+
+          <!-- Priority Filter -->
+          <v-col cols="12" md="2">
+            <v-select
+              v-model="localFilters.priorities"
+              :items="priorityOptions"
+              placeholder="All Priorities"
+              prepend-inner-icon="mdi-flag"
+              variant="outlined"
+              density="compact"
+              hide-details
+              multiple
+              clearable
+              @update:model-value="updateFilters"
+            >
+              <template #selection="{ item, index }">
+                <v-chip
+                  v-if="index < 2"
+                  size="small"
+                  :color="getPriorityColor(item.value)"
+                  variant="flat"
+                  class="mr-1"
+                >
+                  {{ item.title }}
+                </v-chip>
+                <span
+                  v-if="index === 2"
+                  class="text-caption text-medium-emphasis"
+                >
+                  +{{ localFilters.priorities!.length - 2 }} more
+                </span>
+              </template>
+            </v-select>
+          </v-col>
+
+          <!-- Assignee Filter -->
+          <v-col cols="12" md="2">
+            <v-select
+              v-model="localFilters.assignedRoleIds"
+              :items="assigneeOptions"
+              placeholder="All Assignees"
+              prepend-inner-icon="mdi-account"
+              variant="outlined"
+              density="compact"
+              hide-details
+              multiple
+              clearable
+              @update:model-value="updateFilters"
+            >
+              <template #selection="{ item, index }">
+                <v-chip
+                  v-if="index < 2"
+                  size="small"
+                  variant="outlined"
+                  class="mr-1"
+                >
+                  {{ item.title }}
+                </v-chip>
+                <span
+                  v-if="index === 2"
+                  class="text-caption text-medium-emphasis"
+                >
+                  +{{ localFilters.assignedRoleIds!.length - 2 }} more
+                </span>
+              </template>
+            </v-select>
+          </v-col>
+
+          <!-- Include Completed Toggle -->
+          <v-col cols="12" md="2">
+            <v-switch
+              v-model="localFilters.includeCompleted"
+              label="Include Completed"
+              color="primary"
+              density="compact"
+              hide-details
+              @update:model-value="updateFilters"
+            />
+          </v-col>
+
+          <!-- Actions -->
+          <v-col cols="12" md="1" class="text-right">
+            <v-btn-group variant="outlined" density="compact">
+              <v-btn
+                icon="mdi-refresh"
+                :loading="loading"
+                @click="$emit('refresh')"
+              />
+              <v-btn
+                icon="mdi-filter-off"
+                @click="clearFilters"
+              />
+            </v-btn-group>
+          </v-col>
+        </v-row>
+
+        <!-- Advanced Filters Toggle -->
+        <v-row v-if="showAdvanced" class="mt-2">
+          <v-col cols="12" md="6">
+            <div class="filter-section">
+              <label class="filter-label">Due Date Range</label>
+              <v-row>
+                <v-col cols="6">
+                  <v-text-field
+                    v-model="localFilters.dueDateRange?.start"
+                    type="date"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    @update:model-value="updateDateRange"
+                  />
+                </v-col>
+                <v-col cols="6">
+                  <v-text-field
+                    v-model="localFilters.dueDateRange?.end"
+                    type="date"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    @update:model-value="updateDateRange"
+                  />
+                </v-col>
+              </v-row>
+            </div>
+          </v-col>
+        </v-row>
+
+        <!-- Filter Summary -->
+        <div v-if="hasActiveFilters" class="filter-summary mt-3">
+          <div class="d-flex align-center gap-2 flex-wrap">
+            <span class="text-caption text-medium-emphasis">Active filters:</span>
+            
+            <v-chip
+              v-if="localFilters.search"
+              size="small"
+              variant="outlined"
+              closable
+              @click:close="clearFilter('search')"
+            >
+              Search: "{{ localFilters.search }}"
+            </v-chip>
+            
+            <v-chip
+              v-if="localFilters.departmentId"
+              size="small"
+              variant="outlined"
+              closable
+              @click:close="clearFilter('departmentId')"
+            >
+              Department: {{ getDepartmentName(localFilters.departmentId) }}
+            </v-chip>
+            
+            <v-chip
+              v-if="localFilters.priorities?.length"
+              size="small"
+              variant="outlined"
+              closable
+              @click:close="clearFilter('priorities')"
+            >
+              Priority: {{ localFilters.priorities.length }} selected
+            </v-chip>
+            
+            <v-chip
+              v-if="localFilters.assignedRoleIds?.length"
+              size="small"
+              variant="outlined"
+              closable
+              @click:close="clearFilter('assignedRoleIds')"
+            >
+              Assignees: {{ localFilters.assignedRoleIds.length }} selected
+            </v-chip>
+            
+            <v-chip
+              v-if="localFilters.includeCompleted"
+              size="small"
+              variant="outlined"
+              closable
+              @click:close="clearFilter('includeCompleted')"
+            >
+              Include Completed
+            </v-chip>
+            
+            <v-chip
+              v-if="localFilters.dueDateRange"
+              size="small"
+              variant="outlined"
+              closable
+              @click:close="clearFilter('dueDateRange')"
+            >
+              Due Date Range
+            </v-chip>
+          </div>
+        </div>
+
+        <!-- Advanced Toggle -->
+        <div class="text-right mt-2">
+          <v-btn
+            variant="text"
+            size="small"
+            @click="showAdvanced = !showAdvanced"
+          >
+            {{ showAdvanced ? 'Less Filters' : 'More Filters' }}
+            <v-icon :class="{ 'rotate-180': showAdvanced }">
+              mdi-chevron-down
+            </v-icon>
+          </v-btn>
+        </div>
+      </v-card-text>
+    </v-card>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch, onMounted } from 'vue';
+import { debounce } from 'lodash';
+import { projectApi, departmentApi } from '@/services/projectApi';
+import type { KanbanFilters } from '../types/kanban';
+
+interface Props {
+  filters: KanbanFilters;
+  loading?: boolean;
+}
+
+interface Emits {
+  (e: 'update:filters', filters: Partial<KanbanFilters>): void;
+  (e: 'refresh'): void;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
+
+// Local state
+const localFilters = ref<KanbanFilters>({ ...props.filters });
+const showAdvanced = ref(false);
+const departments = ref<any[]>([]);
+const assignees = ref<any[]>([]);
+
+// Computed options
+const departmentOptions = computed(() => [
+  { title: 'All Departments', value: '' },
+  ...departments.value.map(dept => ({
+    title: dept.name,
+    value: dept.id
+  }))
+]);
+
+const priorityOptions = computed(() => [
+  { title: 'Critical', value: 'CRITICAL' },
+  { title: 'High', value: 'HIGH' },
+  { title: 'Medium', value: 'MEDIUM' },
+  { title: 'Low', value: 'LOW' }
+]);
+
+const assigneeOptions = computed(() => [
+  { title: 'All Assignees', value: '' },
+  ...assignees.value.map(assignee => ({
+    title: assignee.email || assignee.name,
+    value: assignee.id
+  }))
+]);
+
+const hasActiveFilters = computed(() => {
+  return !!(
+    localFilters.value.search ||
+    localFilters.value.departmentId ||
+    localFilters.value.priorities?.length ||
+    localFilters.value.assignedRoleIds?.length ||
+    localFilters.value.includeCompleted ||
+    localFilters.value.dueDateRange
+  );
+});
+
+// Methods
+const updateFilters = () => {
+  emit('update:filters', { ...localFilters.value });
+};
+
+const debouncedUpdate = debounce(() => {
+  updateFilters();
+}, 300);
+
+const clearFilters = () => {
+  localFilters.value = {
+    search: '',
+    departmentId: undefined,
+    priorities: [],
+    assignedRoleIds: [],
+    includeCompleted: false,
+    dueDateRange: undefined
+  };
+  updateFilters();
+};
+
+const clearFilter = (filterKey: keyof KanbanFilters) => {
+  switch (filterKey) {
+    case 'search':
+      localFilters.value.search = '';
+      break;
+    case 'departmentId':
+      localFilters.value.departmentId = undefined;
+      break;
+    case 'priorities':
+      localFilters.value.priorities = [];
+      break;
+    case 'assignedRoleIds':
+      localFilters.value.assignedRoleIds = [];
+      break;
+    case 'includeCompleted':
+      localFilters.value.includeCompleted = false;
+      break;
+    case 'dueDateRange':
+      localFilters.value.dueDateRange = undefined;
+      break;
+  }
+  updateFilters();
+};
+
+const updateDateRange = () => {
+  if (localFilters.value.dueDateRange?.start && localFilters.value.dueDateRange?.end) {
+    updateFilters();
+  }
+};
+
+const getPriorityColor = (priority: string) => {
+  switch (priority) {
+    case 'CRITICAL': return 'error';
+    case 'HIGH': return 'warning';
+    case 'MEDIUM': return 'info';
+    case 'LOW': return 'success';
+    default: return 'grey';
+  }
+};
+
+const getDepartmentName = (departmentId: string) => {
+  const dept = departments.value.find(d => d.id === departmentId);
+  return dept?.name || 'Unknown';
+};
+
+// Load filter options
+const loadFilterOptions = async () => {
+  try {
+    // Load departments and assignees from your project context
+    // This would need to be adapted based on your current project context
+    console.log('[KanbanFilters] Loading filter options...');
+    
+    // For now, we'll use mock data - replace with actual API calls
+    departments.value = [
+      { id: '1', name: 'Development' },
+      { id: '2', name: 'Design' },
+      { id: '3', name: 'Marketing' }
+    ];
+    
+    assignees.value = [
+      { id: '1', name: 'John Doe', email: 'john@example.com' },
+      { id: '2', name: 'Jane Smith', email: 'jane@example.com' }
+    ];
+    
+  } catch (error) {
+    console.error('[KanbanFilters] Failed to load filter options:', error);
+  }
+};
+
+// Watch for external filter changes
+watch(() => props.filters, (newFilters) => {
+  localFilters.value = { ...newFilters };
+}, { deep: true });
+
+// Lifecycle
+onMounted(() => {
+  loadFilterOptions();
+});
+</script>
+
+<style scoped>
+.kanban-filters {
+  margin-bottom: 1rem;
+}
+
+.filter-card {
+  background: var(--erp-card-bg);
+  border: 1px solid var(--erp-border);
+}
+
+.filter-section {
+  margin-bottom: 1rem;
+}
+
+.filter-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--erp-text);
+  margin-bottom: 0.5rem;
+}
+
+.filter-summary {
+  padding-top: 1rem;
+  border-top: 1px solid var(--erp-border);
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .kanban-filters :deep(.v-col) {
+    padding: 0.25rem;
+  }
+  
+  .filter-summary {
+    margin-top: 1rem;
+  }
+  
+  .filter-summary .d-flex {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+</style>

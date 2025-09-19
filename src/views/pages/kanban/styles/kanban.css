@@ -1,0 +1,462 @@
+/* Kanban Board Global Styles */
+
+/* Drag and Drop States */
+.drag-active {
+  cursor: grabbing !important;
+}
+
+.drag-active * {
+  cursor: grabbing !important;
+}
+
+.dragging {
+  opacity: 0.5;
+  transform: rotate(5deg);
+  transition: all 0.2s ease;
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.drop-zone-active {
+  background: rgba(59, 130, 246, 0.1) !important;
+  border: 2px dashed rgba(59, 130, 246, 0.5) !important;
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+.touch-dragging {
+  opacity: 0.8;
+  transform: scale(1.05);
+  transition: all 0.2s ease;
+  z-index: 1000;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Task Card Animations */
+.kanban-task-card {
+  animation: slideInUp 0.3s ease-out;
+  transition: all 0.2s ease;
+}
+
+.kanban-task-card:hover {
+  animation: none;
+}
+
+.task-enter-active {
+  animation: slideInUp 0.4s ease-out;
+}
+
+.task-leave-active {
+  animation: slideOutDown 0.3s ease-in;
+}
+
+.task-move {
+  transition: transform 0.3s ease;
+}
+
+/* Column Animations */
+.kanban-column {
+  animation: fadeInScale 0.4s ease-out;
+}
+
+.column-enter-active {
+  animation: slideInLeft 0.5s ease-out;
+}
+
+.column-leave-active {
+  animation: slideOutRight 0.3s ease-in;
+}
+
+/* Filter Animations */
+.filter-enter-active {
+  animation: slideInDown 0.3s ease-out;
+}
+
+.filter-leave-active {
+  animation: slideOutUp 0.2s ease-in;
+}
+
+/* Modal Animations */
+.modal-enter-active {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-leave-active {
+  animation: modalSlideOut 0.2s ease-in;
+}
+
+/* Loading Animations */
+.loading-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loading-shimmer {
+  animation: shimmer 2s linear infinite;
+  background: linear-gradient(
+    90deg,
+    var(--erp-surface) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    var(--erp-surface) 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* Priority Indicators */
+.priority-critical {
+  border-left: 4px solid #ef4444;
+  position: relative;
+}
+
+.priority-critical::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -4px;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #ef4444, #dc2626);
+  animation: priorityPulse 2s ease-in-out infinite;
+}
+
+.priority-high {
+  border-left: 4px solid #f59e0b;
+}
+
+.priority-medium {
+  border-left: 4px solid #3b82f6;
+}
+
+.priority-low {
+  border-left: 4px solid #10b981;
+}
+
+/* Status Indicators */
+.status-pending {
+  border-top: 3px solid #6b7280;
+}
+
+.status-in-progress {
+  border-top: 3px solid #f59e0b;
+  position: relative;
+}
+
+.status-in-progress::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+  animation: progressFlow 2s linear infinite;
+}
+
+.status-completed {
+  border-top: 3px solid #10b981;
+}
+
+.status-approved {
+  border-top: 3px solid #3b82f6;
+}
+
+/* Due Date Indicators */
+.due-today {
+  box-shadow: inset 0 0 0 2px rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.due-overdue {
+  box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.05);
+  animation: overdueGlow 3s ease-in-out infinite;
+}
+
+/* Hover Effects */
+.kanban-task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.kanban-column:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Selection States */
+.task-selected {
+  border: 2px solid rgba(59, 130, 246, 0.5);
+  background: rgba(59, 130, 246, 0.05);
+  transform: scale(1.02);
+}
+
+.multi-select-mode .kanban-task-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.multi-select-mode .kanban-task-card:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Bulk Actions */
+.bulk-actions-bar {
+  animation: slideInUp 0.3s ease-out;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Analytics Drawer */
+.analytics-drawer {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* Responsive Animations */
+@media (max-width: 768px) {
+  .kanban-task-card {
+    animation: none;
+  }
+  
+  .kanban-column {
+    animation: none;
+  }
+  
+  .dragging {
+    transform: scale(1.1);
+  }
+}
+
+/* Keyframe Animations */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalSlideOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes priorityPulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+  }
+}
+
+@keyframes progressFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes overdueGlow {
+  0%, 100% {
+    box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.3);
+  }
+  50% {
+    box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.6), 0 0 12px rgba(239, 68, 68, 0.3);
+  }
+}
+
+/* Dark Theme Adjustments */
+.dark-theme .dragging {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.dark-theme .drop-zone-active {
+  background: rgba(59, 130, 246, 0.15) !important;
+}
+
+.dark-theme .loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--erp-surface) 25%,
+    rgba(255, 255, 255, 0.05) 50%,
+    var(--erp-surface) 75%
+  );
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .kanban-task-card {
+    border: 2px solid var(--erp-text);
+  }
+  
+  .drop-zone-active {
+    border: 3px solid #0066cc !important;
+  }
+  
+  .task-selected {
+    border: 3px solid #0066cc;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .dragging {
+    transform: none;
+  }
+  
+  .kanban-task-card:hover {
+    transform: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .kanban-board {
+    display: block;
+  }
+  
+  .kanban-columns {
+    display: block;
+  }
+  
+  .kanban-column {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+  
+  .kanban-task-card {
+    box-shadow: none;
+    border: 1px solid #ccc;
+    margin-bottom: 0.5rem;
+  }
+  
+  .analytics-fab,
+  .bulk-actions-bar,
+  .task-actions {
+    display: none !important;
+  }
+}
