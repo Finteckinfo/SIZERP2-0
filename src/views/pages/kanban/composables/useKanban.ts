@@ -208,14 +208,19 @@ export function useKanban() {
   };
 
   // WebSocket real-time updates
-  const connectWebSocket = () => {
+  const connectWebSocket = async () => {
     try {
-      console.log('[useKanban] Connecting WebSocket for cross-project updates');
+      console.log('[useKanban] Attempting WebSocket connection for cross-project updates');
       
-      websocket.value = kanbanApi.createWebSocketConnection('all-projects', handleWebSocketMessage);
+      websocket.value = await kanbanApi.createWebSocketConnection('all-projects', handleWebSocketMessage);
+      
+      if (!websocket.value) {
+        console.info('[useKanban] WebSocket not available - real-time updates disabled');
+        console.info('[useKanban] Users can still use manual refresh to see updates');
+      }
       
     } catch (err) {
-      console.error('[useKanban] Failed to connect WebSocket:', err);
+      console.warn('[useKanban] WebSocket connection failed - continuing without real-time updates:', err);
     }
   };
 

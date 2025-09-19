@@ -207,10 +207,10 @@ const columnClasses = computed(() => ({
 // Methods
 const getColumnIcon = (status: string) => {
   const iconMap: Record<string, string> = {
-    'PENDING': 'mdi-clipboard-list-outline',
-    'IN_PROGRESS': 'mdi-progress-clock',
-    'COMPLETED': 'mdi-check-circle-outline',
-    'APPROVED': 'mdi-check-decagram'
+    'PENDING': 'mdi-clipboard-text-outline',
+    'IN_PROGRESS': 'mdi-clock-outline',
+    'COMPLETED': 'mdi-check-circle',
+    'APPROVED': 'mdi-check-all'
   };
   return iconMap[status] || 'mdi-circle';
 };

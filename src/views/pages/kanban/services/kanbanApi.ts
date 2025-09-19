@@ -198,50 +198,70 @@ export const kanbanApi = {
   /**
    * Create WebSocket connection for real-time updates
    */
-  createWebSocketConnection: (projectId: string, onMessage: (message: WebSocketMessage) => void): WebSocket | null => {
+  createWebSocketConnection: async (projectId: string, onMessage: (message: WebSocketMessage) => void): Promise<WebSocket | null> => {
     try {
+      // Get auth token first
+      const token = await authService.getJWTToken();
+      if (!token) {
+        console.warn('[kanbanApi] No auth token available for WebSocket connection - skipping real-time updates');
+        return null;
+      }
+
       // Get the WebSocket URL
       const wsUrl = API_BASE_URL.replace('http', 'ws').replace('https', 'wss');
+      const wsEndpoint = `${wsUrl}/api/tasks/live/${projectId}?token=${token}`;
       
-      // Get auth token for WebSocket connection
-      authService.getJWTToken().then((token: string | null) => {
-        if (!token) {
-          console.error('[kanbanApi] No auth token available for WebSocket connection');
-          return;
-        }
+      console.log('[kanbanApi] Attempting WebSocket connection to:', wsEndpoint.replace(token, 'TOKEN_HIDDEN'));
 
-        const ws = new WebSocket(`${wsUrl}/api/tasks/live/${projectId}?token=${token}`);
-        
-        ws.onopen = () => {
-          console.log('[kanbanApi] WebSocket connected for project:', projectId);
-        };
-        
-        ws.onmessage = (event) => {
-          try {
-            const message: WebSocketMessage = JSON.parse(event.data);
-            console.log('[kanbanApi] WebSocket message received:', message);
-            onMessage(message);
-          } catch (error) {
-            console.error('[kanbanApi] Failed to parse WebSocket message:', error);
-          }
-        };
-        
-        ws.onclose = (event) => {
-          console.log('[kanbanApi] WebSocket closed:', { code: event.code, reason: event.reason });
-        };
-        
-        ws.onerror = (error) => {
-          console.error('[kanbanApi] WebSocket error:', error);
-        };
-        
-        return ws;
-      }).catch((error: any) => {
-        console.error('[kanbanApi] Failed to get auth token for WebSocket:', error);
-      });
+      const ws = new WebSocket(wsEndpoint);
       
-      return null;
+      // Set a connection timeout
+      const connectionTimeout = setTimeout(() => {
+        if (ws.readyState === WebSocket.CONNECTING) {
+          console.warn('[kanbanApi] WebSocket connection timeout - closing connection');
+          ws.close();
+        }
+      }, 10000); // 10 second timeout
+      
+      ws.onopen = () => {
+        clearTimeout(connectionTimeout);
+        console.log('[kanbanApi] ✅ WebSocket connected successfully for project:', projectId);
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const message: WebSocketMessage = JSON.parse(event.data);
+          console.log('[kanbanApi] WebSocket message received:', message);
+          onMessage(message);
+        } catch (error) {
+          console.error('[kanbanApi] Failed to parse WebSocket message:', error);
+        }
+      };
+      
+      ws.onclose = (event) => {
+        clearTimeout(connectionTimeout);
+        
+        if (event.code === 1000) {
+          console.log('[kanbanApi] WebSocket closed normally');
+        } else if (event.code === 1006) {
+          console.warn('[kanbanApi] WebSocket closed abnormally - real-time updates disabled');
+          console.warn('[kanbanApi] This usually means the WebSocket server is not running or not properly configured');
+        } else {
+          console.warn('[kanbanApi] WebSocket closed with code:', event.code, 'reason:', event.reason);
+        }
+      };
+      
+      ws.onerror = (error) => {
+        clearTimeout(connectionTimeout);
+        console.warn('[kanbanApi] WebSocket connection failed - falling back to manual refresh');
+        console.warn('[kanbanApi] Real-time updates are disabled. Users will need to refresh manually.');
+        // Don't log the full error as it's expected when WebSocket server isn't available
+      };
+      
+      return ws;
+      
     } catch (error) {
-      console.error('[kanbanApi] Failed to create WebSocket connection:', error);
+      console.warn('[kanbanApi] WebSocket not available - real-time updates disabled');
       return null;
     }
   }

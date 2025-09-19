@@ -230,7 +230,7 @@ export const DEFAULT_COLUMNS: ColumnConfig[] = [
     title: 'To Do',
     status: 'PENDING',
     color: '#6b7280',
-    icon: 'mdi-clipboard-list-outline',
+    icon: 'mdi-clipboard-text-outline',
     description: 'Tasks ready to be started'
   },
   {
@@ -238,7 +238,7 @@ export const DEFAULT_COLUMNS: ColumnConfig[] = [
     title: 'In Progress',
     status: 'IN_PROGRESS',
     color: '#f59e0b',
-    icon: 'mdi-progress-clock',
+    icon: 'mdi-clock-outline',
     description: 'Tasks currently being worked on'
   },
   {
@@ -246,7 +246,7 @@ export const DEFAULT_COLUMNS: ColumnConfig[] = [
     title: 'Completed',
     status: 'COMPLETED',
     color: '#10b981',
-    icon: 'mdi-check-circle-outline',
+    icon: 'mdi-check-circle',
     description: 'Tasks finished and ready for review'
   },
   {
@@ -254,7 +254,7 @@ export const DEFAULT_COLUMNS: ColumnConfig[] = [
     title: 'Approved',
     status: 'APPROVED',
     color: '#3b82f6',
-    icon: 'mdi-check-decagram',
+    icon: 'mdi-check-all',
     description: 'Tasks reviewed and approved'
   }
 ];
