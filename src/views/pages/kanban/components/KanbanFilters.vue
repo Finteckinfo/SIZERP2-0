@@ -17,6 +17,39 @@
             />
           </v-col>
 
+          <!-- Project Filter -->
+          <v-col cols="12" md="2">
+            <v-select
+              v-model="localFilters.projectIds"
+              :items="projectOptions"
+              placeholder="All Projects"
+              prepend-inner-icon="mdi-folder"
+              variant="outlined"
+              density="compact"
+              hide-details
+              multiple
+              clearable
+              @update:model-value="updateFilters"
+            >
+              <template #selection="{ item, index }">
+                <v-chip
+                  v-if="index < 2"
+                  size="small"
+                  variant="outlined"
+                  class="mr-1"
+                >
+                  {{ item.title }}
+                </v-chip>
+                <span
+                  v-if="index === 2"
+                  class="text-caption text-medium-emphasis"
+                >
+                  +{{ localFilters.projectIds!.length - 2 }} more
+                </span>
+              </template>
+            </v-select>
+          </v-col>
+
           <!-- Department Filter -->
           <v-col cols="12" md="2">
             <v-select
@@ -265,10 +298,19 @@ const emit = defineEmits<Emits>();
 // Local state
 const localFilters = ref<KanbanFilters>({ ...props.filters });
 const showAdvanced = ref(false);
+const projects = ref<any[]>([]);
 const departments = ref<any[]>([]);
 const assignees = ref<any[]>([]);
 
 // Computed options
+const projectOptions = computed(() => [
+  { title: 'All Projects', value: '' },
+  ...projects.value.map(project => ({
+    title: project.name,
+    value: project.id
+  }))
+]);
+
 const departmentOptions = computed(() => [
   { title: 'All Departments', value: '' },
   ...departments.value.map(dept => ({
@@ -315,6 +357,7 @@ const debouncedUpdate = debounce(() => {
 const clearFilters = () => {
   localFilters.value = {
     search: '',
+    projectIds: [],
     departmentId: undefined,
     priorities: [],
     assignedRoleIds: [],
@@ -328,6 +371,9 @@ const clearFilter = (filterKey: keyof KanbanFilters) => {
   switch (filterKey) {
     case 'search':
       localFilters.value.search = '';
+      break;
+    case 'projectIds':
+      localFilters.value.projectIds = [];
       break;
     case 'departmentId':
       localFilters.value.departmentId = undefined;

@@ -32,15 +32,30 @@
               />
             </v-col>
 
+            <!-- Project -->
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="(newTask as any).projectId"
+                :items="projectOptions"
+                label="Project"
+                variant="outlined"
+                :rules="[rules.required]"
+                hide-details="auto"
+                clearable
+                @update:model-value="loadProjectDepartments"
+              />
+            </v-col>
+
             <!-- Department -->
             <v-col cols="12" md="6">
               <v-select
-                v-model="newTask.departmentId"
+                v-model="(newTask as any).departmentId"
                 :items="departmentOptions"
                 label="Department"
                 variant="outlined"
                 :rules="[rules.required]"
                 hide-details="auto"
+                :disabled="!newTask.projectId"
               />
             </v-col>
 
@@ -252,8 +267,8 @@ import type { CreateTaskData, KanbanTask } from '../types/kanban';
 
 interface Props {
   modelValue: boolean;
-  projectId: string;
   defaultStatus?: string;
+  defaultProject?: string;
   defaultDepartment?: string;
 }
 
@@ -278,21 +293,22 @@ const formRef = ref();
 const formValid = ref(false);
 const creating = ref(false);
 
-const newTask = ref<CreateTaskData & { status?: string }>({
+const newTask = ref({
   title: '',
   description: '',
-  departmentId: '',
-  assignedRoleId: undefined,
-  priority: 'MEDIUM',
-  status: props.defaultStatus,
-  estimatedHours: undefined,
-  dueDate: undefined,
-  startDate: undefined,
-  endDate: undefined,
+  projectId: null as string | null,
+  departmentId: null as string | null,
+  assignedRoleId: undefined as string | undefined,
+  priority: 'MEDIUM' as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL',
+  status: props.defaultStatus || 'PENDING',
+  estimatedHours: undefined as number | undefined,
+  dueDate: undefined as string | undefined,
+  startDate: undefined as string | undefined,
+  endDate: undefined as string | undefined,
   isAllDay: false,
   progress: 0,
-  checklistCount: undefined,
-  checklistCompleted: undefined
+  checklistCount: undefined as number | undefined,
+  checklistCompleted: undefined as number | undefined
 });
 
 // Validation rules
@@ -315,19 +331,41 @@ const priorityOptions = [
   { title: 'Low', value: 'LOW' }
 ];
 
-const departmentOptions = ref([
-  { title: 'Development', value: 'dept1' },
-  { title: 'Design', value: 'dept2' },
-  { title: 'Marketing', value: 'dept3' }
-  // This would be loaded from your project's departments
+const projectOptions = ref([
+  // Will be loaded from user's projects
+]);
+
+const departmentOptions = ref<Array<{title: string, value: string}>>([
+  // Will be loaded based on selected project
 ]);
 
 const assigneeOptions = ref([
-  { title: 'Unassigned', value: null },
-  { title: 'John Doe', value: 'user1' },
-  { title: 'Jane Smith', value: 'user2' }
-  // This would be loaded from your project's team members
+  { title: 'Unassigned', value: null }
+  // Will be loaded from project's team members
 ]);
+
+// Load project departments when project is selected
+const loadProjectDepartments = async (projectId: string) => {
+  if (!projectId) {
+    departmentOptions.value = [];
+    return;
+  }
+  
+  try {
+    // Load departments for the selected project
+    console.log('[CreateTaskModal] Loading departments for project:', projectId);
+    // This would use your existing departmentApi.getProjectDepartments(projectId)
+    
+    // Mock data for now
+    departmentOptions.value = [
+      { title: 'Development', value: 'dept1' },
+      { title: 'Design', value: 'dept2' },
+      { title: 'Marketing', value: 'dept3' }
+    ];
+  } catch (error) {
+    console.error('[CreateTaskModal] Failed to load departments:', error);
+  }
+};
 
 // Methods
 const getPriorityColor = (priority: string) => {
@@ -345,6 +383,12 @@ const createTask = async () => {
   
   try {
     creating.value = true;
+    
+    // Validate required fields
+    if (!newTask.value.projectId || !newTask.value.departmentId) {
+      console.error('[CreateTaskModal] Project and Department are required');
+      return;
+    }
     
     // Prepare task data
     const taskData: CreateTaskData = {
@@ -387,10 +431,11 @@ const resetForm = () => {
   newTask.value = {
     title: '',
     description: '',
-    departmentId: props.defaultDepartment || '',
+    projectId: props.defaultProject || null,
+    departmentId: props.defaultDepartment || null,
     assignedRoleId: undefined,
     priority: 'MEDIUM',
-    status: props.defaultStatus,
+    status: props.defaultStatus || 'PENDING',
     estimatedHours: undefined,
     dueDate: undefined,
     startDate: undefined,
@@ -407,8 +452,9 @@ const resetForm = () => {
 };
 
 // Watch for default values changes
-watch(() => [props.defaultStatus, props.defaultDepartment], ([status, department]) => {
+watch(() => [props.defaultStatus, props.defaultProject, props.defaultDepartment], ([status, project, department]) => {
   if (status) newTask.value.status = status;
+  if (project) newTask.value.projectId = project;
   if (department) newTask.value.departmentId = department;
 });
 

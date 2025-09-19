@@ -10,7 +10,7 @@ import type {
   TaskAssignMessage
 } from '../types/kanban';
 
-export function useKanban(projectId: string) {
+export function useKanban() {
   // Reactive state
   const loading = ref(false);
   const error = ref<string | null>(null);
@@ -89,8 +89,8 @@ export function useKanban(projectId: string) {
       loading.value = true;
       error.value = null;
       
-      console.log('[useKanban] Loading kanban data for project:', projectId);
-      const data = await kanbanApi.getKanbanBoard(projectId, filters.value);
+      console.log('[useKanban] Loading cross-project kanban data with filters:', filters.value);
+      const data = await kanbanApi.getKanbanBoard(filters.value);
       kanbanData.value = data;
       
       console.log('[useKanban] Kanban data loaded successfully:', {
@@ -98,7 +98,8 @@ export function useKanban(projectId: string) {
         columns: Object.keys(data.columns).map(status => ({
           status,
           taskCount: data.columns[status as keyof typeof data.columns].length
-        }))
+        })),
+        projectSummary: data.projectSummary?.length || 0
       });
       
     } catch (err: any) {
@@ -209,9 +210,9 @@ export function useKanban(projectId: string) {
   // WebSocket real-time updates
   const connectWebSocket = () => {
     try {
-      console.log('[useKanban] Connecting WebSocket for project:', projectId);
+      console.log('[useKanban] Connecting WebSocket for cross-project updates');
       
-      websocket.value = kanbanApi.createWebSocketConnection(projectId, handleWebSocketMessage);
+      websocket.value = kanbanApi.createWebSocketConnection('all-projects', handleWebSocketMessage);
       
     } catch (err) {
       console.error('[useKanban] Failed to connect WebSocket:', err);

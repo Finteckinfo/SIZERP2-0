@@ -236,7 +236,7 @@ import type { KanbanMetrics } from '../types/kanban';
 
 interface Props {
   modelValue: boolean;
-  projectId: string;
+  projectIds?: string[];
 }
 
 interface Emits {
@@ -325,14 +325,12 @@ const recommendations = computed(() => {
 
 // Methods
 const loadMetrics = async () => {
-  if (!props.projectId) return;
-  
   try {
     loading.value = true;
     error.value = null;
     
-    console.log('[KanbanAnalytics] Loading metrics for project:', props.projectId);
-    const data = await kanbanApi.getKanbanMetrics(props.projectId, selectedTimeRange.value);
+    console.log('[KanbanAnalytics] Loading cross-project metrics with filters:', props.projectIds);
+    const data = await kanbanApi.getKanbanMetrics(selectedTimeRange.value, props.projectIds);
     metrics.value = data;
     
   } catch (err: any) {
@@ -389,22 +387,20 @@ const getRecommendationIcon = (type: string) => {
 };
 
 // Watch for project changes
-watch(() => props.projectId, () => {
-  if (props.projectId) {
-    loadMetrics();
-  }
-});
+watch(() => props.projectIds, () => {
+  loadMetrics();
+}, { deep: true });
 
 // Load metrics when drawer opens
 watch(() => props.modelValue, (isOpen) => {
-  if (isOpen && props.projectId) {
+  if (isOpen) {
     loadMetrics();
   }
 });
 
 // Lifecycle
 onMounted(() => {
-  if (props.modelValue && props.projectId) {
+  if (props.modelValue) {
     loadMetrics();
   }
 });

@@ -259,7 +259,6 @@ import type { BulkTaskUpdate, BulkUpdateResult } from '../types/kanban';
 interface Props {
   modelValue: boolean;
   taskIds: string[];
-  projectId: string;
 }
 
 interface Emits {

@@ -70,10 +70,16 @@ api.interceptors.response.use(
 
 export const kanbanApi = {
   /**
-   * Get kanban board data with tasks organized by status columns
+   * Get cross-project kanban board data with tasks organized by status columns
    */
-  getKanbanBoard: async (projectId: string, filters?: KanbanFilters): Promise<KanbanBoard> => {
+  getKanbanBoard: async (filters?: KanbanFilters): Promise<KanbanBoard> => {
     const params = new URLSearchParams();
+    
+    if (filters?.projectIds?.length) {
+      filters.projectIds.forEach(projectId => {
+        params.append('projectIds', projectId);
+      });
+    }
     
     if (filters?.departmentId) {
       params.append('departmentId', filters.departmentId);
@@ -95,10 +101,19 @@ export const kanbanApi = {
       params.append('includeCompleted', filters.includeCompleted.toString());
     }
 
+    if (filters?.search) {
+      params.append('search', filters.search);
+    }
+
+    if (filters?.dueDateRange) {
+      params.append('dueDate[start]', filters.dueDateRange.start);
+      params.append('dueDate[end]', filters.dueDateRange.end);
+    }
+
     const queryString = params.toString();
-    const url = `/api/tasks/kanban/${projectId}${queryString ? '?' + queryString : ''}`;
+    const url = `/api/tasks/kanban/all-projects${queryString ? '?' + queryString : ''}`;
     
-    console.log('[kanbanApi] Fetching kanban board:', { projectId, filters, url });
+    console.log('[kanbanApi] Fetching cross-project kanban board:', { filters, url });
     
     const response = await api.get(url);
     return response.data;
@@ -153,12 +168,11 @@ export const kanbanApi = {
   },
 
   /**
-   * Get kanban performance metrics
+   * Get cross-project kanban performance metrics
    */
   getKanbanMetrics: async (
-    projectId: string, 
     timeRange?: string, 
-    departmentId?: string
+    projectIds?: string[]
   ): Promise<KanbanMetrics> => {
     const params = new URLSearchParams();
     
@@ -166,14 +180,16 @@ export const kanbanApi = {
       params.append('timeRange', timeRange);
     }
     
-    if (departmentId) {
-      params.append('departmentId', departmentId);
+    if (projectIds?.length) {
+      projectIds.forEach(projectId => {
+        params.append('projectIds', projectId);
+      });
     }
 
     const queryString = params.toString();
-    const url = `/api/analytics/kanban/${projectId}/metrics${queryString ? '?' + queryString : ''}`;
+    const url = `/api/analytics/kanban/all-projects/metrics${queryString ? '?' + queryString : ''}`;
     
-    console.log('[kanbanApi] Fetching kanban metrics:', { projectId, timeRange, departmentId });
+    console.log('[kanbanApi] Fetching cross-project kanban metrics:', { timeRange, projectIds });
     
     const response = await api.get(url);
     return response.data;

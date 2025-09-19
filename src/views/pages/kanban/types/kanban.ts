@@ -20,6 +20,12 @@ export interface KanbanTask {
     avatar?: string;
     name?: string;
   };
+  project: {
+    id: string;
+    name: string;
+    type: 'PROGRESSIVE' | 'PARALLEL';
+    priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  };
   department: {
     id: string;
     name: string;
@@ -47,7 +53,6 @@ export interface KanbanColumn {
 }
 
 export interface KanbanBoard {
-  projectId: string;
   columns: {
     PENDING: KanbanTask[];
     IN_PROGRESS: KanbanTask[];
@@ -55,6 +60,16 @@ export interface KanbanBoard {
     APPROVED: KanbanTask[];
   };
   totalTasks: number;
+  projectSummary: Array<{
+    projectId: string;
+    projectName: string;
+    taskCount: number;
+    departments: Array<{
+      id: string;
+      name: string;
+      taskCount: number;
+    }>;
+  }>;
   userPermissions: {
     canCreateTasks: boolean;
     canEditAllTasks: boolean;
@@ -64,6 +79,7 @@ export interface KanbanBoard {
 }
 
 export interface KanbanFilters {
+  projectIds?: string[];
   departmentId?: string;
   assignedRoleIds?: string[];
   priorities?: ('LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL')[];

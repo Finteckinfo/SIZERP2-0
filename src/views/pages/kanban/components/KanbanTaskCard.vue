@@ -38,6 +38,12 @@
 
     <!-- Task Meta Information -->
     <div class="task-meta">
+      <!-- Project -->
+      <div class="meta-item">
+        <v-icon size="14" color="primary">mdi-folder</v-icon>
+        <span class="meta-text">{{ task.project.name }}</span>
+      </div>
+
       <!-- Department -->
       <div class="meta-item">
         <v-icon size="14" color="grey">mdi-office-building</v-icon>

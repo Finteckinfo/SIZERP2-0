@@ -152,7 +152,6 @@
     <!-- Create Task Modal -->
     <CreateTaskModal
       v-model="showCreateTask"
-      :project-id="projectId"
       @task-created="handleTaskCreated"
     />
 
@@ -160,14 +159,12 @@
     <BulkActionsModal
       v-model="showBulkActions"
       :task-ids="selectedTasks"
-      :project-id="projectId"
       @actions-completed="handleBulkActionsCompleted"
     />
 
     <!-- Analytics Drawer -->
     <KanbanAnalytics
       v-model="showAnalytics"
-      :project-id="projectId"
     />
 
     <!-- Floating Action Button for Analytics -->
@@ -202,11 +199,7 @@ import CreateTaskModal from './components/CreateTaskModal.vue';
 import BulkActionsModal from './components/BulkActionsModal.vue';
 import KanbanAnalytics from './components/KanbanAnalytics.vue';
 
-// Route and project ID
-const route = useRoute();
-const projectId = computed(() => route.query.projectId as string || '');
-
-// Kanban composable
+// Kanban composable (no project ID needed for cross-project view)
 const {
   loading,
   error,
@@ -221,7 +214,7 @@ const {
   moveTask,
   toggleTaskSelection,
   clearSelection
-} = useKanban(projectId.value);
+} = useKanban();
 
 // Local state
 const showTaskDetail = ref(false);
@@ -293,9 +286,7 @@ const handleBulkActionsCompleted = () => {
 
 // Lifecycle
 onMounted(() => {
-  if (!projectId.value) {
-    error.value = 'No project ID provided. Please select a project.';
-  }
+  console.log('[KanbanBoard] Mounted - loading cross-project kanban board');
 });
 </script>
 
