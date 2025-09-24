@@ -300,18 +300,36 @@ onMounted(() => {
 
 <style scoped>
 .kanban-board {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--erp-background);
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   overflow: hidden;
+  position: relative;
+}
+
+.kanban-board::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .kanban-header {
   flex-shrink: 0;
-  background: var(--erp-card-bg);
-  border-bottom: 1px solid var(--erp-border);
-  padding: 1.5rem 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 2rem 3rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 10;
 }
 
 .header-content {
@@ -330,12 +348,17 @@ onMounted(() => {
 }
 
 .board-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--erp-text);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #1e293b;
   margin: 0;
   display: flex;
   align-items: center;
+  letter-spacing: -0.025em;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .board-stats {
@@ -355,16 +378,20 @@ onMounted(() => {
 .kanban-columns {
   flex: 1;
   overflow: hidden;
-  padding: 1rem 2rem;
+  padding: 2rem 3rem;
+  position: relative;
+  z-index: 5;
 }
 
 .columns-container {
   display: flex;
-  gap: 1.5rem;
+  gap: 2rem;
   height: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-  padding-bottom: 1rem;
+  padding-bottom: 2rem;
+  min-height: calc(100vh - 300px);
+  align-items: flex-start;
 }
 
 .loading-container {
@@ -475,42 +502,47 @@ onMounted(() => {
 /* Large screen optimizations */
 @media (min-width: 1440px) {
   .kanban-header {
-    padding: 2rem 3rem;
+    padding: 3rem 4rem;
   }
   
   .kanban-columns {
-    padding: 1.5rem 3rem;
+    padding: 2.5rem 4rem;
   }
   
   .columns-container {
-    gap: 2rem;
+    gap: 2.5rem;
     justify-content: center;
-    max-width: 1600px;
+    max-width: 1800px;
     margin: 0 auto;
   }
   
   .board-title {
-    font-size: 1.75rem;
+    font-size: 2.75rem;
   }
   
   .header-right .v-btn {
-    padding: 0.75rem 1.5rem;
-    font-size: 0.875rem;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    border-radius: 12px;
   }
 }
 
 @media (min-width: 1920px) {
   .columns-container {
-    gap: 2.5rem;
-    max-width: 1800px;
+    gap: 3rem;
+    max-width: 2000px;
   }
   
   .kanban-header {
-    padding: 2.5rem 4rem;
+    padding: 3.5rem 5rem;
   }
   
   .kanban-columns {
-    padding: 2rem 4rem;
+    padding: 3rem 5rem;
+  }
+  
+  .board-title {
+    font-size: 3rem;
   }
 }
 </style>

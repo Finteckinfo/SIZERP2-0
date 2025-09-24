@@ -343,19 +343,38 @@ const handleDragEnd = () => {
 <style scoped>
 .kanban-task-card {
   position: relative;
-  background: var(--erp-card-bg);
-  border: 1px solid var(--erp-border);
-  border-radius: 8px;
-  padding: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 16px;
+  padding: 1.5rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+.kanban-task-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  border-radius: 16px 16px 0 0;
 }
 
 .kanban-task-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.05);
+  border-color: rgba(59, 130, 246, 0.4);
+  background: rgba(255, 255, 255, 1);
 }
 
 .task-selected {
@@ -391,22 +410,22 @@ const handleDragEnd = () => {
 }
 
 .task-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--erp-text);
-  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.75rem 0;
   line-height: 1.4;
   word-break: break-word;
+  letter-spacing: -0.025em;
 }
 
 .task-description {
-  font-size: 0.8125rem;
-  color: var(--erp-text);
-  opacity: 0.7;
-  margin: 0 0 0.75rem 0;
-  line-height: 1.4;
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -604,83 +623,91 @@ const handleDragEnd = () => {
 /* Large screen optimizations */
 @media (min-width: 1440px) {
   .kanban-task-card {
-    padding: 1.25rem;
-    min-height: 140px;
+    padding: 2rem;
+    min-height: 160px;
+    border-radius: 20px;
   }
   
   .task-title {
-    font-size: 1rem;
-    margin-bottom: 0.75rem;
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
   }
   
   .task-description {
-    font-size: 0.875rem;
-    margin-bottom: 1rem;
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+    -webkit-line-clamp: 4;
   }
   
   .task-meta {
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
   }
   
   .meta-text {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
   
   .task-actions .v-btn {
-    min-width: 36px;
-    height: 36px;
+    min-width: 44px;
+    height: 44px;
+    border-radius: 12px;
   }
   
   .task-assignee .v-avatar {
-    width: 32px !important;
-    height: 32px !important;
+    width: 40px !important;
+    height: 40px !important;
   }
   
   .task-priority .v-chip {
-    font-size: 0.75rem;
-    height: 24px;
+    font-size: 0.875rem;
+    height: 28px;
+    border-radius: 14px;
   }
 }
 
 @media (min-width: 1920px) {
   .kanban-task-card {
-    padding: 1.5rem;
-    min-height: 160px;
+    padding: 2.5rem;
+    min-height: 180px;
+    border-radius: 24px;
   }
   
   .task-title {
-    font-size: 1.125rem;
-    margin-bottom: 0.875rem;
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
   }
   
   .task-description {
-    font-size: 1rem;
-    margin-bottom: 1.25rem;
+    font-size: 1.125rem;
+    margin-bottom: 1.5rem;
+    -webkit-line-clamp: 5;
   }
   
   .task-meta {
-    gap: 0.625rem;
-    margin-bottom: 1.25rem;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
   }
   
   .meta-text {
-    font-size: 0.875rem;
+    font-size: 1rem;
   }
   
   .task-actions .v-btn {
-    min-width: 40px;
-    height: 40px;
+    min-width: 48px;
+    height: 48px;
+    border-radius: 16px;
   }
   
   .task-assignee .v-avatar {
-    width: 36px !important;
-    height: 36px !important;
+    width: 44px !important;
+    height: 44px !important;
   }
   
   .task-priority .v-chip {
-    font-size: 0.8125rem;
-    height: 26px;
+    font-size: 1rem;
+    height: 32px;
+    border-radius: 16px;
   }
 }
 </style>

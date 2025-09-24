@@ -280,26 +280,44 @@ const handleDrop = (event: DragEvent) => {
 
 <style scoped>
 .kanban-column {
-  width: 320px;
-  min-width: 320px;
-  max-width: 320px;
+  width: 380px;
+  min-width: 380px;
+  max-width: 380px;
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--erp-card-bg);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--erp-border);
-  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 
+    0 10px 25px rgba(0, 0, 0, 0.1),
+    0 4px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.kanban-column::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+  border-radius: 20px 20px 0 0;
 }
 
 .column-header {
   flex-shrink: 0;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--erp-border);
-  border-radius: 12px 12px 0 0;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+  border-radius: 20px 20px 0 0;
   border-top: 3px solid transparent;
-  background: var(--erp-surface);
+  background: rgba(248, 250, 252, 0.8);
+  position: relative;
+  z-index: 2;
 }
 
 .header-content {
@@ -316,13 +334,14 @@ const handleDrop = (event: DragEvent) => {
 }
 
 .column-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--erp-text);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.025em;
 }
 
 .column-actions {
@@ -346,8 +365,9 @@ const handleDrop = (event: DragEvent) => {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 1rem 1.25rem;
-  transition: all 0.2s ease;
+  padding: 1.5rem 2rem;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .column-content.drag-over {
@@ -358,7 +378,7 @@ const handleDrop = (event: DragEvent) => {
 .tasks-container {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .empty-drop-zone {
@@ -482,49 +502,49 @@ const handleDrop = (event: DragEvent) => {
 /* Large screen optimizations */
 @media (min-width: 1440px) {
   .kanban-column {
-    width: 360px;
-    min-width: 360px;
-    max-width: 360px;
+    width: 420px;
+    min-width: 420px;
+    max-width: 420px;
   }
   
   .column-header {
-    padding: 1.25rem 1.5rem;
+    padding: 2rem 2.5rem;
   }
   
   .column-content {
-    padding: 1.25rem 1.5rem;
+    padding: 2rem 2.5rem;
   }
   
   .column-title {
-    font-size: 1rem;
+    font-size: 1.25rem;
   }
   
   .tasks-container {
-    gap: 1rem;
+    gap: 1.25rem;
   }
 }
 
 @media (min-width: 1920px) {
   .kanban-column {
-    width: 400px;
-    min-width: 400px;
-    max-width: 400px;
+    width: 480px;
+    min-width: 480px;
+    max-width: 480px;
   }
   
   .column-header {
-    padding: 1.5rem 2rem;
+    padding: 2.5rem 3rem;
   }
   
   .column-content {
-    padding: 1.5rem 2rem;
+    padding: 2.5rem 3rem;
   }
   
   .column-title {
-    font-size: 1.125rem;
+    font-size: 1.375rem;
   }
   
   .tasks-container {
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
 }
 

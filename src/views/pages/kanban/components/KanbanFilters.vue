@@ -472,8 +472,13 @@ onMounted(() => {
 }
 
 .filter-card {
-  background: var(--erp-card-bg);
-  border: 1px solid var(--erp-border);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 16px;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.03);
 }
 
 .filter-section {
