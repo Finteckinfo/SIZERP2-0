@@ -85,7 +85,7 @@ const sidebarItem: menu[] = [
   {
     title: 'Analytics',
     icon: ChartBarIcon,
-    to: ''
+    to: '/analytics'
   },
   {
     title: 'Reports',
