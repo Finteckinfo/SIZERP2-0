@@ -31,13 +31,29 @@
               <div class="alert-title">{{ alert.title }}</div>
               <div class="alert-description">{{ alert.description }}</div>
               <div class="alert-meta">
-                <span class="alert-time">{{ formatTime(alert.timestamp) }}</span>
+                <span class="alert-time">{{ formatTime(alert.createdAt) }}</span>
                 <v-chip 
                   :color="getSeverityColor(alert.severity)"
                   size="x-small" 
                   variant="tonal"
                 >
                   {{ alert.severity }}
+                </v-chip>
+                <v-chip 
+                  v-if="alert.type"
+                  :color="getTypeColor(alert.type)"
+                  size="x-small" 
+                  variant="tonal"
+                >
+                  {{ alert.type }}
+                </v-chip>
+                <v-chip 
+                  v-if="alert.acknowledged"
+                  color="success"
+                  size="x-small" 
+                  variant="tonal"
+                >
+                  Acknowledged
                 </v-chip>
               </div>
             </div>
@@ -98,6 +114,16 @@ const getSeverityColor = (severity: string) => {
     'CRITICAL': 'error'
   };
   return colors[severity] || 'info';
+};
+
+const getTypeColor = (type: string) => {
+  const colors: Record<string, string> = {
+    'DEADLINE': 'error',
+    'BUDGET': 'warning',
+    'RISK': 'info',
+    'SYSTEM': 'secondary'
+  };
+  return colors[type] || 'grey';
 };
 
 const formatTime = (timestamp: string) => {

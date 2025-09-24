@@ -31,17 +31,25 @@
             </div>
             
             <div class="activity-content">
-              <div class="activity-title">{{ activity.title }}</div>
-              <div class="activity-description">{{ activity.description }}</div>
+              <div class="activity-title">{{ formatActivityTitle(activity) }}</div>
+              <div class="activity-description">{{ formatActivityDescription(activity) }}</div>
               <div class="activity-meta">
-                <span class="activity-time">{{ formatTime(activity.timestamp) }}</span>
+                <span class="activity-time">{{ formatTime(activity.createdAt) }}</span>
                 <v-chip 
-                  v-if="activity.projectName"
+                  v-if="activity.projectId"
                   size="x-small" 
                   variant="tonal" 
                   color="primary"
                 >
-                  {{ activity.projectName }}
+                  {{ activity.projectId }}
+                </v-chip>
+                <v-chip 
+                  v-if="activity.actorUserId"
+                  size="x-small" 
+                  variant="tonal" 
+                  color="secondary"
+                >
+                  {{ activity.actorUserId }}
                 </v-chip>
               </div>
             </div>
@@ -71,24 +79,48 @@ defineEmits<Emits>();
 
 const getActivityIcon = (type: string) => {
   const icons: Record<string, string> = {
-    'task_completed': 'mdi-check-circle',
-    'project_created': 'mdi-plus-circle',
-    'member_added': 'mdi-account-plus',
-    'payment_released': 'mdi-cash',
-    'deadline_approaching': 'mdi-clock-alert'
+    'TASK_CREATED': 'mdi-plus-circle',
+    'STATUS_CHANGED': 'mdi-swap-horizontal',
+    'COMMENT_ADDED': 'mdi-comment',
+    'ASSIGNMENT_CHANGED': 'mdi-account-switch',
+    'DEADLINE_CHANGED': 'mdi-clock-edit'
   };
   return icons[type] || 'mdi-circle';
 };
 
 const getActivityColor = (type: string) => {
   const colors: Record<string, string> = {
-    'task_completed': 'success',
-    'project_created': 'primary',
-    'member_added': 'info',
-    'payment_released': 'warning',
-    'deadline_approaching': 'error'
+    'TASK_CREATED': 'primary',
+    'STATUS_CHANGED': 'info',
+    'COMMENT_ADDED': 'secondary',
+    'ASSIGNMENT_CHANGED': 'warning',
+    'DEADLINE_CHANGED': 'error'
   };
   return colors[type] || 'grey';
+};
+
+const formatActivityTitle = (activity: any) => {
+  const titles: Record<string, string> = {
+    'TASK_CREATED': 'Task Created',
+    'STATUS_CHANGED': 'Status Changed',
+    'COMMENT_ADDED': 'Comment Added',
+    'ASSIGNMENT_CHANGED': 'Assignment Changed',
+    'DEADLINE_CHANGED': 'Deadline Changed'
+  };
+  return titles[activity.type] || activity.type;
+};
+
+const formatActivityDescription = (activity: any) => {
+  if (activity.type === 'STATUS_CHANGED') {
+    return `Changed from ${activity.oldValue} to ${activity.newValue}`;
+  }
+  if (activity.taskId) {
+    return `Task: ${activity.taskId}`;
+  }
+  if (activity.departmentId) {
+    return `Department: ${activity.departmentId}`;
+  }
+  return activity.type.toLowerCase().replace(/_/g, ' ');
 };
 
 const formatTime = (timestamp: string) => {

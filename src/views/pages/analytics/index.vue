@@ -172,6 +172,26 @@
       />
       <AnalyticsSkeleton v-else type="alerts" />
     </div>
+
+    <!-- User Performance Section -->
+    <div class="user-performance-section">
+      <UserPerformance 
+        v-if="!loading.userPerformance"
+        :data="userPerformanceData"
+        @refresh="loadUserPerformance"
+      />
+      <AnalyticsSkeleton v-else type="widget" />
+    </div>
+
+    <!-- User Dashboard Section -->
+    <div class="user-dashboard-section">
+      <UserDashboard 
+        v-if="!loading.userDashboard"
+        :data="userDashboardData"
+        @refresh="loadUserDashboard"
+      />
+      <AnalyticsSkeleton v-else type="widget" />
+    </div>
   </div>
 </template>
 
@@ -194,6 +214,8 @@ import BenchmarksComparison from './components/BenchmarksComparison.vue';
 import LiveDashboard from './components/LiveDashboard.vue';
 import ActivityFeed from './components/ActivityFeed.vue';
 import AlertsPanel from './components/AlertsPanel.vue';
+import UserPerformance from './components/UserPerformance.vue';
+import UserDashboard from './components/UserDashboard.vue';
 import AnalyticsSkeleton from './components/AnalyticsSkeleton.vue';
 
 // Services
@@ -216,6 +238,8 @@ const benchmarksData = ref<any>(null);
 const liveData = ref<any>(null);
 const activityData = ref<any>(null);
 const alertsData = ref<any>(null);
+const userPerformanceData = ref<any>(null);
+const userDashboardData = ref<any>(null);
 
 // User's projects for project-specific analytics
 const userProjects = ref<any[]>([]);
@@ -235,7 +259,9 @@ const loading = ref({
   benchmarks: true,
   live: true,
   activity: true,
-  alerts: true
+  alerts: true,
+  userPerformance: true,
+  userDashboard: true
 });
 
 // Error state
@@ -502,13 +528,10 @@ const loadLive = async () => {
 };
 
 const loadActivity = async () => {
-  if (!user.value?.id) return;
-  
   try {
     loading.value.activity = true;
     const data = await analyticsApi.getActivityFeed({
-      userId: user.value.id,
-      limit: 20
+      limit: 20 // Backend default
     });
     activityData.value = data;
   } catch (err: any) {
@@ -519,18 +542,46 @@ const loadActivity = async () => {
 };
 
 const loadAlerts = async () => {
-  if (!user.value?.id) return;
-  
   try {
     loading.value.alerts = true;
-    const data = await analyticsApi.getActiveAlerts({
-      userId: user.value.id
-    });
+    const data = await analyticsApi.getActiveAlerts({});
     alertsData.value = data;
   } catch (err: any) {
     console.error('Failed to load alerts data:', err);
   } finally {
     loading.value.alerts = false;
+  }
+};
+
+const loadUserPerformance = async () => {
+  if (!user.value?.id) return;
+  
+  try {
+    loading.value.userPerformance = true;
+    const data = await analyticsApi.getUserPerformance(user.value.id, {
+      dateRange: '30d' // Backend default
+    });
+    userPerformanceData.value = data;
+  } catch (err: any) {
+    console.error('Failed to load user performance data:', err);
+  } finally {
+    loading.value.userPerformance = false;
+  }
+};
+
+const loadUserDashboard = async () => {
+  if (!user.value?.id) return;
+  
+  try {
+    loading.value.userDashboard = true;
+    const data = await analyticsApi.getUserDashboard(user.value.id, {
+      viewType: 'personal' // Backend default
+    });
+    userDashboardData.value = data;
+  } catch (err: any) {
+    console.error('Failed to load user dashboard data:', err);
+  } finally {
+    loading.value.userDashboard = false;
   }
 };
 
@@ -552,7 +603,9 @@ const loadAllData = async () => {
     loadBenchmarks(),
     loadLive(),
     loadActivity(),
-    loadAlerts()
+    loadAlerts(),
+    loadUserPerformance(),
+    loadUserDashboard()
   ];
   
   await Promise.allSettled(promises);

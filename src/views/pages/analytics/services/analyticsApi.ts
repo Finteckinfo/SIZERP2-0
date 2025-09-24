@@ -202,25 +202,25 @@ export const analyticsApi = {
   },
 
   // 13. Activity Feed
-  getActivityFeed: async (params: { userId: string; projectId?: string; activityType?: string; limit?: number; offset?: number }) => {
+  getActivityFeed: async (params: { userId?: string; projectId?: string; activityType?: string; limit?: number; offset?: number }) => {
     const response = await api.get('/analytics/activity/feed', { params });
     return response.data;
   },
 
   // 14. Active Alerts
-  getActiveAlerts: async (params: { userId: string; alertType?: string; severity?: string }) => {
+  getActiveAlerts: async (params: { userId?: string; alertType?: 'DEADLINE' | 'BUDGET' | 'RISK' | 'SYSTEM'; severity?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' }) => {
     const response = await api.get('/analytics/alerts/active', { params });
     return response.data;
   },
 
   // 15. User Performance
-  getUserPerformance: async (userId: string, params: { dateRange: string; metrics?: string[] }) => {
+  getUserPerformance: async (userId: string, params: { dateRange?: '7d' | '30d' | '90d' | '1y'; metrics?: string[] }) => {
     const response = await api.get(`/analytics/users/${userId}/performance`, { params });
     return response.data;
   },
 
   // 16. User Dashboard
-  getUserDashboard: async (userId: string, params: { viewType: 'personal' | 'team' | 'project' }) => {
+  getUserDashboard: async (userId: string, params: { viewType?: 'personal' | 'team' | 'project' }) => {
     const response = await api.get(`/analytics/users/${userId}/dashboard`, { params });
     return response.data;
   },
