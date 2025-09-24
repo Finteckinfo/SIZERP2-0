@@ -15,7 +15,7 @@
           color="primary"
           variant="elevated"
           prepend-icon="mdi-download"
-          @click="exportReport"
+          @click="handleExportReport({ reportType: 'comprehensive', format: 'PDF' })"
         >
           Export Report
         </v-btn>
@@ -23,7 +23,7 @@
           color="secondary"
           variant="outlined"
           prepend-icon="mdi-share"
-          @click="shareDashboard"
+          @click="handleShareDashboard({ dashboardId: 'main', shareType: 'link' })"
         >
           Share Dashboard
         </v-btn>
@@ -192,6 +192,48 @@
       />
       <AnalyticsSkeleton v-else type="widget" />
     </div>
+
+    <!-- Bottlenecks Analysis Section -->
+    <div class="bottlenecks-section">
+      <BottlenecksAnalysis 
+        v-if="!loading.bottlenecks"
+        :data="bottlenecksData"
+        @refresh="loadBottlenecks"
+      />
+      <AnalyticsSkeleton v-else type="widget" />
+    </div>
+
+    <!-- Quality Metrics Section -->
+    <div class="quality-section">
+      <QualityMetrics 
+        v-if="!loading.quality"
+        :data="qualityData"
+        @refresh="loadQuality"
+      />
+      <AnalyticsSkeleton v-else type="widget" />
+    </div>
+
+    <!-- Collaboration Metrics Section -->
+    <div class="collaboration-section">
+      <CollaborationMetrics 
+        v-if="!loading.collaboration"
+        :data="collaborationData"
+        @refresh="loadCollaboration"
+      />
+      <AnalyticsSkeleton v-else type="widget" />
+    </div>
+
+    <!-- Custom Reports Section -->
+    <div class="custom-reports-section">
+      <CustomReports 
+        v-if="!loading.customReport"
+        :data="customReportData"
+        :loading="loading.exportReport"
+        @refresh="loadCustomReport"
+        @export="handleExportReport"
+      />
+      <AnalyticsSkeleton v-else type="widget" />
+    </div>
   </div>
 </template>
 
@@ -216,6 +258,10 @@ import ActivityFeed from './components/ActivityFeed.vue';
 import AlertsPanel from './components/AlertsPanel.vue';
 import UserPerformance from './components/UserPerformance.vue';
 import UserDashboard from './components/UserDashboard.vue';
+import BottlenecksAnalysis from './components/BottlenecksAnalysis.vue';
+import QualityMetrics from './components/QualityMetrics.vue';
+import CollaborationMetrics from './components/CollaborationMetrics.vue';
+import CustomReports from './components/CustomReports.vue';
 import AnalyticsSkeleton from './components/AnalyticsSkeleton.vue';
 
 // Services
@@ -240,6 +286,12 @@ const activityData = ref<any>(null);
 const alertsData = ref<any>(null);
 const userPerformanceData = ref<any>(null);
 const userDashboardData = ref<any>(null);
+const bottlenecksData = ref<any>(null);
+const qualityData = ref<any>(null);
+const collaborationData = ref<any>(null);
+const customReportData = ref<any>(null);
+const exportReportData = ref<any>(null);
+const shareDashboardData = ref<any>(null);
 
 // User's projects for project-specific analytics
 const userProjects = ref<any[]>([]);
@@ -261,7 +313,13 @@ const loading = ref({
   activity: true,
   alerts: true,
   userPerformance: true,
-  userDashboard: true
+  userDashboard: true,
+  bottlenecks: true,
+  quality: true,
+  collaboration: true,
+  customReport: true,
+  exportReport: true,
+  shareDashboard: true
 });
 
 // Error state
@@ -585,6 +643,103 @@ const loadUserDashboard = async () => {
   }
 };
 
+const loadBottlenecks = async () => {
+  const firstProject = userProjects.value[0];
+  if (!firstProject?.id) return;
+  
+  try {
+    loading.value.bottlenecks = true;
+    const data = await analyticsApi.getBottlenecksAnalysis({
+      projectId: firstProject.id,
+      dateRange: '30d' // Backend default
+    });
+    bottlenecksData.value = data;
+  } catch (err: any) {
+    console.error('Failed to load bottlenecks data:', err);
+  } finally {
+    loading.value.bottlenecks = false;
+  }
+};
+
+const loadQuality = async () => {
+  const firstProject = userProjects.value[0];
+  if (!firstProject?.id) return;
+  
+  try {
+    loading.value.quality = true;
+    const data = await analyticsApi.getQualityMetrics({
+      projectId: firstProject.id,
+      dateRange: '30d' // Backend default
+    });
+    qualityData.value = data;
+  } catch (err: any) {
+    console.error('Failed to load quality data:', err);
+  } finally {
+    loading.value.quality = false;
+  }
+};
+
+const loadCollaboration = async () => {
+  const firstProject = userProjects.value[0];
+  if (!firstProject?.id) return;
+  
+  try {
+    loading.value.collaboration = true;
+    const data = await analyticsApi.getCollaborationMetrics({
+      projectId: firstProject.id,
+      dateRange: '30d' // Backend default
+    });
+    collaborationData.value = data;
+  } catch (err: any) {
+    console.error('Failed to load collaboration data:', err);
+  } finally {
+    loading.value.collaboration = false;
+  }
+};
+
+const loadCustomReport = async () => {
+  try {
+    loading.value.customReport = true;
+    const data = await analyticsApi.getCustomReport({
+      reportId: 'default', // Placeholder report ID
+      dateRange: '30d' // Backend default
+    });
+    customReportData.value = data;
+  } catch (err: any) {
+    console.error('Failed to load custom report data:', err);
+  } finally {
+    loading.value.customReport = false;
+  }
+};
+
+const handleExportReport = async (reportData: any) => {
+  try {
+    loading.value.exportReport = true;
+    const data = await analyticsApi.exportReport(reportData);
+    exportReportData.value = data;
+    return data;
+  } catch (err: any) {
+    console.error('Failed to export report:', err);
+    throw err;
+  } finally {
+    loading.value.exportReport = false;
+  }
+};
+
+const handleShareDashboard = async (shareData: any) => {
+  try {
+    loading.value.shareDashboard = true;
+    const data = await analyticsApi.shareDashboard(shareData);
+    shareDashboardData.value = data;
+    return data;
+  } catch (err: any) {
+    console.error('Failed to share dashboard:', err);
+    throw err;
+  } finally {
+    loading.value.shareDashboard = false;
+  }
+};
+
 const loadAllData = async () => {
   // First load user projects, then load analytics data
   await loadUserProjects();
@@ -605,42 +760,16 @@ const loadAllData = async () => {
     loadActivity(),
     loadAlerts(),
     loadUserPerformance(),
-    loadUserDashboard()
+    loadUserDashboard(),
+    loadBottlenecks(),
+    loadQuality(),
+    loadCollaboration(),
+    loadCustomReport()
   ];
   
   await Promise.allSettled(promises);
 };
 
-const exportReport = async () => {
-  try {
-    const response = await analyticsApi.exportReport({
-      reportType: 'comprehensive',
-      format: 'PDF',
-      filters: {
-        dateRange: '30d'
-      }
-    });
-    
-    // Handle download
-    console.log('Export started:', response);
-  } catch (err: any) {
-    console.error('Failed to export report:', err);
-  }
-};
-
-const shareDashboard = async () => {
-  try {
-    const response = await analyticsApi.shareDashboard({
-      dashboardId: 'main',
-      shareType: 'link',
-      permissions: ['read']
-    });
-    
-    console.log('Share link created:', response);
-  } catch (err: any) {
-    console.error('Failed to share dashboard:', err);
-  }
-};
 
 // Lifecycle
 onMounted(() => {

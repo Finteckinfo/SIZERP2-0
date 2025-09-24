@@ -226,37 +226,37 @@ export const analyticsApi = {
   },
 
   // 17. Bottlenecks Analysis
-  getBottlenecksAnalysis: async (params: { projectId?: string; dateRange: string; severity?: string }) => {
+  getBottlenecksAnalysis: async (params: { projectId: string; dateRange?: '7d' | '30d' | '90d' | '1y'; severity?: 'LOW' | 'MEDIUM' | 'HIGH' }) => {
     const response = await api.get('/analytics/bottlenecks/analysis', { params });
     return response.data;
   },
 
   // 18. Quality Metrics
-  getQualityMetrics: async (params: { projectId?: string; dateRange: string; qualityType?: string }) => {
+  getQualityMetrics: async (params: { projectId: string; dateRange?: '7d' | '30d' | '90d' | '1y'; qualityType?: 'review' | 'approval' | 'defect' }) => {
     const response = await api.get('/analytics/quality/metrics', { params });
     return response.data;
   },
 
   // 19. Collaboration Metrics
-  getCollaborationMetrics: async (params: { projectId?: string; teamId?: string; dateRange: string }) => {
+  getCollaborationMetrics: async (params: { projectId: string; teamId?: string; dateRange?: '7d' | '30d' | '90d' | '1y' }) => {
     const response = await api.get('/analytics/collaboration/metrics', { params });
     return response.data;
   },
 
   // 20. Custom Reports
-  getCustomReport: async (params: { reportId: string; dateRange: string; filters?: any }) => {
+  getCustomReport: async (params: { reportId: string; dateRange?: '7d' | '30d' | '90d' | '1y'; filters?: string }) => {
     const response = await api.get('/analytics/reports/custom', { params });
     return response.data;
   },
 
   // 21. Export Report
-  exportReport: async (data: { reportType: string; filters?: any; format: 'PDF' | 'Excel' | 'CSV'; email?: string }) => {
+  exportReport: async (data: { reportType: string; filters?: object; format: 'PDF' | 'Excel' | 'CSV'; email?: string }) => {
     const response = await api.post('/analytics/reports/export', data);
     return response.data;
   },
 
   // 22. Share Dashboard
-  shareDashboard: async (data: { dashboardId: string; shareType: 'link' | 'email'; recipients?: string[]; permissions: string[] }) => {
+  shareDashboard: async (data: { dashboardId: string; shareType: 'link' | 'email'; recipients?: string[]; permissions?: string[] }) => {
     const response = await api.post('/analytics/dashboards/share', data);
     return response.data;
   },
