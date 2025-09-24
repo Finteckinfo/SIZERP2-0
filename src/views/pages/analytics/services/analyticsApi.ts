@@ -262,25 +262,25 @@ export const analyticsApi = {
   },
 
   // 23. Config Settings
-  getConfigSettings: async (params: { userId: string; configType?: string }) => {
+  getConfigSettings: async (params: { userId?: string; configType?: 'preferences' | 'layouts' | 'metrics' | 'alerts' | 'views' }) => {
     const response = await api.get('/analytics/config/settings', { params });
     return response.data;
   },
 
   // 24. Widget Config
-  getWidgetConfig: async (params: { dashboardId: string; widgetType?: string }) => {
+  getWidgetConfig: async (params: { dashboardId: string; widgetType?: 'kpi' | 'chart' | 'table' | 'calendar' }) => {
     const response = await api.get('/analytics/widgets/config', { params });
     return response.data;
   },
 
   // 25. Cache Status
-  getCacheStatus: async (params: { cacheType?: string; metricType?: string }) => {
+  getCacheStatus: async (params: { cacheType?: 'memory' | 'redis' | 'none'; metricType?: 'trends' | 'overview' | 'performance' }) => {
     const response = await api.get('/analytics/cache/status', { params });
     return response.data;
   },
 
   // 26. Data Freshness
-  getDataFreshness: async (params: { dataType?: string; source?: string }) => {
+  getDataFreshness: async (params: { dataType?: 'tasks' | 'activities' | 'alerts' | 'metrics'; source?: 'primary' | 'replica' | 'external' }) => {
     const response = await api.get('/analytics/data/freshness', { params });
     return response.data;
   }

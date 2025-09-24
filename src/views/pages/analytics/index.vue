@@ -234,6 +234,46 @@
       />
       <AnalyticsSkeleton v-else type="widget" />
     </div>
+
+    <!-- Analytics Settings Section -->
+    <div class="analytics-settings-section">
+      <AnalyticsSettings 
+        v-if="!loading.configSettings"
+        :data="configSettingsData"
+        @refresh="loadConfigSettings"
+      />
+      <AnalyticsSkeleton v-else type="widget" />
+    </div>
+
+    <!-- Widget Configuration Section -->
+    <div class="widget-configuration-section">
+      <WidgetConfiguration 
+        v-if="!loading.widgetConfig"
+        :data="widgetConfigData"
+        @refresh="loadWidgetConfig"
+      />
+      <AnalyticsSkeleton v-else type="widget" />
+    </div>
+
+    <!-- Cache Status Section -->
+    <div class="cache-status-section">
+      <CacheStatus 
+        v-if="!loading.cacheStatus"
+        :data="cacheStatusData"
+        @refresh="loadCacheStatus"
+      />
+      <AnalyticsSkeleton v-else type="widget" />
+    </div>
+
+    <!-- Data Freshness Section -->
+    <div class="data-freshness-section">
+      <DataFreshness 
+        v-if="!loading.dataFreshness"
+        :data="dataFreshnessData"
+        @refresh="loadDataFreshness"
+      />
+      <AnalyticsSkeleton v-else type="widget" />
+    </div>
   </div>
 </template>
 
@@ -262,6 +302,10 @@ import BottlenecksAnalysis from './components/BottlenecksAnalysis.vue';
 import QualityMetrics from './components/QualityMetrics.vue';
 import CollaborationMetrics from './components/CollaborationMetrics.vue';
 import CustomReports from './components/CustomReports.vue';
+import AnalyticsSettings from './components/AnalyticsSettings.vue';
+import WidgetConfiguration from './components/WidgetConfiguration.vue';
+import CacheStatus from './components/CacheStatus.vue';
+import DataFreshness from './components/DataFreshness.vue';
 import AnalyticsSkeleton from './components/AnalyticsSkeleton.vue';
 
 // Services
@@ -292,6 +336,10 @@ const collaborationData = ref<any>(null);
 const customReportData = ref<any>(null);
 const exportReportData = ref<any>(null);
 const shareDashboardData = ref<any>(null);
+const configSettingsData = ref<any>(null);
+const widgetConfigData = ref<any>(null);
+const cacheStatusData = ref<any>(null);
+const dataFreshnessData = ref<any>(null);
 
 // User's projects for project-specific analytics
 const userProjects = ref<any[]>([]);
@@ -319,7 +367,11 @@ const loading = ref({
   collaboration: true,
   customReport: true,
   exportReport: true,
-  shareDashboard: true
+  shareDashboard: true,
+  configSettings: true,
+  widgetConfig: true,
+  cacheStatus: true,
+  dataFreshness: true
 });
 
 // Error state
@@ -740,6 +792,60 @@ const handleShareDashboard = async (shareData: any) => {
   }
 };
 
+const loadConfigSettings = async () => {
+  try {
+    loading.value.configSettings = true;
+    const data = await analyticsApi.getConfigSettings({});
+    configSettingsData.value = data;
+  } catch (err: any) {
+    console.error('Failed to load config settings:', err);
+  } finally {
+    loading.value.configSettings = false;
+  }
+};
+
+const loadWidgetConfig = async () => {
+  try {
+    loading.value.widgetConfig = true;
+    const data = await analyticsApi.getWidgetConfig({
+      dashboardId: 'main' // Default dashboard ID
+    });
+    widgetConfigData.value = data;
+  } catch (err: any) {
+    console.error('Failed to load widget config:', err);
+  } finally {
+    loading.value.widgetConfig = false;
+  }
+};
+
+const loadCacheStatus = async () => {
+  try {
+    loading.value.cacheStatus = true;
+    const data = await analyticsApi.getCacheStatus({
+      cacheType: 'memory' // Backend default
+    });
+    cacheStatusData.value = data;
+  } catch (err: any) {
+    console.error('Failed to load cache status:', err);
+  } finally {
+    loading.value.cacheStatus = false;
+  }
+};
+
+const loadDataFreshness = async () => {
+  try {
+    loading.value.dataFreshness = true;
+    const data = await analyticsApi.getDataFreshness({
+      dataType: 'tasks' // Backend default
+    });
+    dataFreshnessData.value = data;
+  } catch (err: any) {
+    console.error('Failed to load data freshness:', err);
+  } finally {
+    loading.value.dataFreshness = false;
+  }
+};
+
 const loadAllData = async () => {
   // First load user projects, then load analytics data
   await loadUserProjects();
@@ -764,7 +870,11 @@ const loadAllData = async () => {
     loadBottlenecks(),
     loadQuality(),
     loadCollaboration(),
-    loadCustomReport()
+    loadCustomReport(),
+    loadConfigSettings(),
+    loadWidgetConfig(),
+    loadCacheStatus(),
+    loadDataFreshness()
   ];
   
   await Promise.allSettled(promises);
