@@ -4,7 +4,7 @@
     <div class="column-header" :style="{ borderTopColor: column.color }">
       <div class="header-content">
         <div class="column-info">
-          <v-icon :color="column.color" class="mr-2">
+          <v-icon :color="column.color" class="mr-2" aria-hidden="true">
             {{ getColumnIcon(column.status) }}
           </v-icon>
           <h3 class="column-title">{{ column.title }}</h3>
@@ -13,6 +13,7 @@
             variant="outlined" 
             :color="column.color"
             class="ml-2"
+            :aria-label="`${tasks.length} tasks in ${column.title}`"
           >
             {{ tasks.length }}
           </v-chip>
@@ -24,6 +25,7 @@
             icon
             size="small"
             variant="text"
+            :aria-label="`Add task to ${column.title}`"
             @click="$emit('add-task', column.status)"
           >
             <v-icon>mdi-plus</v-icon>
@@ -35,6 +37,7 @@
                 icon
                 size="small"
                 variant="text"
+                aria-label="Column options"
                 v-bind="menuProps"
               >
                 <v-icon>mdi-dots-vertical</v-icon>
@@ -75,6 +78,8 @@
       v-show="!collapsed"
       class="column-content"
       :class="{ 'drag-over': isDragOver }"
+      role="list"
+      :aria-label="`${column.title} tasks`"
       @dragover.prevent="handleDragOver"
       @dragleave.prevent="handleDragLeave"
       @drop.prevent="handleDrop"
@@ -89,6 +94,7 @@
           :selected="selectedTasks.includes(task.id)"
           :user-permissions="userPermissions"
           :draggable="userPermissions.canEditAllTasks || task.canEdit"
+          role="listitem"
           @click="$emit('task-click', task)"
           @select="$emit('task-select', task.id)"
           @drag-start="handleTaskDragStart"
@@ -416,21 +422,109 @@ const handleDrop = (event: DragEvent) => {
 /* Responsive Design */
 @media (max-width: 768px) {
   .kanban-column {
+    width: 300px;
+    min-width: 300px;
+    max-width: 300px;
+  }
+  
+  .column-header {
+    padding: 0.875rem 1rem;
+  }
+  
+  .column-content {
+    padding: 0.875rem 1rem;
+  }
+  
+  .column-title {
+    font-size: 0.875rem;
+  }
+  
+  .column-actions .v-btn {
+    min-width: 32px;
+    height: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .kanban-column {
     width: 280px;
     min-width: 280px;
     max-width: 280px;
   }
   
   .column-header {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0.875rem;
   }
   
   .column-content {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0.875rem;
   }
   
   .column-title {
     font-size: 0.8125rem;
+  }
+  
+  .column-actions .v-btn {
+    min-width: 28px;
+    height: 28px;
+  }
+  
+  .empty-drop-zone {
+    min-height: 100px;
+    padding: 1rem;
+  }
+  
+  .empty-drop-zone .v-icon {
+    font-size: 36px !important;
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1440px) {
+  .kanban-column {
+    width: 360px;
+    min-width: 360px;
+    max-width: 360px;
+  }
+  
+  .column-header {
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .column-content {
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .column-title {
+    font-size: 1rem;
+  }
+  
+  .tasks-container {
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1920px) {
+  .kanban-column {
+    width: 400px;
+    min-width: 400px;
+    max-width: 400px;
+  }
+  
+  .column-header {
+    padding: 1.5rem 2rem;
+  }
+  
+  .column-content {
+    padding: 1.5rem 2rem;
+  }
+  
+  .column-title {
+    font-size: 1.125rem;
+  }
+  
+  .tasks-container {
+    gap: 1.25rem;
   }
 }
 

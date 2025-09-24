@@ -504,6 +504,10 @@ onMounted(() => {
     padding: 0.25rem;
   }
   
+  .filter-card {
+    margin-bottom: 0.75rem;
+  }
+  
   .filter-summary {
     margin-top: 1rem;
   }
@@ -512,6 +516,89 @@ onMounted(() => {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
+  }
+  
+  .kanban-filters :deep(.v-text-field),
+  .kanban-filters :deep(.v-select),
+  .kanban-filters :deep(.v-switch) {
+    font-size: 0.875rem;
+  }
+  
+  .kanban-filters :deep(.v-btn-group .v-btn) {
+    min-width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .kanban-filters :deep(.v-col) {
+    padding: 0.125rem;
+  }
+  
+  .filter-card {
+    margin-bottom: 0.5rem;
+  }
+  
+  .filter-summary {
+    margin-top: 0.75rem;
+  }
+  
+  .kanban-filters :deep(.v-text-field),
+  .kanban-filters :deep(.v-select),
+  .kanban-filters :deep(.v-switch) {
+    font-size: 0.8125rem;
+  }
+  
+  .kanban-filters :deep(.v-btn-group .v-btn) {
+    min-width: 36px;
+    height: 36px;
+  }
+  
+  .filter-label {
+    font-size: 0.8125rem;
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1440px) {
+  .filter-card {
+    margin-bottom: 1.5rem;
+  }
+  
+  .kanban-filters :deep(.v-text-field),
+  .kanban-filters :deep(.v-select),
+  .kanban-filters :deep(.v-switch) {
+    font-size: 0.875rem;
+  }
+  
+  .kanban-filters :deep(.v-btn-group .v-btn) {
+    min-width: 48px;
+    height: 48px;
+  }
+  
+  .filter-label {
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1920px) {
+  .filter-card {
+    margin-bottom: 2rem;
+  }
+  
+  .kanban-filters :deep(.v-text-field),
+  .kanban-filters :deep(.v-select),
+  .kanban-filters :deep(.v-switch) {
+    font-size: 1rem;
+  }
+  
+  .kanban-filters :deep(.v-btn-group .v-btn) {
+    min-width: 52px;
+    height: 52px;
+  }
+  
+  .filter-label {
+    font-size: 1rem;
   }
 }
 </style>

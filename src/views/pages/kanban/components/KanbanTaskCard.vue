@@ -3,9 +3,14 @@
     class="kanban-task-card"
     :class="cardClasses"
     :draggable="draggable"
+    :aria-label="`Task: ${task.title}. Priority: ${task.priority}. Status: ${task.status}`"
+    :tabindex="0"
+    role="button"
     @dragstart="handleDragStart"
     @dragend="handleDragEnd"
     @click="handleClick"
+    @keydown.enter="handleClick"
+    @keydown.space.prevent="handleClick"
   >
     <!-- Selection Checkbox -->
     <div v-if="showSelection" class="task-selection" @click.stop>
@@ -129,6 +134,7 @@
           icon
           size="x-small"
           variant="text"
+          aria-label="Edit task"
           @click.stop="$emit('edit')"
         >
           <v-icon size="16">mdi-pencil</v-icon>
@@ -140,6 +146,7 @@
               icon
               size="x-small"
               variant="text"
+              aria-label="Task options"
               v-bind="menuProps"
               @click.stop
             >
@@ -179,8 +186,8 @@
     </div>
 
     <!-- Drag Handle -->
-    <div v-if="draggable" class="drag-handle">
-      <v-icon size="16" color="grey-lighten-1">mdi-drag-vertical</v-icon>
+    <div v-if="draggable" class="drag-handle" aria-label="Drag to move task">
+      <v-icon size="16" color="grey-lighten-1" aria-hidden="true">mdi-drag-vertical</v-icon>
     </div>
   </div>
 </template>
@@ -495,19 +502,185 @@ const handleDragEnd = () => {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .kanban-task-card {
-    padding: 0.75rem;
+    padding: 0.875rem;
+    min-height: 120px;
   }
   
   .task-title {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
+    line-height: 1.3;
+    margin-bottom: 0.625rem;
   }
   
   .task-description {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    margin-bottom: 0.875rem;
+  }
+  
+  .task-meta {
+    gap: 0.5rem;
+    margin-bottom: 0.875rem;
+  }
+  
+  .meta-item {
+    gap: 0.5rem;
+  }
+  
+  .meta-text {
+    font-size: 0.8125rem;
   }
   
   .task-actions {
     opacity: 1;
+  }
+  
+  .task-actions .v-btn {
+    min-width: 28px;
+    height: 28px;
+  }
+  
+  .task-assignee .v-avatar {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  
+  .progress-section,
+  .checklist-section {
+    margin-bottom: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .kanban-task-card {
+    padding: 0.75rem;
+    min-height: 100px;
+  }
+  
+  .task-title {
+    font-size: 0.8125rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .task-description {
+    font-size: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .task-meta {
+    gap: 0.375rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .meta-item {
+    gap: 0.375rem;
+  }
+  
+  .meta-text {
+    font-size: 0.75rem;
+  }
+  
+  .task-actions .v-btn {
+    min-width: 24px;
+    height: 24px;
+  }
+  
+  .task-assignee .v-avatar {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  
+  .task-priority .v-chip {
+    font-size: 0.625rem;
+    height: 20px;
+  }
+  
+  .progress-section,
+  .checklist-section {
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1440px) {
+  .kanban-task-card {
+    padding: 1.25rem;
+    min-height: 140px;
+  }
+  
+  .task-title {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .task-description {
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+  
+  .task-meta {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .meta-text {
+    font-size: 0.8125rem;
+  }
+  
+  .task-actions .v-btn {
+    min-width: 36px;
+    height: 36px;
+  }
+  
+  .task-assignee .v-avatar {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  
+  .task-priority .v-chip {
+    font-size: 0.75rem;
+    height: 24px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .kanban-task-card {
+    padding: 1.5rem;
+    min-height: 160px;
+  }
+  
+  .task-title {
+    font-size: 1.125rem;
+    margin-bottom: 0.875rem;
+  }
+  
+  .task-description {
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .task-meta {
+    gap: 0.625rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .meta-text {
+    font-size: 0.875rem;
+  }
+  
+  .task-actions .v-btn {
+    min-width: 40px;
+    height: 40px;
+  }
+  
+  .task-assignee .v-avatar {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  
+  .task-priority .v-chip {
+    font-size: 0.8125rem;
+    height: 26px;
   }
 }
 </style>

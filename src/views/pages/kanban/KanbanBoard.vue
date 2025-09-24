@@ -1,5 +1,8 @@
 <template>
   <div class="kanban-board">
+    <!-- Skip to content link for accessibility -->
+    <a href="#kanban-columns" class="skip-to-content">Skip to Kanban Board</a>
+    
     <!-- Header -->
     <div class="kanban-header">
       <div class="header-content">
@@ -98,8 +101,13 @@
     </v-alert>
 
     <!-- Kanban Columns -->
-    <div v-if="!loading && !error" class="kanban-columns">
-      <div class="columns-container">
+    <div v-if="!loading && !error" id="kanban-columns" class="kanban-columns">
+      <div 
+        class="columns-container"
+        role="region"
+        aria-label="Kanban Board Columns"
+        aria-live="polite"
+      >
         <KanbanColumn
           v-for="column in columnConfigs"
           :key="column.id"
@@ -402,33 +410,107 @@ onMounted(() => {
   .header-right {
     width: 100%;
     justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
   
   .kanban-columns {
-    padding: 1rem;
+    padding: 0.5rem;
   }
   
   .columns-container {
-    gap: 1rem;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
   }
   
   .analytics-fab {
     bottom: 1rem;
     right: 1rem;
+    width: 56px;
+    height: 56px;
   }
 }
 
 @media (max-width: 480px) {
+  .kanban-header {
+    padding: 0.75rem;
+  }
+  
   .board-title {
     font-size: 1.25rem;
   }
   
   .board-stats {
     flex-wrap: wrap;
+    gap: 0.25rem;
   }
   
   .header-right {
     flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  
+  .header-right .v-btn {
+    min-width: auto;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .kanban-columns {
+    padding: 0.25rem;
+  }
+  
+  .columns-container {
+    gap: 0.5rem;
+  }
+  
+  .analytics-fab {
+    bottom: 0.75rem;
+    right: 0.75rem;
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1440px) {
+  .kanban-header {
+    padding: 2rem 3rem;
+  }
+  
+  .kanban-columns {
+    padding: 1.5rem 3rem;
+  }
+  
+  .columns-container {
+    gap: 2rem;
+    justify-content: center;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  
+  .board-title {
+    font-size: 1.75rem;
+  }
+  
+  .header-right .v-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1920px) {
+  .columns-container {
+    gap: 2.5rem;
+    max-width: 1800px;
+  }
+  
+  .kanban-header {
+    padding: 2.5rem 4rem;
+  }
+  
+  .kanban-columns {
+    padding: 2rem 4rem;
   }
 }
 </style>

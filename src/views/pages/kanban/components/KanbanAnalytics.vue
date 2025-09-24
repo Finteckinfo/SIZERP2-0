@@ -657,13 +657,20 @@ onMounted(() => {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .analytics-drawer {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+  
   .metrics-grid {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
   
   .trend-summary {
     flex-direction: column;
     align-items: center;
+    gap: 1rem;
   }
   
   .drawer-header {
@@ -672,6 +679,162 @@ onMounted(() => {
   
   .drawer-content {
     padding: 1rem;
+  }
+  
+  .metrics-section {
+    padding: 1rem;
+  }
+  
+  .metric-card {
+    padding: 0.75rem;
+  }
+  
+  .metric-value {
+    font-size: 1.25rem;
+  }
+  
+  .section-title {
+    font-size: 0.875rem;
+  }
+  
+  .bottleneck-item,
+  .department-item,
+  .recommendation-item {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics-drawer {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+  
+  .metrics-grid {
+    gap: 0.5rem;
+  }
+  
+  .drawer-header {
+    padding: 0.75rem;
+  }
+  
+  .drawer-content {
+    padding: 0.75rem;
+  }
+  
+  .metrics-section {
+    padding: 0.75rem;
+  }
+  
+  .metric-card {
+    padding: 0.5rem;
+  }
+  
+  .metric-value {
+    font-size: 1.125rem;
+  }
+  
+  .section-title {
+    font-size: 0.8125rem;
+  }
+  
+  .bottleneck-item,
+  .department-item,
+  .recommendation-item {
+    padding: 0.5rem;
+  }
+  
+  .time-range-selector .v-btn {
+    min-width: 36px;
+    height: 36px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1440px) {
+  .analytics-drawer {
+    width: 450px !important;
+    max-width: 450px !important;
+  }
+  
+  .drawer-header {
+    padding: 2rem;
+  }
+  
+  .drawer-content {
+    padding: 2rem;
+  }
+  
+  .metrics-section {
+    padding: 2rem;
+  }
+  
+  .metric-card {
+    padding: 1.5rem;
+  }
+  
+  .metric-value {
+    font-size: 1.75rem;
+  }
+  
+  .section-title {
+    font-size: 1.125rem;
+  }
+  
+  .bottleneck-item,
+  .department-item,
+  .recommendation-item {
+    padding: 1.5rem;
+  }
+  
+  .time-range-selector .v-btn {
+    min-width: 52px;
+    height: 52px;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1920px) {
+  .analytics-drawer {
+    width: 500px !important;
+    max-width: 500px !important;
+  }
+  
+  .drawer-header {
+    padding: 2.5rem;
+  }
+  
+  .drawer-content {
+    padding: 2.5rem;
+  }
+  
+  .metrics-section {
+    padding: 2.5rem;
+  }
+  
+  .metric-card {
+    padding: 2rem;
+  }
+  
+  .metric-value {
+    font-size: 2rem;
+  }
+  
+  .section-title {
+    font-size: 1.25rem;
+  }
+  
+  .bottleneck-item,
+  .department-item,
+  .recommendation-item {
+    padding: 2rem;
+  }
+  
+  .time-range-selector .v-btn {
+    min-width: 56px;
+    height: 56px;
+    font-size: 1rem;
   }
 }
 </style>

@@ -832,6 +832,15 @@ watch(() => props.modelValue, (isOpen) => {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .v-dialog {
+    margin: 1rem;
+    max-width: calc(100vw - 2rem) !important;
+  }
+  
+  .v-card {
+    margin: 0;
+  }
+  
   .task-content {
     padding: 1rem;
   }
@@ -849,6 +858,98 @@ watch(() => props.modelValue, (isOpen) => {
   .header-actions {
     width: 100%;
     justify-content: flex-end;
+  }
+  
+  .task-sidebar {
+    margin-top: 1rem;
+  }
+  
+  .v-card-actions {
+    padding: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .v-card-actions .v-btn {
+    min-width: auto;
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .v-dialog {
+    margin: 0.5rem;
+    max-width: calc(100vw - 1rem) !important;
+  }
+  
+  .task-content {
+    padding: 0.75rem;
+  }
+  
+  .task-sidebar {
+    padding: 0.75rem;
+  }
+  
+  .v-card-actions {
+    padding: 0.75rem;
+    flex-direction: column;
+  }
+  
+  .v-card-actions .v-btn {
+    width: 100%;
+  }
+  
+  .task-title {
+    font-size: 1.125rem;
+  }
+  
+  .section-title {
+    font-size: 0.875rem;
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1440px) {
+  .v-dialog {
+    max-width: 900px !important;
+  }
+  
+  .task-content {
+    padding: 2rem;
+  }
+  
+  .task-sidebar {
+    padding: 1.5rem;
+  }
+  
+  .v-card-actions {
+    padding: 1.5rem 2rem 2rem;
+  }
+}
+
+@media (min-width: 1920px) {
+  .v-dialog {
+    max-width: 1000px !important;
+  }
+  
+  .task-content {
+    padding: 2.5rem;
+  }
+  
+  .task-sidebar {
+    padding: 2rem;
+  }
+  
+  .v-card-actions {
+    padding: 2rem 2.5rem 2.5rem;
+  }
+  
+  .task-title {
+    font-size: 1.5rem;
+  }
+  
+  .section-title {
+    font-size: 1.125rem;
   }
 }
 </style>
