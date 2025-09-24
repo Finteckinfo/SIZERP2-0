@@ -12,7 +12,7 @@ if (!API_BASE_URL) {
 console.log('🌐 API Base URL configured:', API_BASE_URL || '(missing)');
 
 // Centralized axios instance with proper JWT authentication interceptor
-const api = axios.create({ 
+export const api = axios.create({ 
   baseURL: API_BASE_URL,
   timeout: 30000 // 30 second timeout
 });

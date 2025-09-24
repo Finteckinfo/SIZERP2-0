@@ -169,17 +169,17 @@ import { analyticsApi } from './services/analyticsApi';
 const { user } = useUser();
 
 // Data state
-const overviewData = ref(null);
-const performanceData = ref(null);
-const teamData = ref(null);
-const financialData = ref(null);
-const timelineData = ref(null);
-const departmentData = ref(null);
-const resourceData = ref(null);
-const trendsData = ref(null);
-const liveData = ref(null);
-const activityData = ref(null);
-const alertsData = ref(null);
+const overviewData = ref<any>(null);
+const performanceData = ref<any>(null);
+const teamData = ref<any>(null);
+const financialData = ref<any>(null);
+const timelineData = ref<any>(null);
+const departmentData = ref<any>(null);
+const resourceData = ref<any>(null);
+const trendsData = ref<any>(null);
+const liveData = ref<any>(null);
+const activityData = ref<any>(null);
+const alertsData = ref<any>(null);
 
 // Loading state
 const loading = ref({
@@ -206,10 +206,12 @@ const hasData = computed(() => {
 
 // Methods
 const loadOverview = async () => {
+  if (!user.value?.id) return;
+  
   try {
     loading.value.overview = true;
     const data = await analyticsApi.getDashboardOverview({
-      userId: user.value?.id,
+      userId: user.value.id,
       dateRange: '30d'
     });
     overviewData.value = data;
@@ -323,10 +325,12 @@ const loadTrends = async () => {
 };
 
 const loadLive = async () => {
+  if (!user.value?.id) return;
+  
   try {
     loading.value.live = true;
     const data = await analyticsApi.getLiveDashboard({
-      userId: user.value?.id
+      userId: user.value.id
     });
     liveData.value = data;
   } catch (err: any) {
@@ -337,10 +341,12 @@ const loadLive = async () => {
 };
 
 const loadActivity = async () => {
+  if (!user.value?.id) return;
+  
   try {
     loading.value.activity = true;
     const data = await analyticsApi.getActivityFeed({
-      userId: user.value?.id,
+      userId: user.value.id,
       limit: 20
     });
     activityData.value = data;
@@ -352,10 +358,12 @@ const loadActivity = async () => {
 };
 
 const loadAlerts = async () => {
+  if (!user.value?.id) return;
+  
   try {
     loading.value.alerts = true;
     const data = await analyticsApi.getActiveAlerts({
-      userId: user.value?.id
+      userId: user.value.id
     });
     alertsData.value = data;
   } catch (err: any) {

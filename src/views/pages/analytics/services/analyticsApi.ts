@@ -1,4 +1,4 @@
-import { api } from '@/services/api';
+import { api } from '@/services/projectApi';
 
 // Types for Analytics APIs
 export interface DashboardOverviewParams {
