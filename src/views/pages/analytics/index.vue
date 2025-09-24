@@ -102,6 +102,16 @@
         <AnalyticsSkeleton v-else type="widget" />
       </div>
 
+      <!-- Workload Distribution -->
+      <div class="analytics-widget">
+        <WorkloadDistribution 
+          v-if="!loading.workload"
+          :data="workloadData"
+          @refresh="loadWorkload"
+        />
+        <AnalyticsSkeleton v-else type="widget" />
+      </div>
+
       <!-- Trends & Predictions -->
       <div class="analytics-widget">
         <TrendsAnalysis 
@@ -157,6 +167,7 @@ import FinancialOverview from './components/FinancialOverview.vue';
 import TimelineAnalysis from './components/TimelineAnalysis.vue';
 import DepartmentEfficiency from './components/DepartmentEfficiency.vue';
 import ResourceUtilization from './components/ResourceUtilization.vue';
+import WorkloadDistribution from './components/WorkloadDistribution.vue';
 import TrendsAnalysis from './components/TrendsAnalysis.vue';
 import LiveDashboard from './components/LiveDashboard.vue';
 import ActivityFeed from './components/ActivityFeed.vue';
@@ -176,6 +187,7 @@ const financialData = ref<any>(null);
 const timelineData = ref<any>(null);
 const departmentData = ref<any>(null);
 const resourceData = ref<any>(null);
+const workloadData = ref<any>(null);
 const trendsData = ref<any>(null);
 const liveData = ref<any>(null);
 const activityData = ref<any>(null);
@@ -193,6 +205,7 @@ const loading = ref({
   timeline: true,
   departments: true,
   resources: true,
+  workload: true,
   trends: true,
   live: true,
   activity: true,
@@ -318,8 +331,16 @@ const loadTimeline = async () => {
 const loadDepartments = async () => {
   try {
     loading.value.departments = true;
+    // Use first project for now - in future we can let user select
+    const firstProject = userProjects.value[0];
+    if (!firstProject) {
+      console.log('No projects available for department analysis');
+      return;
+    }
+    
     const data = await analyticsApi.getDepartmentEfficiency({
-      dateRange: '30d'
+      projectId: firstProject.id,
+      dateRange: '30d' // Backend default
     });
     departmentData.value = data;
   } catch (err: any) {
@@ -332,14 +353,44 @@ const loadDepartments = async () => {
 const loadResources = async () => {
   try {
     loading.value.resources = true;
+    // Use first project for now - in future we can let user select
+    const firstProject = userProjects.value[0];
+    if (!firstProject) {
+      console.log('No projects available for resource analysis');
+      return;
+    }
+    
     const data = await analyticsApi.getResourceUtilization({
-      resourceType: 'human'
+      projectId: firstProject.id,
+      resourceType: 'human' // Backend default
     });
     resourceData.value = data;
   } catch (err: any) {
     console.error('Failed to load resource data:', err);
   } finally {
     loading.value.resources = false;
+  }
+};
+
+const loadWorkload = async () => {
+  try {
+    loading.value.workload = true;
+    // Use first project for now - in future we can let user select
+    const firstProject = userProjects.value[0];
+    if (!firstProject) {
+      console.log('No projects available for workload analysis');
+      return;
+    }
+    
+    const data = await analyticsApi.getWorkloadDistribution({
+      projectId: firstProject.id,
+      dateRange: '30d' // Backend default
+    });
+    workloadData.value = data;
+  } catch (err: any) {
+    console.error('Failed to load workload data:', err);
+  } finally {
+    loading.value.workload = false;
   }
 };
 
@@ -421,6 +472,7 @@ const loadAllData = async () => {
     loadTimeline(),
     loadDepartments(),
     loadResources(),
+    loadWorkload(),
     loadTrends(),
     loadLive(),
     loadActivity(),

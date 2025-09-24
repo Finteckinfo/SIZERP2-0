@@ -160,19 +160,19 @@ export const analyticsApi = {
   },
 
   // 6. Department Efficiency
-  getDepartmentEfficiency: async (params: { projectId?: string; dateRange: string }) => {
+  getDepartmentEfficiency: async (params: { projectId: string; dateRange?: '7d' | '30d' | '90d' | '1y' }) => {
     const response = await api.get('/analytics/departments/efficiency', { params });
     return response.data;
   },
 
   // 7. Resource Utilization
-  getResourceUtilization: async (params: { projectId?: string; resourceType: 'human' | 'equipment' | 'budget' }) => {
+  getResourceUtilization: async (params: { projectId: string; resourceType?: 'human' | 'equipment' | 'budget' }) => {
     const response = await api.get('/analytics/resources/utilization', { params });
     return response.data;
   },
 
   // 8. Workload Distribution
-  getWorkloadDistribution: async (params: { projectId?: string; teamId?: string; dateRange: string }) => {
+  getWorkloadDistribution: async (params: { projectId: string; teamId?: string; dateRange?: '7d' | '30d' | '90d' | '1y' }) => {
     const response = await api.get('/analytics/workload/distribution', { params });
     return response.data;
   },
