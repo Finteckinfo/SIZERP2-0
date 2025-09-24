@@ -178,19 +178,19 @@ export const analyticsApi = {
   },
 
   // 9. Trends Analysis
-  getTrendsAnalysis: async (params: { metricType: string; dateRange: string; granularity: string; projectIds?: string[] }) => {
+  getTrendsAnalysis: async (params: { metricType: 'throughput' | 'completion_rate' | 'on_time_rate' | 'in_progress' | 'pending'; dateRange?: '7d' | '30d' | '90d' | '1y'; granularity?: 'daily' | 'weekly' | 'monthly'; projectIds?: string[] }) => {
     const response = await api.get('/analytics/trends/analysis', { params });
     return response.data;
   },
 
   // 10. Predictions Forecast
-  getPredictionsForecast: async (params: { projectId?: string; predictionType: 'completion' | 'budget' | 'timeline'; horizon: '30d' | '90d' | '180d' }) => {
+  getPredictionsForecast: async (params: { projectId: string; predictionType?: 'completion' | 'budget' | 'timeline'; horizon?: '30d' | '90d' | '180d' }) => {
     const response = await api.get('/analytics/predictions/forecast', { params });
     return response.data;
   },
 
   // 11. Benchmarks Comparison
-  getBenchmarksComparison: async (params: { projectId?: string; benchmarkType: 'industry' | 'historical' | 'team' }) => {
+  getBenchmarksComparison: async (params: { projectId: string; benchmarkType?: 'industry' | 'historical' | 'team' }) => {
     const response = await api.get('/analytics/benchmarks/comparison', { params });
     return response.data;
   },

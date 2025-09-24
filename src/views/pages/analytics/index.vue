@@ -112,12 +112,32 @@
         <AnalyticsSkeleton v-else type="widget" />
       </div>
 
-      <!-- Trends & Predictions -->
+      <!-- Trends Analysis -->
       <div class="analytics-widget">
         <TrendsAnalysis 
           v-if="!loading.trends"
           :data="trendsData"
           @refresh="loadTrends"
+        />
+        <AnalyticsSkeleton v-else type="widget" />
+      </div>
+
+      <!-- Predictions Forecast -->
+      <div class="analytics-widget">
+        <PredictionsForecast 
+          v-if="!loading.predictions"
+          :data="predictionsData"
+          @refresh="loadPredictions"
+        />
+        <AnalyticsSkeleton v-else type="widget" />
+      </div>
+
+      <!-- Benchmarks Comparison -->
+      <div class="analytics-widget">
+        <BenchmarksComparison 
+          v-if="!loading.benchmarks"
+          :data="benchmarksData"
+          @refresh="loadBenchmarks"
         />
         <AnalyticsSkeleton v-else type="widget" />
       </div>
@@ -169,6 +189,8 @@ import DepartmentEfficiency from './components/DepartmentEfficiency.vue';
 import ResourceUtilization from './components/ResourceUtilization.vue';
 import WorkloadDistribution from './components/WorkloadDistribution.vue';
 import TrendsAnalysis from './components/TrendsAnalysis.vue';
+import PredictionsForecast from './components/PredictionsForecast.vue';
+import BenchmarksComparison from './components/BenchmarksComparison.vue';
 import LiveDashboard from './components/LiveDashboard.vue';
 import ActivityFeed from './components/ActivityFeed.vue';
 import AlertsPanel from './components/AlertsPanel.vue';
@@ -189,6 +211,8 @@ const departmentData = ref<any>(null);
 const resourceData = ref<any>(null);
 const workloadData = ref<any>(null);
 const trendsData = ref<any>(null);
+const predictionsData = ref<any>(null);
+const benchmarksData = ref<any>(null);
 const liveData = ref<any>(null);
 const activityData = ref<any>(null);
 const alertsData = ref<any>(null);
@@ -207,6 +231,8 @@ const loading = ref({
   resources: true,
   workload: true,
   trends: true,
+  predictions: true,
+  benchmarks: true,
   live: true,
   activity: true,
   alerts: true
@@ -397,16 +423,64 @@ const loadWorkload = async () => {
 const loadTrends = async () => {
   try {
     loading.value.trends = true;
+    // Get project IDs from user's projects
+    const projectIds = userProjects.value.map(p => p.id);
+    
     const data = await analyticsApi.getTrendsAnalysis({
-      metricType: 'productivity',
-      dateRange: '90d',
-      granularity: 'weekly'
+      metricType: 'throughput', // Backend required parameter
+      dateRange: '90d', // Backend default
+      granularity: 'weekly' // Backend default
     });
     trendsData.value = data;
   } catch (err: any) {
     console.error('Failed to load trends data:', err);
   } finally {
     loading.value.trends = false;
+  }
+};
+
+const loadPredictions = async () => {
+  try {
+    loading.value.predictions = true;
+    // Use first project for now - in future we can let user select
+    const firstProject = userProjects.value[0];
+    if (!firstProject) {
+      console.log('No projects available for predictions analysis');
+      return;
+    }
+    
+    const data = await analyticsApi.getPredictionsForecast({
+      projectId: firstProject.id,
+      predictionType: 'completion', // Backend default
+      horizon: '90d' // Backend default
+    });
+    predictionsData.value = data;
+  } catch (err: any) {
+    console.error('Failed to load predictions data:', err);
+  } finally {
+    loading.value.predictions = false;
+  }
+};
+
+const loadBenchmarks = async () => {
+  try {
+    loading.value.benchmarks = true;
+    // Use first project for now - in future we can let user select
+    const firstProject = userProjects.value[0];
+    if (!firstProject) {
+      console.log('No projects available for benchmarks analysis');
+      return;
+    }
+    
+    const data = await analyticsApi.getBenchmarksComparison({
+      projectId: firstProject.id,
+      benchmarkType: 'historical' // Backend default
+    });
+    benchmarksData.value = data;
+  } catch (err: any) {
+    console.error('Failed to load benchmarks data:', err);
+  } finally {
+    loading.value.benchmarks = false;
   }
 };
 
@@ -474,6 +548,8 @@ const loadAllData = async () => {
     loadResources(),
     loadWorkload(),
     loadTrends(),
+    loadPredictions(),
+    loadBenchmarks(),
     loadLive(),
     loadActivity(),
     loadAlerts()
