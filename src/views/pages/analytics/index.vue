@@ -212,7 +212,7 @@ const loadOverview = async () => {
     loading.value.overview = true;
     const data = await analyticsApi.getDashboardOverview({
       userId: user.value.id,
-      dateRange: '30d'
+      dateRange: '30d' // Backend default
     });
     overviewData.value = data;
   } catch (err: any) {
@@ -226,9 +226,10 @@ const loadOverview = async () => {
 const loadPerformance = async () => {
   try {
     loading.value.performance = true;
-    const data = await analyticsApi.getProjectPerformance({
-      dateRange: '30d',
-      granularity: 'weekly'
+    // Use all-projects endpoint for cross-project analytics
+    const data = await analyticsApi.getAllProjectsPerformance({
+      dateRange: '30d', // Backend default
+      granularity: 'weekly' // Backend default
     });
     performanceData.value = data;
   } catch (err: any) {
@@ -241,8 +242,9 @@ const loadPerformance = async () => {
 const loadTeam = async () => {
   try {
     loading.value.team = true;
-    const data = await analyticsApi.getTeamPerformance({
-      dateRange: '30d'
+    // Use all-projects endpoint for cross-project team analytics
+    const data = await analyticsApi.getAllProjectsTeamPerformance({
+      dateRange: '30d' // Backend default
     });
     teamData.value = data;
   } catch (err: any) {

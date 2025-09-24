@@ -30,6 +30,7 @@ export interface ProjectPerformanceParams {
   projectId?: string;
   dateRange: '7d' | '30d' | '90d' | '1y';
   granularity: 'daily' | 'weekly' | 'monthly';
+  allProjects?: boolean; // New flag for all projects analytics
 }
 
 export interface ProjectPerformanceResponse {
@@ -65,6 +66,7 @@ export interface TeamPerformanceParams {
   departmentId?: string;
   userId?: string;
   dateRange: '7d' | '30d' | '90d' | '1y';
+  allProjects?: boolean; // New flag for all projects analytics
 }
 
 export interface TeamPerformanceResponse {
@@ -121,15 +123,27 @@ export const analyticsApi = {
     return response.data;
   },
 
-  // 2. Project Performance
+  // 2. Project Performance (Single Project)
   getProjectPerformance: async (params: ProjectPerformanceParams): Promise<ProjectPerformanceResponse> => {
     const response = await api.get('/analytics/projects/performance', { params });
     return response.data;
   },
 
-  // 3. Team Performance
+  // 2b. All Projects Performance (Cross-Project Analytics)
+  getAllProjectsPerformance: async (params: { dateRange?: '7d' | '30d' | '90d' | '1y'; granularity?: 'daily' | 'weekly' | 'monthly' }) => {
+    const response = await api.get('/analytics/projects/all/performance', { params });
+    return response.data;
+  },
+
+  // 3. Team Performance (Single Project)
   getTeamPerformance: async (params: TeamPerformanceParams): Promise<TeamPerformanceResponse> => {
     const response = await api.get('/analytics/team/performance', { params });
+    return response.data;
+  },
+
+  // 3b. All Projects Team Performance (Cross-Project Analytics)
+  getAllProjectsTeamPerformance: async (params: { dateRange?: '7d' | '30d' | '90d' | '1y' }) => {
+    const response = await api.get('/analytics/team/all/performance', { params });
     return response.data;
   },
 

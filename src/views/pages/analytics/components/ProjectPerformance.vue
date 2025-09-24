@@ -12,28 +12,44 @@
         <div class="performance-metrics">
           <div class="metric-item">
             <div class="metric-label">Health Score</div>
-            <div class="metric-value">{{ data?.metrics?.healthScore || 0 }}%</div>
+            <div class="metric-value">{{ data?.metrics?.averageHealthScore || 0 }}%</div>
           </div>
           <div class="metric-item">
             <div class="metric-label">Completion Rate</div>
-            <div class="metric-value">{{ data?.metrics?.completionRate || 0 }}%</div>
+            <div class="metric-value">{{ data?.metrics?.totalCompletionRate || 0 }}%</div>
           </div>
           <div class="metric-item">
             <div class="metric-label">Timeline Progress</div>
-            <div class="metric-value">{{ data?.metrics?.timelineProgress || 0 }}%</div>
+            <div class="metric-value">{{ data?.metrics?.averageTimelineProgress || 0 }}%</div>
           </div>
         </div>
         
         <div class="budget-section">
-          <h4 class="section-title">Budget vs Actual</h4>
-          <div class="budget-comparison">
+          <h4 class="section-title">Budget Utilization</h4>
+          <div class="budget-info">
             <div class="budget-item">
-              <span class="budget-label">Budget</span>
-              <span class="budget-value">${{ data?.metrics?.budgetVsActual?.budget || 0 }}</span>
+              <span class="budget-label">Budget Utilization</span>
+              <span class="budget-value">{{ data?.metrics?.budgetUtilization || 'N/A' }}</span>
             </div>
-            <div class="budget-item">
-              <span class="budget-label">Actual</span>
-              <span class="budget-value">${{ data?.metrics?.budgetVsActual?.actual || 0 }}</span>
+          </div>
+        </div>
+        
+        <div class="risks-section">
+          <h4 class="section-title">Common Risks</h4>
+          <div class="risks-list">
+            <div 
+              v-for="risk in data?.metrics?.commonRisks?.slice(0, 3)" 
+              :key="risk.type"
+              class="risk-item"
+            >
+              <v-icon :color="getRiskColor(risk.severity)" size="16">
+                {{ getRiskIcon(risk.severity) }}
+              </v-icon>
+              <span class="risk-text">{{ risk.type }} ({{ risk.count }})</span>
+            </div>
+            <div v-if="!data?.metrics?.commonRisks?.length" class="no-risks">
+              <v-icon color="success" size="16">mdi-check-circle</v-icon>
+              <span class="risk-text">No risks detected</span>
             </div>
           </div>
         </div>
@@ -51,8 +67,28 @@ interface Emits {
   (e: 'refresh'): void;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 defineEmits<Emits>();
+
+const getRiskColor = (severity: string) => {
+  const colors: Record<string, string> = {
+    'LOW': 'info',
+    'MEDIUM': 'warning', 
+    'HIGH': 'error',
+    'CRITICAL': 'error'
+  };
+  return colors[severity] || 'info';
+};
+
+const getRiskIcon = (severity: string) => {
+  const icons: Record<string, string> = {
+    'LOW': 'mdi-information',
+    'MEDIUM': 'mdi-alert-circle',
+    'HIGH': 'mdi-alert',
+    'CRITICAL': 'mdi-alert-octagon'
+  };
+  return icons[severity] || 'mdi-information';
+};
 </script>
 
 <style scoped>
@@ -112,9 +148,8 @@ defineEmits<Emits>();
   margin-bottom: 1rem;
 }
 
-.budget-comparison {
-  display: flex;
-  justify-content: space-between;
+.budget-info {
+  text-align: center;
 }
 
 .budget-item {
@@ -133,5 +168,32 @@ defineEmits<Emits>();
   font-size: 1.25rem;
   font-weight: 600;
   color: #1e293b;
+}
+
+.risks-section {
+  margin-top: 1.5rem;
+  background: rgba(248, 250, 252, 0.5);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.risks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.risk-item, .no-risks {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 6px;
+}
+
+.risk-text {
+  font-size: 0.8125rem;
+  color: #374151;
 }
 </style>

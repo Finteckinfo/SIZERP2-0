@@ -12,7 +12,7 @@
         <div class="team-overview">
           <div class="overview-item">
             <div class="overview-label">Team Members</div>
-            <div class="overview-value">{{ data?.individuals?.length || 0 }}</div>
+            <div class="overview-value">{{ data?.members?.length || 0 }}</div>
           </div>
           <div class="overview-item">
             <div class="overview-label">Avg Productivity</div>
@@ -24,25 +24,25 @@
           <h4 class="section-title">Team Members</h4>
           <div class="members-list">
             <div 
-              v-for="member in data?.individuals?.slice(0, 5)" 
+              v-for="member in data?.members?.slice(0, 5)" 
               :key="member.userId"
               class="member-item"
             >
               <v-avatar size="32" color="primary">
-                <span class="text-white">{{ getInitials(member.name) }}</span>
+                <span class="text-white">{{ getInitials(member.userId) }}</span>
               </v-avatar>
               <div class="member-info">
-                <div class="member-name">{{ member.name }}</div>
+                <div class="member-name">{{ member.userId }}</div>
                 <div class="member-role">{{ member.role }}</div>
               </div>
               <div class="member-metrics">
                 <div class="metric">
-                  <span class="metric-label">Tasks</span>
-                  <span class="metric-value">{{ member.tasksCompleted }}</span>
+                  <span class="metric-label">Completed</span>
+                  <span class="metric-value">{{ member.completed }}</span>
                 </div>
                 <div class="metric">
                   <span class="metric-label">Productivity</span>
-                  <span class="metric-value">{{ member.productivity }}%</span>
+                  <span class="metric-value">{{ member.productivityScore }}%</span>
                 </div>
               </div>
             </div>
@@ -68,13 +68,13 @@ const props = defineProps<Props>();
 defineEmits<Emits>();
 
 const getAverageProductivity = () => {
-  if (!props.data?.individuals?.length) return 0;
-  const total = props.data.individuals.reduce((sum: number, member: any) => sum + member.productivity, 0);
-  return Math.round(total / props.data.individuals.length);
+  if (!props.data?.members?.length) return 0;
+  const total = props.data.members.reduce((sum: number, member: any) => sum + member.productivityScore, 0);
+  return Math.round(total / props.data.members.length);
 };
 
-const getInitials = (name: string) => {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase();
+const getInitials = (userId: string) => {
+  return userId.substring(0, 2).toUpperCase();
 };
 </script>
 
