@@ -16,7 +16,37 @@
           </div>
           <div class="metric-item">
             <div class="metric-label">Schedule Variance</div>
-            <div class="metric-value">{{ data?.scheduleVariance || 0 }}%</div>
+            <div class="metric-value">{{ data?.scheduleVariance || 0 }} days</div>
+          </div>
+        </div>
+        
+        <div class="risks-section" v-if="data?.risks?.length">
+          <h4 class="section-title">Timeline Risks</h4>
+          <div class="risks-list">
+            <div 
+              v-for="risk in data.risks.slice(0, 3)" 
+              :key="risk.type"
+              class="risk-item"
+            >
+              <v-icon :color="getRiskColor(risk.severity)" size="16">
+                {{ getRiskIcon(risk.severity) }}
+              </v-icon>
+              <span class="risk-text">{{ risk.type }} ({{ risk.count }})</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="predictions-section" v-if="data?.deliveryPredictions?.length">
+          <h4 class="section-title">Delivery Predictions</h4>
+          <div class="predictions-list">
+            <div 
+              v-for="prediction in data.deliveryPredictions" 
+              :key="prediction.metric"
+              class="prediction-item"
+            >
+              <div class="prediction-metric">{{ prediction.metric }}</div>
+              <div class="prediction-value">{{ prediction.value || 'TBD' }}</div>
+            </div>
           </div>
         </div>
         
@@ -52,8 +82,28 @@ interface Emits {
   (e: 'refresh'): void;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 defineEmits<Emits>();
+
+const getRiskColor = (severity: string) => {
+  const colors: Record<string, string> = {
+    'LOW': 'info',
+    'MEDIUM': 'warning', 
+    'HIGH': 'error',
+    'CRITICAL': 'error'
+  };
+  return colors[severity] || 'info';
+};
+
+const getRiskIcon = (severity: string) => {
+  const icons: Record<string, string> = {
+    'LOW': 'mdi-information',
+    'MEDIUM': 'mdi-alert-circle',
+    'HIGH': 'mdi-alert',
+    'CRITICAL': 'mdi-alert-octagon'
+  };
+  return icons[severity] || 'mdi-information';
+};
 </script>
 
 <style scoped>
@@ -135,5 +185,47 @@ defineEmits<Emits>();
 .milestone-date {
   font-size: 0.75rem;
   color: #6b7280;
+}
+
+.risks-section, .predictions-section {
+  margin-top: 1.5rem;
+  background: rgba(248, 250, 252, 0.5);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.risks-list, .predictions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.risk-item, .prediction-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 6px;
+}
+
+.risk-text {
+  font-size: 0.8125rem;
+  color: #374151;
+}
+
+.prediction-item {
+  justify-content: space-between;
+}
+
+.prediction-metric {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.prediction-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
 }
 </style>

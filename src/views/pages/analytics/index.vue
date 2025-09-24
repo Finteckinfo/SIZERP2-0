@@ -181,6 +181,9 @@ const liveData = ref<any>(null);
 const activityData = ref<any>(null);
 const alertsData = ref<any>(null);
 
+// User's projects for project-specific analytics
+const userProjects = ref<any[]>([]);
+
 // Loading state
 const loading = ref({
   overview: true,
@@ -205,6 +208,20 @@ const hasData = computed(() => {
 });
 
 // Methods
+const loadUserProjects = async () => {
+  if (!user.value?.id) return;
+  
+  try {
+    // Get user's projects - this should come from your existing project API
+    // For now, we'll use a placeholder or get from overview data
+    console.log('Loading user projects for analytics...');
+    // TODO: Replace with actual project API call
+    userProjects.value = []; // Will be populated from overview data
+  } catch (err: any) {
+    console.error('Failed to load user projects:', err);
+  }
+};
+
 const loadOverview = async () => {
   if (!user.value?.id) return;
   
@@ -257,8 +274,16 @@ const loadTeam = async () => {
 const loadFinancial = async () => {
   try {
     loading.value.financial = true;
+    // Use first project for now - in future we can let user select
+    const firstProject = userProjects.value[0];
+    if (!firstProject) {
+      console.log('No projects available for financial analysis');
+      return;
+    }
+    
     const data = await analyticsApi.getFinancialOverview({
-      dateRange: '30d'
+      projectId: firstProject.id,
+      dateRange: '30d' // Backend default
     });
     financialData.value = data;
   } catch (err: any) {
@@ -271,8 +296,16 @@ const loadFinancial = async () => {
 const loadTimeline = async () => {
   try {
     loading.value.timeline = true;
+    // Use first project for now - in future we can let user select
+    const firstProject = userProjects.value[0];
+    if (!firstProject) {
+      console.log('No projects available for timeline analysis');
+      return;
+    }
+    
     const data = await analyticsApi.getTimelineAnalysis({
-      dateRange: '30d'
+      projectId: firstProject.id,
+      dateRange: '30d' // Backend default
     });
     timelineData.value = data;
   } catch (err: any) {
@@ -327,12 +360,13 @@ const loadTrends = async () => {
 };
 
 const loadLive = async () => {
-  if (!user.value?.id) return;
-  
   try {
     loading.value.live = true;
+    // Get project IDs from user's projects
+    const projectIds = userProjects.value.map(p => p.id);
+    
     const data = await analyticsApi.getLiveDashboard({
-      userId: user.value.id
+      projectIds: projectIds
     });
     liveData.value = data;
   } catch (err: any) {
@@ -376,6 +410,9 @@ const loadAlerts = async () => {
 };
 
 const loadAllData = async () => {
+  // First load user projects, then load analytics data
+  await loadUserProjects();
+  
   const promises = [
     loadOverview(),
     loadPerformance(),

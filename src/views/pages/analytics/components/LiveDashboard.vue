@@ -32,20 +32,48 @@
           </div>
         </div>
         
-        <div class="system-health">
+        <div class="status-section" v-if="data?.status?.length">
+          <h4 class="section-title">Task Status</h4>
+          <div class="status-items">
+            <div 
+              v-for="statusItem in data.status.slice(0, 4)" 
+              :key="statusItem.status"
+              class="status-item"
+            >
+              <div class="status-name">{{ statusItem.status }}</div>
+              <div class="status-count">{{ statusItem.count }}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="alerts-section" v-if="data?.alerts?.length">
+          <h4 class="section-title">Active Alerts</h4>
+          <div class="alerts-list">
+            <div 
+              v-for="alert in data.alerts.slice(0, 3)" 
+              :key="alert.type"
+              class="alert-item"
+            >
+              <v-icon :color="getAlertColor(alert.severity)" size="16">
+                {{ getAlertIcon(alert.severity) }}
+              </v-icon>
+              <span class="alert-text">{{ alert.type }} ({{ alert.count }})</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="system-health" v-if="data?.systemHealth?.length">
           <h4 class="section-title">System Health</h4>
           <div class="health-items">
-            <div class="health-item">
-              <v-icon color="success">mdi-check-circle</v-icon>
-              <span>API Status</span>
-            </div>
-            <div class="health-item">
-              <v-icon color="success">mdi-check-circle</v-icon>
-              <span>Database</span>
-            </div>
-            <div class="health-item">
-              <v-icon color="warning">mdi-alert-circle</v-icon>
-              <span>Cache</span>
+            <div 
+              v-for="health in data.systemHealth" 
+              :key="health.service"
+              class="health-item"
+            >
+              <v-icon :color="getHealthColor(health.status)">
+                {{ getHealthIcon(health.status) }}
+              </v-icon>
+              <span>{{ health.service }}: {{ health.status }}</span>
             </div>
           </div>
         </div>
@@ -63,8 +91,48 @@ interface Emits {
   (e: 'refresh'): void;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 defineEmits<Emits>();
+
+const getAlertColor = (severity: string) => {
+  const colors: Record<string, string> = {
+    'LOW': 'info',
+    'MEDIUM': 'warning', 
+    'HIGH': 'error',
+    'CRITICAL': 'error'
+  };
+  return colors[severity] || 'info';
+};
+
+const getAlertIcon = (severity: string) => {
+  const icons: Record<string, string> = {
+    'LOW': 'mdi-information',
+    'MEDIUM': 'mdi-alert-circle',
+    'HIGH': 'mdi-alert',
+    'CRITICAL': 'mdi-alert-octagon'
+  };
+  return icons[severity] || 'mdi-information';
+};
+
+const getHealthColor = (status: string) => {
+  const colors: Record<string, string> = {
+    'healthy': 'success',
+    'warning': 'warning',
+    'error': 'error',
+    'unknown': 'grey'
+  };
+  return colors[status] || 'grey';
+};
+
+const getHealthIcon = (status: string) => {
+  const icons: Record<string, string> = {
+    'healthy': 'mdi-check-circle',
+    'warning': 'mdi-alert-circle',
+    'error': 'mdi-alert-octagon',
+    'unknown': 'mdi-help-circle'
+  };
+  return icons[status] || 'mdi-help-circle';
+};
 </script>
 
 <style scoped>
@@ -154,6 +222,60 @@ defineEmits<Emits>();
   background: rgba(248, 250, 252, 0.5);
   border-radius: 8px;
   font-size: 0.875rem;
+  color: #374151;
+}
+
+.status-section, .alerts-section, .system-health {
+  margin-top: 1.5rem;
+  background: rgba(248, 250, 252, 0.5);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.status-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.5rem;
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 6px;
+}
+
+.status-name {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.status-count {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.alert-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 6px;
+}
+
+.alert-text {
+  font-size: 0.8125rem;
   color: #374151;
 }
 </style>

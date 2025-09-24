@@ -12,15 +12,33 @@
         <div class="financial-metrics">
           <div class="metric-item">
             <div class="metric-label">Budget Utilization</div>
-            <div class="metric-value">{{ data?.budgetUtilization || 0 }}%</div>
+            <div class="metric-value">{{ data?.budgetUtilization || 'N/A' }}</div>
           </div>
           <div class="metric-item">
             <div class="metric-label">Cost per Task</div>
-            <div class="metric-value">${{ data?.costPerTask || 0 }}</div>
+            <div class="metric-value">{{ data?.costPerTask || 'N/A' }}</div>
           </div>
           <div class="metric-item">
             <div class="metric-label">ROI</div>
-            <div class="metric-value">{{ data?.roi || 0 }}%</div>
+            <div class="metric-value">{{ data?.roi || 'N/A' }}</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Profit Margins</div>
+            <div class="metric-value">{{ data?.profitMargins || 'N/A' }}</div>
+          </div>
+        </div>
+        
+        <div class="projections-section" v-if="data?.projections?.length">
+          <h4 class="section-title">Projections</h4>
+          <div class="projections-list">
+            <div 
+              v-for="projection in data.projections" 
+              :key="projection.metric"
+              class="projection-item"
+            >
+              <div class="projection-metric">{{ projection.metric }}</div>
+              <div class="projection-value">{{ projection.value }} {{ projection.currency }}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -81,6 +99,46 @@ defineEmits<Emits>();
 .metric-value {
   font-size: 1.5rem;
   font-weight: 700;
+  color: #1e293b;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+.projections-section {
+  margin-top: 1.5rem;
+  background: rgba(248, 250, 252, 0.5);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.projections-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.projection-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 6px;
+}
+
+.projection-metric {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.projection-value {
+  font-size: 0.875rem;
+  font-weight: 600;
   color: #1e293b;
 }
 </style>

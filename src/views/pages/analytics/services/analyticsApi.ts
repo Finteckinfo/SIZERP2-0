@@ -148,13 +148,13 @@ export const analyticsApi = {
   },
 
   // 4. Financial Overview
-  getFinancialOverview: async (params: { projectId?: string; dateRange: string; currency?: string }) => {
+  getFinancialOverview: async (params: { projectId: string; dateRange?: '7d' | '30d' | '90d' | '1y'; currency?: string }) => {
     const response = await api.get('/analytics/financial/overview', { params });
     return response.data;
   },
 
   // 5. Timeline Analysis
-  getTimelineAnalysis: async (params: { projectId?: string; dateRange: string }) => {
+  getTimelineAnalysis: async (params: { projectId: string; dateRange?: '7d' | '30d' | '90d' | '1y' }) => {
     const response = await api.get('/analytics/timeline/analysis', { params });
     return response.data;
   },
@@ -196,7 +196,7 @@ export const analyticsApi = {
   },
 
   // 12. Live Dashboard
-  getLiveDashboard: async (params: { userId: string; projectIds?: string[] }) => {
+  getLiveDashboard: async (params: { projectIds?: string[] }) => {
     const response = await api.get('/analytics/live/dashboard', { params });
     return response.data;
   },
