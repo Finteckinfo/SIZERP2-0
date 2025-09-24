@@ -95,12 +95,103 @@
         <v-window v-model="activeTab" class="analytics-window">
           <!-- Overview Tab -->
           <v-window-item value="overview">
-            <AnalyticsTab
-              :sections="overviewSections"
-              :global-filters="globalFilters"
-              @section-toggle="onSectionToggle"
-              @refresh-section="onRefreshSection"
-            />
+            <div class="tab-content">
+              <!-- Dashboard Overview -->
+              <div class="section-container">
+                <div class="section-header" @click="toggleSection('dashboard-overview')">
+                  <div class="section-title-group">
+                    <div class="section-title">
+                      <v-icon icon="mdi-view-dashboard" size="20" class="me-3" color="primary" />
+                      <span class="title-text">Dashboard Overview</span>
+                      <v-chip color="error" size="x-small" variant="tonal" class="ms-2">high</v-chip>
+                    </div>
+                    <div class="section-description">Key performance indicators and summary metrics</div>
+                  </div>
+                  <div class="section-actions">
+                    <v-btn icon variant="text" size="small" @click.stop="props.loadOverview" :loading="props.loading.overview">
+                      <v-icon size="16">mdi-refresh</v-icon>
+                    </v-btn>
+                    <v-btn icon variant="text" size="small">
+                      <v-icon size="16">{{ isSectionOpen('dashboard-overview') ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                    </v-btn>
+                  </div>
+                </div>
+                <v-expand-transition>
+                  <div v-if="isSectionOpen('dashboard-overview')" class="section-content">
+                    <AnalyticsOverview 
+                      v-if="!props.loading.overview"
+                      :data="props.overviewData"
+                      @refresh="props.loadOverview"
+                    />
+                    <AnalyticsSkeleton v-else type="overview" />
+                  </div>
+                </v-expand-transition>
+              </div>
+
+              <!-- All Projects Performance -->
+              <div class="section-container">
+                <div class="section-header" @click="toggleSection('all-projects-performance')">
+                  <div class="section-title-group">
+                    <div class="section-title">
+                      <v-icon icon="mdi-folder-multiple" size="20" class="me-3" color="success" />
+                      <span class="title-text">All Projects Performance</span>
+                      <v-chip color="error" size="x-small" variant="tonal" class="ms-2">high</v-chip>
+                    </div>
+                    <div class="section-description">Aggregated performance metrics across all projects</div>
+                  </div>
+                  <div class="section-actions">
+                    <v-btn icon variant="text" size="small" @click.stop="props.loadPerformance" :loading="props.loading.performance">
+                      <v-icon size="16">mdi-refresh</v-icon>
+                    </v-btn>
+                    <v-btn icon variant="text" size="small">
+                      <v-icon size="16">{{ isSectionOpen('all-projects-performance') ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                    </v-btn>
+                  </div>
+                </div>
+                <v-expand-transition>
+                  <div v-if="isSectionOpen('all-projects-performance')" class="section-content">
+                    <ProjectPerformance 
+                      v-if="!props.loading.performance"
+                      :data="props.performanceData"
+                      @refresh="props.loadPerformance"
+                    />
+                    <AnalyticsSkeleton v-else type="widget" />
+                  </div>
+                </v-expand-transition>
+              </div>
+
+              <!-- Live Snapshot -->
+              <div class="section-container">
+                <div class="section-header" @click="toggleSection('live-snapshot')">
+                  <div class="section-title-group">
+                    <div class="section-title">
+                      <v-icon icon="mdi-pulse" size="20" class="me-3" color="info" />
+                      <span class="title-text">Live Snapshot</span>
+                      <v-chip color="warning" size="x-small" variant="tonal" class="ms-2">medium</v-chip>
+                    </div>
+                    <div class="section-description">Real-time project status and active tasks</div>
+                  </div>
+                  <div class="section-actions">
+                    <v-btn icon variant="text" size="small" @click.stop="props.loadLive" :loading="props.loading.live">
+                      <v-icon size="16">mdi-refresh</v-icon>
+                    </v-btn>
+                    <v-btn icon variant="text" size="small">
+                      <v-icon size="16">{{ isSectionOpen('live-snapshot') ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                    </v-btn>
+                  </div>
+                </div>
+                <v-expand-transition>
+                  <div v-if="isSectionOpen('live-snapshot')" class="section-content">
+                    <LiveDashboard 
+                      v-if="!props.loading.live"
+                      :data="props.liveData"
+                      @refresh="props.loadLive"
+                    />
+                    <AnalyticsSkeleton v-else type="widget" />
+                  </div>
+                </v-expand-transition>
+              </div>
+            </div>
           </v-window-item>
 
           <!-- Projects Tab -->
@@ -189,11 +280,92 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, inject } from 'vue';
 import { useUser } from '@clerk/vue';
-import AnalyticsTab from './AnalyticsTab.vue';
+
+// Import all analytics components
+import AnalyticsOverview from './components/AnalyticsOverview.vue';
+import ProjectPerformance from './components/ProjectPerformance.vue';
+import TeamAnalytics from './components/TeamAnalytics.vue';
+import FinancialOverview from './components/FinancialOverview.vue';
+import TimelineAnalysis from './components/TimelineAnalysis.vue';
+import DepartmentEfficiency from './components/DepartmentEfficiency.vue';
+import ResourceUtilization from './components/ResourceUtilization.vue';
+import WorkloadDistribution from './components/WorkloadDistribution.vue';
+import TrendsAnalysis from './components/TrendsAnalysis.vue';
+import PredictionsForecast from './components/PredictionsForecast.vue';
+import BenchmarksComparison from './components/BenchmarksComparison.vue';
+import QualityMetrics from './components/QualityMetrics.vue';
+import UserPerformance from './components/UserPerformance.vue';
+import UserDashboard from './components/UserDashboard.vue';
+import ActivityFeed from './components/ActivityFeed.vue';
+import AlertsPanel from './components/AlertsPanel.vue';
+import CustomReports from './components/CustomReports.vue';
+import AnalyticsSettings from './components/AnalyticsSettings.vue';
+import WidgetConfiguration from './components/WidgetConfiguration.vue';
+import CacheStatus from './components/CacheStatus.vue';
+import DataFreshness from './components/DataFreshness.vue';
+import LiveDashboard from './components/LiveDashboard.vue';
+import BottlenecksAnalysis from './components/BottlenecksAnalysis.vue';
+import CollaborationMetrics from './components/CollaborationMetrics.vue';
+import AnalyticsSkeleton from './components/AnalyticsSkeleton.vue';
 
 const { user } = useUser();
+
+// Props from parent component
+const props = defineProps<{
+  overviewData: any;
+  performanceData: any;
+  teamData: any;
+  financialData: any;
+  timelineData: any;
+  departmentData: any;
+  resourceData: any;
+  workloadData: any;
+  trendsData: any;
+  predictionsData: any;
+  benchmarksData: any;
+  liveData: any;
+  activityData: any;
+  alertsData: any;
+  userPerformanceData: any;
+  userDashboardData: any;
+  bottlenecksData: any;
+  qualityData: any;
+  collaborationData: any;
+  customReportData: any;
+  configSettingsData: any;
+  widgetConfigData: any;
+  cacheStatusData: any;
+  dataFreshnessData: any;
+  loading: any;
+  loadOverview: () => void;
+  loadPerformance: () => void;
+  loadTeam: () => void;
+  loadFinancial: () => void;
+  loadTimeline: () => void;
+  loadDepartments: () => void;
+  loadResources: () => void;
+  loadWorkload: () => void;
+  loadTrends: () => void;
+  loadPredictions: () => void;
+  loadBenchmarks: () => void;
+  loadLive: () => void;
+  loadActivity: () => void;
+  loadAlerts: () => void;
+  loadUserPerformance: () => void;
+  loadUserDashboard: () => void;
+  loadBottlenecks: () => void;
+  loadQuality: () => void;
+  loadCollaboration: () => void;
+  loadCustomReport: () => void;
+  handleExportReport: (data: any) => void;
+  handleShareDashboard: (data: any) => void;
+  loadConfigSettings: () => void;
+  loadWidgetConfig: () => void;
+  loadCacheStatus: () => void;
+  loadDataFreshness: () => void;
+}>();
 
 // Global filters
 const globalFilters = ref({
@@ -236,6 +408,22 @@ const tabs = [
 // Active tab
 const activeTab = ref('overview');
 const isRefreshing = ref(false);
+
+// Section states
+const sectionStates = ref<Record<string, boolean>>({
+  'dashboard-overview': true,
+  'all-projects-performance': true,
+  'live-snapshot': false
+});
+
+// Section management
+const isSectionOpen = (sectionId: string): boolean => {
+  return sectionStates.value[sectionId] ?? false;
+};
+
+const toggleSection = (sectionId: string) => {
+  sectionStates.value[sectionId] = !sectionStates.value[sectionId];
+};
 
 // Section configurations for each tab
 const overviewSections = [
