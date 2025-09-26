@@ -18,7 +18,8 @@ const MainRoutes = {
     { name: 'Colors', path: '/utils/colors', component: () => import('@/views/utilities/colors/ColorPage.vue') },
     { name: 'TaskCalendar', path: '/tasks/calendar', component: () => import('@/views/pages/tasks/taskCalender.vue') },
     { name: 'KanbanBoard', path: '/kanban', component: () => import('@/views/pages/kanban/KanbanBoard.vue') },
-    { name: 'Analytics', path: '/analytics', component: () => import('@/views/pages/analytics/index.vue') }
+    { name: 'Analytics', path: '/analytics', component: () => import('@/views/pages/analytics/index.vue') },
+    { name: 'Settings', path: '/settings', component: () => import('@/views/pages/settings/index.vue') }
   ]
 };
 

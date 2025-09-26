@@ -92,17 +92,12 @@ const sidebarItem: menu[] = [
     icon: FileTextIcon,
     to: ''
   },
-  {
-    title: 'Performance Metrics',
-    icon: ChartBarIcon,
-    to: ''
-  },
   { divider: true },
   { header: 'System' },
   {
     title: 'Settings',
     icon: SettingsIcon,
-    to: ''
+    to: '/settings'
   },
   {
     title: 'Help & Support',
