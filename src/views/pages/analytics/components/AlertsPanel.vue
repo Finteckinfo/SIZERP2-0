@@ -14,7 +14,11 @@
       </div>
       
       <div class="widget-content">
-        <div class="alerts-list">
+        <div v-if="!hasData" class="empty-state text-center py-6">
+          <v-icon size="28" color="grey" icon="mdi-database-off" />
+          <div class="mt-2 text-body-2 text-medium-emphasis">No data available</div>
+        </div>
+        <div v-else class="alerts-list">
           <div 
             v-for="alert in data?.alerts?.slice(0, 6)" 
             :key="alert.id"
@@ -79,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 interface Props {
   data: any;
@@ -140,6 +144,10 @@ const dismissAlert = (alertId: string) => {
   // In a real app, you'd call an API to dismiss the alert
   console.log('Alert dismissed:', alertId);
 };
+
+const hasData = computed(() => {
+  return Array.isArray(props.data?.alerts) ? props.data.alerts.length > 0 : false;
+});
 </script>
 
 <style scoped>

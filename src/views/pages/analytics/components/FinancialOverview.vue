@@ -1,6 +1,11 @@
 <template>
   <v-card class="financial-overview" elevation="0">
-    <v-card-text class="pa-6">
+  <v-card-text class="pa-6">
+    <div v-if="!hasData" class="empty-state text-center py-6">
+      <v-icon size="28" color="grey" icon="mdi-database-off" />
+      <div class="mt-2 text-body-2 text-medium-emphasis">No data available</div>
+    </div>
+    <template v-else>
       <div class="widget-header">
         <h3 class="text-h5 font-weight-medium">Financial Overview</h3>
         <v-btn icon variant="text" size="small" @click="$emit('refresh')">
@@ -42,11 +47,14 @@
           </div>
         </div>
       </div>
-    </v-card-text>
+    </template>
+  </v-card-text>
   </v-card>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+
 interface Props {
   data: any;
 }
@@ -55,11 +63,23 @@ interface Emits {
   (e: 'refresh'): void;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 defineEmits<Emits>();
+
+const hasData = computed(() => {
+  const p: any = props.data || {};
+  return (
+    (Array.isArray(p.projections) && p.projections.length > 0) ||
+    typeof p.budgetUtilization === 'number' ||
+    typeof p.costPerTask === 'number' ||
+    typeof p.roi === 'number' ||
+    typeof p.profitMargins === 'number'
+  );
+});
 </script>
 
 <style scoped>
+.empty-state { border: 1px dashed rgba(0,0,0,0.08); border-radius: 8px; }
 .financial-overview {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);

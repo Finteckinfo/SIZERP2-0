@@ -8,7 +8,11 @@
         </v-btn>
       </div>
       
-      <div class="widget-content">
+      <div v-if="!hasData" class="empty-state text-center py-6">
+        <v-icon size="28" color="grey" icon="mdi-database-off" />
+        <div class="mt-2 text-body-2 text-medium-emphasis">No data available</div>
+      </div>
+      <div v-else class="widget-content">
         <div class="performance-metrics">
           <div class="metric-item">
             <div class="metric-label">Health Score</div>
@@ -59,6 +63,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+
 interface Props {
   data: any;
 }
@@ -89,9 +95,20 @@ const getRiskIcon = (severity: string) => {
   };
   return icons[severity] || 'mdi-information';
 };
+
+const hasData = computed(() => {
+  const m = props.data?.metrics || {};
+  return (
+    typeof m.averageHealthScore === 'number' ||
+    typeof m.totalCompletionRate === 'number' ||
+    typeof m.averageTimelineProgress === 'number' ||
+    (Array.isArray(m.commonRisks) && m.commonRisks.length > 0)
+  );
+});
 </script>
 
 <style scoped>
+.empty-state { border: 1px dashed rgba(0,0,0,0.08); border-radius: 8px; }
 .project-performance {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);

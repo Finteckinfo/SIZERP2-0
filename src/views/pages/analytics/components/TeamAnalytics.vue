@@ -8,7 +8,11 @@
         </v-btn>
       </div>
       
-      <div class="widget-content">
+      <div v-if="!hasData" class="empty-state text-center py-6">
+        <v-icon size="28" color="grey" icon="mdi-database-off" />
+        <div class="mt-2 text-body-2 text-medium-emphasis">No data available</div>
+      </div>
+      <div v-else class="widget-content">
         <div class="team-overview">
           <div class="overview-item">
             <div class="overview-label">Team Members</div>
@@ -76,9 +80,15 @@ const getAverageProductivity = () => {
 const getInitials = (userId: string) => {
   return userId.substring(0, 2).toUpperCase();
 };
+
+const hasData = computed(() => {
+  const members = props.data?.members || [];
+  return members.length > 0;
+});
 </script>
 
 <style scoped>
+.empty-state { border: 1px dashed rgba(0,0,0,0.08); border-radius: 8px; }
 .team-analytics {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
