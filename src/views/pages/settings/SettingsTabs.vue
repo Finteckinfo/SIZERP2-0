@@ -32,7 +32,10 @@
             <div class="tab-content pa-4">
               <div class="mb-3 text-body-2 text-medium-emphasis">Manage your Clerk profile, security, and connected accounts.</div>
               <div class="profile-wrapper">
-                <UserProfile routing="hash" />
+                <UserProfile
+                  routing="hash"
+                  :appearance="clerkAppearance"
+                />
               </div>
             </div>
           </v-window-item>
@@ -164,6 +167,31 @@ const savePrefs = () => {
     localStorage.setItem(saveKey, JSON.stringify(prefs.value));
   } catch {}
 };
+
+// Tame Clerk layout so it doesn't overflow the card
+const clerkAppearance = {
+  variables: {
+    colorBackground: 'transparent'
+  },
+  elements: {
+    rootBox: {
+      width: '100%'
+    },
+    card: {
+      width: '100%',
+      maxWidth: '920px',
+      margin: '0 auto',
+      boxShadow: 'none',
+      background: 'transparent'
+    },
+    headerTitle: {
+      fontSize: '20px'
+    },
+    scrollBox: {
+      maxWidth: '100%'
+    }
+  }
+} as any;
 </script>
 
 <style scoped>
@@ -178,6 +206,22 @@ const savePrefs = () => {
 .profile-wrapper :deep(*) {
   /* Allow Clerk profile to expand nicely */
   width: 100%;
+}
+
+.profile-wrapper {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+/* Ensure large provider icons or images don't overflow */
+.profile-wrapper :deep(img) {
+  max-width: 100%;
+  height: auto;
+}
+
+.profile-wrapper :deep(.cl-socialButtonsIcon) {
+  width: 24px;
+  height: 24px;
 }
 
 .preference-card {
