@@ -378,9 +378,10 @@ onMounted(() => {
 .kanban-columns {
   flex: 1;
   overflow: hidden;
-  padding: 2rem 3rem;
+  padding: 2rem 0;
   position: relative;
   z-index: 5;
+  width: 100%;
 }
 
 .columns-container {
@@ -389,9 +390,40 @@ onMounted(() => {
   height: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-  padding-bottom: 2rem;
+  padding: 0 2rem 2rem 2rem;
   min-height: calc(100vh - 300px);
   align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+  /* Ensure proper horizontal scrolling */
+  scroll-behavior: smooth;
+  /* Add padding to ensure first and last columns are fully visible */
+  padding-left: 2rem;
+  padding-right: 2rem;
+  /* Add scroll indicators */
+  position: relative;
+}
+
+/* Scroll indicators */
+.columns-container::before,
+.columns-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.columns-container::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(248, 250, 252, 0.9), transparent);
+}
+
+.columns-container::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(248, 250, 252, 0.9), transparent);
 }
 
 .loading-container {
@@ -442,12 +474,12 @@ onMounted(() => {
   }
   
   .kanban-columns {
-    padding: 0.5rem;
+    padding: 0.5rem 0;
   }
   
   .columns-container {
     gap: 0.75rem;
-    padding-bottom: 0.5rem;
+    padding: 0 1rem 0.5rem 1rem;
   }
   
   .analytics-fab {
@@ -484,11 +516,12 @@ onMounted(() => {
   }
   
   .kanban-columns {
-    padding: 0.25rem;
+    padding: 0.25rem 0;
   }
   
   .columns-container {
     gap: 0.5rem;
+    padding: 0 0.75rem 0.25rem 0.75rem;
   }
   
   .analytics-fab {
@@ -506,14 +539,15 @@ onMounted(() => {
   }
   
   .kanban-columns {
-    padding: 2.5rem 4rem;
+    padding: 2.5rem 0;
   }
   
   .columns-container {
     gap: 2.5rem;
-    justify-content: center;
+    justify-content: flex-start;
     max-width: 1800px;
     margin: 0 auto;
+    padding: 0 3rem 2rem 3rem;
   }
   
   .board-title {
@@ -531,6 +565,7 @@ onMounted(() => {
   .columns-container {
     gap: 3rem;
     max-width: 2000px;
+    padding: 0 4rem 2rem 4rem;
   }
   
   .kanban-header {
@@ -538,7 +573,7 @@ onMounted(() => {
   }
   
   .kanban-columns {
-    padding: 3rem 5rem;
+    padding: 3rem 0;
   }
   
   .board-title {

@@ -296,6 +296,10 @@ const handleDrop = (event: DragEvent) => {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
+  /* Ensure columns maintain their size and don't compress */
+  flex-grow: 0;
+  flex-basis: 380px;
 }
 
 .kanban-column::before {
@@ -445,6 +449,9 @@ const handleDrop = (event: DragEvent) => {
     width: 300px;
     min-width: 300px;
     max-width: 300px;
+    flex-shrink: 0;
+    flex-grow: 0;
+    flex-basis: 300px;
   }
   
   .column-header {
@@ -470,6 +477,9 @@ const handleDrop = (event: DragEvent) => {
     width: 280px;
     min-width: 280px;
     max-width: 280px;
+    flex-shrink: 0;
+    flex-grow: 0;
+    flex-basis: 280px;
   }
   
   .column-header {
@@ -505,6 +515,9 @@ const handleDrop = (event: DragEvent) => {
     width: 420px;
     min-width: 420px;
     max-width: 420px;
+    flex-shrink: 0;
+    flex-grow: 0;
+    flex-basis: 420px;
   }
   
   .column-header {
@@ -529,6 +542,9 @@ const handleDrop = (event: DragEvent) => {
     width: 480px;
     min-width: 480px;
     max-width: 480px;
+    flex-shrink: 0;
+    flex-grow: 0;
+    flex-basis: 480px;
   }
   
   .column-header {
