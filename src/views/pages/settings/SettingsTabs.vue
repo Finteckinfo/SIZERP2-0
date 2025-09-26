@@ -128,7 +128,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { useTheme } from 'vuetify';
 import { UserProfile } from '@clerk/vue';
 
 const activeTab = ref('account');
@@ -160,6 +161,12 @@ onMounted(() => {
       prefs.value = { ...prefs.value, ...parsed };
     }
   } catch {}
+  applyTheme();
+  // React to OS theme changes when set to system
+  try {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    mq.addEventListener?.('change', () => prefs.value.theme === 'system' && applyTheme());
+  } catch {}
 });
 
 const savePrefs = () => {
@@ -167,6 +174,30 @@ const savePrefs = () => {
     localStorage.setItem(saveKey, JSON.stringify(prefs.value));
   } catch {}
 };
+
+// Theme application
+const theme = useTheme();
+const setVuetifyTheme = (mode: 'light' | 'dark') => {
+  try {
+    theme.global.name.value = mode; // expects themes named 'light' and 'dark'
+    document.documentElement.dataset.theme = mode;
+  } catch {
+    document.documentElement.dataset.theme = mode;
+  }
+};
+
+const applyTheme = () => {
+  if (prefs.value.theme === 'light') return setVuetifyTheme('light');
+  if (prefs.value.theme === 'dark') return setVuetifyTheme('dark');
+  // system
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return setVuetifyTheme(prefersDark ? 'dark' : 'light');
+};
+
+watch(() => prefs.value.theme, () => {
+  applyTheme();
+  savePrefs();
+});
 
 // Tame Clerk layout so it doesn't overflow the card
 const clerkAppearance = {

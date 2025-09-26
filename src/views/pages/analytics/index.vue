@@ -736,6 +736,6 @@ defineExpose({
 <style scoped>
 .analytics-page {
   min-height: 100vh;
-  background: transparent;
+  background: var(--v-theme-background);
 }
 </style>

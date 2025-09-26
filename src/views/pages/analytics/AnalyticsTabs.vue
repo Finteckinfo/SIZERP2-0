@@ -724,7 +724,7 @@ onMounted(() => {
   flex-direction: column;
   gap: 1rem;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--v-theme-background);
   min-height: 100vh;
 }
 
@@ -735,10 +735,9 @@ onMounted(() => {
 }
 
 .filter-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+  background: var(--v-theme-surface);
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 .filters-row {
@@ -757,16 +756,15 @@ onMounted(() => {
 }
 
 .tabs-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+  background: var(--v-theme-surface);
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }
 
 .analytics-tabs-nav {
-  background: rgba(248, 250, 252, 0.5);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+  background: var(--v-theme-surface-variant);
+  border-bottom: 1px solid color-mix(in srgb, var(--v-theme-outline) 40%, transparent);
 }
 
 .tab-item {
@@ -776,7 +774,65 @@ onMounted(() => {
 }
 
 .tab-content {
-  background: rgba(248, 250, 252, 0.3);
+  background: color-mix(in srgb, var(--v-theme-surface) 30%, transparent);
+}
+
+/* Theming sweep: normalize analytics component surfaces to theme tokens */
+:deep(.section-content .v-card) {
+  background: var(--v-theme-surface);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+}
+
+/* Common container classes across analytics widgets */
+:deep(.project-performance),
+:deep(.team-analytics),
+:deep(.alerts-panel),
+:deep(.live-dashboard),
+:deep(.financial-overview),
+:deep(.timeline-analysis),
+:deep(.department-efficiency),
+:deep(.resource-utilization),
+:deep(.workload-distribution),
+:deep(.trends-analysis),
+:deep(.predictions-forecast),
+:deep(.benchmarks-comparison),
+:deep(.quality-metrics),
+:deep(.user-performance),
+:deep(.user-dashboard),
+:deep(.custom-reports),
+:deep(.analytics-settings),
+:deep(.widget-configuration),
+:deep(.cache-status),
+:deep(.data-freshness) {
+  background: var(--v-theme-surface);
+}
+
+/* Light panels within widgets
+   Replace translucent whites with surface variants and outline tokens */
+:deep(.widget-content),
+:deep(.performance-scores),
+:deep(.quick-insights),
+:deep(.projections-section),
+:deep(.status-section),
+:deep(.alerts-section),
+:deep(.system-health) {
+  background: color-mix(in srgb, var(--v-theme-surface) 60%, transparent);
+  border-radius: 12px;
+}
+
+/* Cards/lists inside widgets */
+:deep(.stat-card),
+:deep(.metric-item),
+:deep(.member-item),
+:deep(.risk-item),
+:deep(.no-risks),
+:deep(.projection-item),
+:deep(.status-item),
+:deep(.alert-item),
+:deep(.health-item) {
+  background: var(--v-theme-surface-variant);
+  border: 1px solid color-mix(in srgb, var(--v-theme-outline) 40%, transparent);
 }
 
 .analytics-window {

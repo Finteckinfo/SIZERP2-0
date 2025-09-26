@@ -279,8 +279,7 @@ const hasData = computed(() => {
   border-radius: 8px;
 }
 .analytics-overview {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
+  background: var(--v-theme-surface);
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -301,9 +300,9 @@ const hasData = computed(() => {
   align-items: center;
   gap: 1rem;
   padding: 1.5rem;
-  background: rgba(248, 250, 252, 0.8);
+  background: var(--v-theme-surface-variant);
   border-radius: 12px;
-  border: 1px solid rgba(226, 232, 240, 0.5);
+  border: 1px solid color-mix(in srgb, var(--v-theme-outline) 50%, transparent);
   transition: all 0.3s ease;
 }
 
@@ -355,7 +354,7 @@ const hasData = computed(() => {
 }
 
 .performance-scores {
-  background: rgba(248, 250, 252, 0.5);
+  background: color-mix(in srgb, var(--v-theme-surface) 60%, transparent);
   border-radius: 12px;
   padding: 1.5rem;
 }
@@ -394,7 +393,7 @@ const hasData = computed(() => {
 }
 
 .quick-insights {
-  background: rgba(248, 250, 252, 0.5);
+  background: color-mix(in srgb, var(--v-theme-surface) 60%, transparent);
   border-radius: 12px;
   padding: 1.5rem;
 }
