@@ -48,11 +48,11 @@
             
             <div v-if="data.meta" class="report-stats">
               <div class="stat-item">
-                <v-icon color="primary" size="16" class="me-1">mdi-database</v-icon>
+              <v-icon color="primary" size="16" class="me-1" icon="mdi-database" />
                 <span>{{ data.meta.rows || 'N/A' }} rows</span>
               </div>
               <div v-if="data.meta.generatedAt" class="stat-item">
-                <v-icon color="success" size="16" class="me-1">mdi-clock-check</v-icon>
+              <v-icon color="success" size="16" class="me-1" icon="mdi-clock-check" />
                 <span>{{ formatDate(data.meta.generatedAt) }}</span>
               </div>
             </div>
@@ -116,14 +116,14 @@
           <div v-if="data.meta?.notes" class="notes-section">
             <h4 class="section-title">Notes</h4>
             <div class="notes-content">
-              <v-icon color="info" size="16" class="me-2">mdi-information</v-icon>
+            <v-icon color="info" size="16" class="me-2" icon="mdi-information" />
               <span>{{ data.meta.notes }}</span>
             </div>
           </div>
 
           <!-- Empty State -->
           <div v-if="!data.data && !data.meta?.notes" class="empty-state">
-            <v-icon size="48" color="grey">mdi-file-document-outline</v-icon>
+            <v-icon size="48" color="grey" icon="mdi-file-document-outline" />
             <p class="text-body-2 text-medium-emphasis">No report data available</p>
             <p class="text-caption text-medium-emphasis">Report data will appear here once generated</p>
           </div>

@@ -24,7 +24,7 @@
               size="small"
               @click="$emit('refresh')"
             >
-              <v-icon>mdi-refresh</v-icon>
+              <v-icon icon="mdi-refresh" />
             </v-btn>
           </div>
         </div>
@@ -36,14 +36,14 @@
           <div class="stat-card">
             <div class="stat-icon">
               <v-avatar size="48" color="primary" class="text-white">
-                <v-icon>mdi-folder-multiple</v-icon>
+                <v-icon icon="mdi-folder-multiple" />
               </v-avatar>
             </div>
             <div class="stat-content">
               <div class="stat-value">{{ data?.totals?.totalProjects || 0 }}</div>
               <div class="stat-label">Total Projects</div>
               <div class="stat-change positive">
-                <v-icon size="16" color="success">mdi-trending-up</v-icon>
+                <v-icon size="16" color="success" icon="mdi-trending-up" />
                 <span>+12%</span>
               </div>
             </div>
@@ -54,14 +54,14 @@
           <div class="stat-card">
             <div class="stat-icon">
               <v-avatar size="48" color="success" class="text-white">
-                <v-icon>mdi-play-circle</v-icon>
+                <v-icon icon="mdi-play-circle" />
               </v-avatar>
             </div>
             <div class="stat-content">
               <div class="stat-value">{{ data?.totals?.activeProjects || 0 }}</div>
               <div class="stat-label">Active Projects</div>
               <div class="stat-change positive">
-                <v-icon size="16" color="success">mdi-trending-up</v-icon>
+                <v-icon size="16" color="success" icon="mdi-trending-up" />
                 <span>+8%</span>
               </div>
             </div>
@@ -72,14 +72,14 @@
           <div class="stat-card">
             <div class="stat-icon">
               <v-avatar size="48" color="info" class="text-white">
-                <v-icon>mdi-check-circle</v-icon>
+                <v-icon icon="mdi-check-circle" />
               </v-avatar>
             </div>
             <div class="stat-content">
               <div class="stat-value">{{ data?.totals?.completedTasks || 0 }}</div>
               <div class="stat-label">Completed Tasks</div>
               <div class="stat-change positive">
-                <v-icon size="16" color="success">mdi-trending-up</v-icon>
+                <v-icon size="16" color="success" icon="mdi-trending-up" />
                 <span>+15%</span>
               </div>
             </div>
@@ -90,14 +90,14 @@
           <div class="stat-card">
             <div class="stat-icon">
               <v-avatar size="48" color="warning" class="text-white">
-                <v-icon>mdi-account-group</v-icon>
+                <v-icon icon="mdi-account-group" />
               </v-avatar>
             </div>
             <div class="stat-content">
               <div class="stat-value">{{ data?.totals?.teamMembers || 0 }}</div>
               <div class="stat-label">Team Members</div>
               <div class="stat-change neutral">
-                <v-icon size="16" color="grey">mdi-minus</v-icon>
+                <v-icon size="16" color="grey" icon="mdi-minus" />
                 <span>0%</span>
               </div>
             </div>
@@ -112,7 +112,7 @@
           <v-col cols="12" md="4">
             <div class="score-card">
               <div class="score-header">
-                <v-icon color="primary" class="mr-2">mdi-speedometer</v-icon>
+                <v-icon color="primary" class="mr-2" icon="mdi-speedometer" />
                 <span class="score-title">Productivity</span>
               </div>
               <div class="score-value">{{ data?.scores?.productivity || 0 }}%</div>
@@ -132,7 +132,7 @@
           <v-col cols="12" md="4">
             <div class="score-card">
               <div class="score-header">
-                <v-icon color="success" class="mr-2">mdi-cash</v-icon>
+                <v-icon color="success" class="mr-2" icon="mdi-cash" />
                 <span class="score-title">Budget Utilization</span>
               </div>
               <div class="score-value">{{ data?.scores?.budgetUtilization || 0 }}%</div>
@@ -152,7 +152,7 @@
           <v-col cols="12" md="4">
             <div class="score-card">
               <div class="score-header">
-                <v-icon color="info" class="mr-2">mdi-clock</v-icon>
+                <v-icon color="info" class="mr-2" icon="mdi-clock" />
                 <span class="score-title">Timeline Adherence</span>
               </div>
               <div class="score-value">{{ data?.scores?.timelineAdherence || 0 }}%</div>
@@ -183,7 +183,7 @@
               class="insight-card"
             >
               <template #prepend>
-                <v-icon>mdi-trending-up</v-icon>
+                <v-icon icon="mdi-trending-up" />
               </template>
               <div class="insight-content">
                 <div class="insight-title">Productivity Up</div>
@@ -202,7 +202,7 @@
               class="insight-card"
             >
               <template #prepend>
-                <v-icon>mdi-clock-fast</v-icon>
+                <v-icon icon="mdi-clock-fast" />
               </template>
               <div class="insight-content">
                 <div class="insight-title">Faster Delivery</div>

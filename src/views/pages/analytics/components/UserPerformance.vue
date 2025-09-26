@@ -19,7 +19,7 @@
           <div class="metrics-grid">
             <div class="metric-card">
               <div class="metric-icon">
-                <v-icon color="primary" size="24">mdi-chart-line</v-icon>
+                <v-icon color="primary" size="24" icon="mdi-chart-line" />
               </div>
               <div class="metric-content">
                 <div class="metric-value">{{ data.performance.throughputPerDay.toFixed(1) }}</div>
@@ -29,7 +29,7 @@
             
             <div class="metric-card">
               <div class="metric-icon">
-                <v-icon color="success" size="24">mdi-check-circle</v-icon>
+                <v-icon color="success" size="24" icon="mdi-check-circle" />
               </div>
               <div class="metric-content">
                 <div class="metric-value">{{ data.performance.completionRate }}%</div>
@@ -39,7 +39,7 @@
             
             <div class="metric-card">
               <div class="metric-icon">
-                <v-icon color="warning" size="24">mdi-clock-check</v-icon>
+                <v-icon color="warning" size="24" icon="mdi-clock-check" />
               </div>
               <div class="metric-content">
                 <div class="metric-value">{{ data.performance.onTimeRate }}%</div>
@@ -49,7 +49,7 @@
             
             <div class="metric-card">
               <div class="metric-icon">
-                <v-icon color="info" size="24">mdi-timer</v-icon>
+                <v-icon color="info" size="24" icon="mdi-timer" />
               </div>
               <div class="metric-content">
                 <div class="metric-value">{{ data.performance.averageCycleTimeDays ? data.performance.averageCycleTimeDays.toFixed(1) : 'N/A' }}</div>
@@ -110,7 +110,7 @@
                 :key="achievement.id"
                 class="achievement-item"
               >
-                <v-icon color="warning" size="20">mdi-trophy</v-icon>
+                <v-icon color="warning" size="20" icon="mdi-trophy" />
                 <div class="achievement-content">
                   <div class="achievement-title">{{ achievement.title }}</div>
                   <div class="achievement-date">{{ formatDate(achievement.earnedAt) }}</div>
@@ -121,7 +121,7 @@
 
           <!-- Empty State -->
           <div v-if="!data.goals?.active?.length && !data.achievements?.length" class="empty-state">
-            <v-icon size="48" color="grey">mdi-account-star</v-icon>
+            <v-icon size="48" color="grey" icon="mdi-account-star" />
             <p class="text-body-2 text-medium-emphasis">No goals or achievements yet</p>
           </div>
         </div>

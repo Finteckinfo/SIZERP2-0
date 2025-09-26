@@ -56,7 +56,7 @@
           </div>
           
           <div v-if="!data?.activities?.length" class="no-activities">
-            <v-icon size="48" color="grey">mdi-history</v-icon>
+            <v-icon size="48" color="grey" icon="mdi-history" />
             <p class="text-body-2 text-medium-emphasis">No recent activities</p>
           </div>
         </div>

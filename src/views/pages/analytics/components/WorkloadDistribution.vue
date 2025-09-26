@@ -4,7 +4,7 @@
       <div class="widget-header">
         <h3 class="text-h5 font-weight-medium">Workload Distribution</h3>
         <v-btn icon variant="text" size="small" @click="$emit('refresh')">
-          <v-icon>mdi-refresh</v-icon>
+          <v-icon icon="mdi-refresh" />
         </v-btn>
       </div>
       
@@ -71,7 +71,7 @@
               :key="balance.userId"
               class="balancing-item"
             >
-              <v-icon color="warning" size="16">mdi-scale-balance</v-icon>
+              <v-icon color="warning" size="16" icon="mdi-scale-balance" />
               <span class="balancing-text">{{ balance.recommendation }}</span>
             </div>
           </div>

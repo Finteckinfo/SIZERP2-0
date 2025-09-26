@@ -22,9 +22,7 @@
             :class="`alert-${alert.severity}`"
           >
             <div class="alert-icon">
-              <v-icon :color="getSeverityColor(alert.severity)">
-                {{ getSeverityIcon(alert.severity) }}
-              </v-icon>
+              <v-icon :color="getSeverityColor(alert.severity)" :icon="getSeverityIcon(alert.severity)" />
             </div>
             
             <div class="alert-content">
@@ -65,13 +63,13 @@
                 size="small"
                 @click="dismissAlert(alert.id)"
               >
-                <v-icon size="16">mdi-close</v-icon>
+                <v-icon size="16" icon="mdi-close" />
               </v-btn>
             </div>
           </div>
           
           <div v-if="!data?.alerts?.length" class="no-alerts">
-            <v-icon size="48" color="success">mdi-check-circle</v-icon>
+            <v-icon size="48" color="success" icon="mdi-check-circle" />
             <p class="text-body-2 text-medium-emphasis">No active alerts</p>
           </div>
         </div>

@@ -54,7 +54,7 @@
               <div v-if="data.status.size !== null" class="status-card">
                 <div class="status-header">
                   <span class="status-label">Size</span>
-                  <v-icon color="info" size="16">mdi-database</v-icon>
+                  <v-icon color="info" size="16" icon="mdi-database" />
                 </div>
                 <div class="status-value">{{ formatSize(data.status.size) }}</div>
               </div>
@@ -62,7 +62,7 @@
               <div v-if="data.status.items !== null" class="status-card">
                 <div class="status-header">
                   <span class="status-label">Items</span>
-                  <v-icon color="primary" size="16">mdi-counter</v-icon>
+                  <v-icon color="primary" size="16" icon="mdi-counter" />
                 </div>
                 <div class="status-value">{{ data.status.items.toLocaleString() }}</div>
               </div>
@@ -117,11 +117,11 @@
                 </div>
                 <div class="schedule-details">
                   <div v-if="schedule.lastRunAt" class="schedule-detail">
-                    <v-icon color="info" size="14" class="me-1">mdi-clock-outline</v-icon>
+                    <v-icon color="info" size="14" class="me-1" icon="mdi-clock-outline" />
                     <span>Last: {{ formatDate(schedule.lastRunAt) }}</span>
                   </div>
                   <div v-if="schedule.nextRunAt" class="schedule-detail">
-                    <v-icon color="success" size="14" class="me-1">mdi-clock-alert</v-icon>
+                    <v-icon color="success" size="14" class="me-1" icon="mdi-clock-alert" />
                     <span>Next: {{ formatDate(schedule.nextRunAt) }}</span>
                   </div>
                 </div>
@@ -199,7 +199,7 @@
 
           <!-- Empty State -->
           <div v-if="!data.status && !data.hitRates && !data.schedules?.length && !data.recommendations?.length && !data.perf" class="empty-state">
-            <v-icon size="48" color="grey">mdi-database-off</v-icon>
+            <v-icon size="48" color="grey" icon="mdi-database-off" />
             <p class="text-body-2 text-medium-emphasis">No cache data available</p>
             <p class="text-caption text-medium-emphasis">Cache status will appear here once configured</p>
           </div>

@@ -207,7 +207,11 @@ const loadTeam = async () => {
 };
 
 const loadFinancial = async () => {
-  if (!user.value?.id || !userProjects.value.length) return;
+  if (!user.value?.id || !userProjects.value.length) {
+    console.log('Skipping financial overview: No accessible projects');
+    loading.value.financial = false;
+    return;
+  }
   try {
     loading.value.financial = true;
     const data = await analyticsApi.getFinancialOverview({
@@ -217,13 +221,18 @@ const loadFinancial = async () => {
     financialData.value = data;
   } catch (err: any) {
     console.error('Failed to load financial:', err);
+    financialData.value = null;
   } finally {
     loading.value.financial = false;
   }
 };
 
 const loadTimeline = async () => {
-  if (!user.value?.id || !userProjects.value.length) return;
+  if (!user.value?.id || !userProjects.value.length) {
+    console.log('Skipping timeline analysis: No accessible projects');
+    loading.value.timeline = false;
+    return;
+  }
   try {
     loading.value.timeline = true;
     const data = await analyticsApi.getTimelineAnalysis({
@@ -233,13 +242,18 @@ const loadTimeline = async () => {
     timelineData.value = data;
   } catch (err: any) {
     console.error('Failed to load timeline:', err);
+    timelineData.value = null;
   } finally {
     loading.value.timeline = false;
   }
 };
 
 const loadDepartments = async () => {
-  if (!user.value?.id || !userProjects.value.length) return;
+  if (!user.value?.id || !userProjects.value.length) {
+    console.log('Skipping department efficiency: No accessible projects');
+    loading.value.departments = false;
+    return;
+  }
   try {
     loading.value.departments = true;
     const data = await analyticsApi.getDepartmentEfficiency({
@@ -249,13 +263,18 @@ const loadDepartments = async () => {
     departmentData.value = data;
   } catch (err: any) {
     console.error('Failed to load departments:', err);
+    departmentData.value = null;
   } finally {
     loading.value.departments = false;
   }
 };
 
 const loadResources = async () => {
-  if (!user.value?.id || !userProjects.value.length) return;
+  if (!user.value?.id || !userProjects.value.length) {
+    console.log('Skipping resource utilization: No accessible projects');
+    loading.value.resources = false;
+    return;
+  }
   try {
     loading.value.resources = true;
     const data = await analyticsApi.getResourceUtilization({
@@ -265,13 +284,18 @@ const loadResources = async () => {
     resourceData.value = data;
   } catch (err: any) {
     console.error('Failed to load resources:', err);
+    resourceData.value = null;
   } finally {
     loading.value.resources = false;
   }
 };
 
 const loadWorkload = async () => {
-  if (!user.value?.id || !userProjects.value.length) return;
+  if (!user.value?.id || !userProjects.value.length) {
+    console.log('Skipping workload distribution: No accessible projects');
+    loading.value.workload = false;
+    return;
+  }
   try {
     loading.value.workload = true;
     const data = await analyticsApi.getWorkloadDistribution({
@@ -281,6 +305,7 @@ const loadWorkload = async () => {
     workloadData.value = data;
   } catch (err: any) {
     console.error('Failed to load workload:', err);
+    workloadData.value = null;
   } finally {
     loading.value.workload = false;
   }
@@ -303,7 +328,11 @@ const loadTrends = async () => {
 };
 
 const loadPredictions = async () => {
-  if (!user.value?.id || !userProjects.value.length) return;
+  if (!user.value?.id || !userProjects.value.length) {
+    console.log('Skipping predictions forecast: No accessible projects');
+    loading.value.predictions = false;
+    return;
+  }
   try {
     loading.value.predictions = true;
     const data = await analyticsApi.getPredictionsForecast({
@@ -314,13 +343,18 @@ const loadPredictions = async () => {
     predictionsData.value = data;
   } catch (err: any) {
     console.error('Failed to load predictions:', err);
+    predictionsData.value = null;
   } finally {
     loading.value.predictions = false;
   }
 };
 
 const loadBenchmarks = async () => {
-  if (!user.value?.id || !userProjects.value.length) return;
+  if (!user.value?.id || !userProjects.value.length) {
+    console.log('Skipping benchmarks comparison: No accessible projects');
+    loading.value.benchmarks = false;
+    return;
+  }
   try {
     loading.value.benchmarks = true;
     const data = await analyticsApi.getBenchmarksComparison({
@@ -330,6 +364,7 @@ const loadBenchmarks = async () => {
     benchmarksData.value = data;
   } catch (err: any) {
     console.error('Failed to load benchmarks:', err);
+    benchmarksData.value = null;
   } finally {
     loading.value.benchmarks = false;
   }
@@ -412,7 +447,11 @@ const loadUserDashboard = async () => {
 };
 
 const loadBottlenecks = async () => {
-  if (!user.value?.id || !userProjects.value.length) return;
+  if (!user.value?.id || !userProjects.value.length) {
+    console.log('Skipping bottlenecks analysis: No accessible projects');
+    loading.value.bottlenecks = false;
+    return;
+  }
   try {
     loading.value.bottlenecks = true;
     const data = await analyticsApi.getBottlenecksAnalysis({
@@ -422,13 +461,18 @@ const loadBottlenecks = async () => {
     bottlenecksData.value = data;
   } catch (err: any) {
     console.error('Failed to load bottlenecks:', err);
+    bottlenecksData.value = null;
   } finally {
     loading.value.bottlenecks = false;
   }
 };
 
 const loadQuality = async () => {
-  if (!user.value?.id || !userProjects.value.length) return;
+  if (!user.value?.id || !userProjects.value.length) {
+    console.log('Skipping quality metrics: No accessible projects');
+    loading.value.quality = false;
+    return;
+  }
   try {
     loading.value.quality = true;
     const data = await analyticsApi.getQualityMetrics({
@@ -438,13 +482,18 @@ const loadQuality = async () => {
     qualityData.value = data;
   } catch (err: any) {
     console.error('Failed to load quality:', err);
+    qualityData.value = null;
   } finally {
     loading.value.quality = false;
   }
 };
 
 const loadCollaboration = async () => {
-  if (!user.value?.id || !userProjects.value.length) return;
+  if (!user.value?.id || !userProjects.value.length) {
+    console.log('Skipping collaboration metrics: No accessible projects');
+    loading.value.collaboration = false;
+    return;
+  }
   try {
     loading.value.collaboration = true;
     const data = await analyticsApi.getCollaborationMetrics({
@@ -454,6 +503,7 @@ const loadCollaboration = async () => {
     collaborationData.value = data;
   } catch (err: any) {
     console.error('Failed to load collaboration:', err);
+    collaborationData.value = null;
   } finally {
     loading.value.collaboration = false;
   }
@@ -557,14 +607,28 @@ const loadDataFreshness = async () => {
 };
 
 const loadUserProjects = async () => {
+  if (!user.value?.id) return;
   try {
-    // This would load user's accessible projects
-    // For now, using placeholder data
-    userProjects.value = [
-      { id: 'project-1', name: 'Sample Project' }
-    ];
+    // Load user's accessible projects from the backend
+    const response = await analyticsApi.getDashboardOverview({
+      userId: user.value.id,
+      dateRange: '30d'
+    });
+    
+    // Extract project IDs from the overview response
+    if (response?.filters?.projectIds) {
+      userProjects.value = response.filters.projectIds.map((id: string, index: number) => ({
+        id: id,
+        name: `Project ${index + 1}`
+      }));
+    } else {
+      // Fallback: use empty array to avoid 403 errors
+      userProjects.value = [];
+    }
   } catch (err: any) {
     console.error('Failed to load user projects:', err);
+    // Fallback: use empty array to avoid 403 errors
+    userProjects.value = [];
   }
 };
 

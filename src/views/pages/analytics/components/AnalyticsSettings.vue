@@ -195,7 +195,7 @@
 
           <!-- Empty State -->
           <div v-if="!data.preferences && !data.layouts?.length && !data.metricConfigs?.length && !data.alertSettings?.length && !data.views?.length" class="empty-state">
-            <v-icon size="48" color="grey">mdi-cog</v-icon>
+            <v-icon size="48" color="grey" icon="mdi-cog" />
             <p class="text-body-2 text-medium-emphasis">No settings configured</p>
             <p class="text-caption text-medium-emphasis">Settings will appear here once configured</p>
           </div>

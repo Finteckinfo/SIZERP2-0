@@ -53,7 +53,7 @@
                 @click="refreshCurrentTab"
                 :loading="isRefreshing"
               >
-                <v-icon size="16" class="me-1">mdi-refresh</v-icon>
+                <v-icon size="16" class="me-1" icon="mdi-refresh" />
                 Refresh
               </v-btn>
             </div>
@@ -109,7 +109,7 @@
                   </div>
                   <div class="section-actions">
                     <v-btn icon variant="text" size="small" @click.stop="props.loadOverview" :loading="props.loading.overview">
-                      <v-icon size="16">mdi-refresh</v-icon>
+                    <v-icon size="16" icon="mdi-refresh" />
                     </v-btn>
                     <v-btn icon variant="text" size="small">
                       <v-icon size="16">{{ isSectionOpen('dashboard-overview') ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
@@ -141,7 +141,7 @@
                   </div>
                   <div class="section-actions">
                     <v-btn icon variant="text" size="small" @click.stop="props.loadPerformance" :loading="props.loading.performance">
-                      <v-icon size="16">mdi-refresh</v-icon>
+                    <v-icon size="16" icon="mdi-refresh" />
                     </v-btn>
                     <v-btn icon variant="text" size="small">
                       <v-icon size="16">{{ isSectionOpen('all-projects-performance') ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
@@ -173,7 +173,7 @@
                   </div>
                   <div class="section-actions">
                     <v-btn icon variant="text" size="small" @click.stop="props.loadLive" :loading="props.loading.live">
-                      <v-icon size="16">mdi-refresh</v-icon>
+                    <v-icon size="16" icon="mdi-refresh" />
                     </v-btn>
                     <v-btn icon variant="text" size="small">
                       <v-icon size="16">{{ isSectionOpen('live-snapshot') ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>

@@ -4,7 +4,7 @@
       <div class="widget-header">
         <h3 class="text-h5 font-weight-medium">Resource Utilization</h3>
         <v-btn icon variant="text" size="small" @click="$emit('refresh')">
-          <v-icon>mdi-refresh</v-icon>
+          <v-icon icon="mdi-refresh" />
         </v-btn>
       </div>
       
@@ -58,7 +58,7 @@
               :key="rec.recommendation"
               class="recommendation-item"
             >
-              <v-icon color="primary" size="16">mdi-lightbulb</v-icon>
+              <v-icon color="primary" size="16" icon="mdi-lightbulb" />
               <span class="recommendation-text">{{ rec.recommendation }}</span>
             </div>
           </div>

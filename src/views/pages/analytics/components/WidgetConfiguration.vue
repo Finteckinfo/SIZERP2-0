@@ -106,7 +106,7 @@
                       <span>{{ widget.refresh.autoRefresh ? 'Auto' : 'Manual' }} refresh</span>
                     </div>
                     <div v-if="widget.refresh.intervalSec" class="refresh-item">
-                      <v-icon color="info" size="16" class="me-1">mdi-timer</v-icon>
+                      <v-icon color="info" size="16" class="me-1" icon="mdi-timer" />
                       <span>{{ formatInterval(widget.refresh.intervalSec) }}</span>
                     </div>
                   </div>
@@ -131,7 +131,7 @@
 
           <!-- Empty State -->
           <div v-else class="empty-state">
-            <v-icon size="48" color="grey">mdi-view-dashboard-variant</v-icon>
+            <v-icon size="48" color="grey" icon="mdi-view-dashboard-variant" />
             <p class="text-body-2 text-medium-emphasis">No widgets configured</p>
             <p class="text-caption text-medium-emphasis">Widgets will appear here once configured</p>
           </div>

@@ -4,7 +4,7 @@
       <div class="widget-header">
         <h3 class="text-h5 font-weight-medium">Predictions Forecast</h3>
         <v-btn icon variant="text" size="small" @click="$emit('refresh')">
-          <v-icon>mdi-refresh</v-icon>
+          <v-icon icon="mdi-refresh" />
         </v-btn>
       </div>
       

@@ -45,7 +45,7 @@
               @click.stop="refreshSection(section.id)"
               :loading="isSectionLoading(section.id)"
             >
-              <v-icon size="16">mdi-refresh</v-icon>
+              <v-icon size="16" icon="mdi-refresh" />
             </v-btn>
             
             <v-btn
@@ -81,7 +81,7 @@
 
     <!-- Empty state for tab with no sections -->
     <div v-if="!sections.length" class="empty-tab">
-      <v-icon size="64" color="grey-lighten-2">mdi-chart-line-variant</v-icon>
+      <v-icon size="64" color="grey-lighten-2" icon="mdi-chart-line-variant" />
       <h3 class="text-h6 text-grey-darken-1 mt-4">No sections available</h3>
       <p class="text-body-2 text-grey">This tab doesn't have any analytics sections configured yet.</p>
     </div>

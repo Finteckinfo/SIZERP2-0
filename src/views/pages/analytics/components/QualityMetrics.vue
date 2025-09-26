@@ -75,7 +75,7 @@
                 class="revision-item"
               >
                 <div class="revision-icon">
-                  <v-icon color="warning" size="20">mdi-file-edit</v-icon>
+                  <v-icon color="warning" size="20" icon="mdi-file-edit" />
                 </div>
                 <div class="revision-content">
                   <div class="revision-header">
@@ -106,7 +106,7 @@
                 class="approval-item"
               >
                 <div class="approval-icon">
-                  <v-icon color="success" size="20">mdi-check-circle</v-icon>
+                  <v-icon color="success" size="20" icon="mdi-check-circle" />
                 </div>
                 <div class="approval-content">
                   <div class="approval-header">
@@ -179,7 +179,7 @@
 
           <!-- Empty State -->
           <div v-if="!data.taskQuality?.length && !data.revisions?.length && !data.approvalTimes?.length && !data.defects?.length && !data.trends?.length" class="empty-state">
-            <v-icon size="48" color="grey">mdi-chart-line-variant</v-icon>
+            <v-icon size="48" color="grey" icon="mdi-chart-line-variant" />
             <p class="text-body-2 text-medium-emphasis">No quality metrics available</p>
             <p class="text-caption text-medium-emphasis">Quality data will appear here once available</p>
           </div>

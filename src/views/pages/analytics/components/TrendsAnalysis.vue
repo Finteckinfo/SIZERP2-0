@@ -4,7 +4,7 @@
       <div class="widget-header">
         <h3 class="text-h5 font-weight-medium">Trends Analysis</h3>
         <v-btn icon variant="text" size="small" @click="$emit('refresh')">
-          <v-icon>mdi-refresh</v-icon>
+          <v-icon icon="mdi-refresh" />
         </v-btn>
       </div>
       
@@ -66,7 +66,7 @@
         
         <div class="trend-chart">
           <div class="chart-placeholder">
-            <v-icon size="48" color="grey">mdi-chart-line</v-icon>
+            <v-icon size="48" color="grey" icon="mdi-chart-line" />
             <p class="chart-text">Trend chart will be displayed here</p>
           </div>
         </div>

@@ -21,7 +21,7 @@
             <div class="metrics-grid">
               <div class="metric-item">
                 <div class="metric-icon">
-                  <v-icon color="primary" size="20">mdi-clipboard-list</v-icon>
+                  <v-icon color="primary" size="20" icon="mdi-clipboard-list" />
                 </div>
                 <div class="metric-info">
                   <div class="metric-value">{{ data.metrics.openTasks }}</div>
@@ -31,7 +31,7 @@
               
               <div class="metric-item">
                 <div class="metric-icon">
-                  <v-icon color="warning" size="20">mdi-clock-alert</v-icon>
+                  <v-icon color="warning" size="20" icon="mdi-clock-alert" />
                 </div>
                 <div class="metric-info">
                   <div class="metric-value">{{ data.metrics.tasksDueThisWeek }}</div>
@@ -41,7 +41,7 @@
               
               <div class="metric-item">
                 <div class="metric-icon">
-                  <v-icon color="success" size="20">mdi-check</v-icon>
+                  <v-icon color="success" size="20" icon="mdi-check" />
                 </div>
                 <div class="metric-info">
                   <div class="metric-value">{{ data.metrics.completedLast7d }}</div>
@@ -51,7 +51,7 @@
               
               <div class="metric-item">
                 <div class="metric-icon">
-                  <v-icon color="info" size="20">mdi-timer-check</v-icon>
+                  <v-icon color="info" size="20" icon="mdi-timer-check" />
                 </div>
                 <div class="metric-info">
                   <div class="metric-value">{{ data.metrics.onTimeRate }}%</div>
@@ -182,7 +182,7 @@
 
           <!-- Empty State -->
           <div v-if="!data.quickActions?.length && !data.recentActivity?.length && !data.upcomingDeadlines?.length" class="empty-state">
-            <v-icon size="48" color="grey">mdi-view-dashboard</v-icon>
+            <v-icon size="48" color="grey" icon="mdi-view-dashboard" />
             <p class="text-body-2 text-medium-emphasis">Dashboard data will appear here</p>
           </div>
         </div>

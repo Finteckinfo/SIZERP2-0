@@ -4,7 +4,7 @@
       <div class="widget-header">
         <h3 class="text-h5 font-weight-medium">Live Dashboard</h3>
         <div class="live-indicator">
-          <v-icon size="12" color="success">mdi-circle</v-icon>
+          <v-icon size="12" color="success" icon="mdi-circle" />
           <span class="live-text">LIVE</span>
         </div>
       </div>
@@ -13,7 +13,7 @@
         <div class="live-stats">
           <div class="stat-item">
             <div class="stat-icon">
-              <v-icon color="primary">mdi-account-group</v-icon>
+              <v-icon color="primary" icon="mdi-account-group" />
             </div>
             <div class="stat-info">
               <div class="stat-value">{{ data?.teamOnline?.length || 0 }}</div>
@@ -23,7 +23,7 @@
           
           <div class="stat-item">
             <div class="stat-icon">
-              <v-icon color="success">mdi-check-circle</v-icon>
+              <v-icon color="success" icon="mdi-check-circle" />
             </div>
             <div class="stat-info">
               <div class="stat-value">{{ data?.activeTasks?.length || 0 }}</div>
@@ -54,9 +54,7 @@
               :key="alert.type"
               class="alert-item"
             >
-              <v-icon :color="getAlertColor(alert.severity)" size="16">
-                {{ getAlertIcon(alert.severity) }}
-              </v-icon>
+              <v-icon :color="getAlertColor(alert.severity)" size="16" :icon="getAlertIcon(alert.severity)" />
               <span class="alert-text">{{ alert.type }} ({{ alert.count }})</span>
             </div>
           </div>
@@ -70,9 +68,7 @@
               :key="health.service"
               class="health-item"
             >
-              <v-icon :color="getHealthColor(health.status)">
-                {{ getHealthIcon(health.status) }}
-              </v-icon>
+              <v-icon :color="getHealthColor(health.status)" :icon="getHealthIcon(health.status)" />
               <span>{{ health.service }}: {{ health.status }}</span>
             </div>
           </div>

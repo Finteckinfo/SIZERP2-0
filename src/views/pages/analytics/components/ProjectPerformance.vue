@@ -4,7 +4,7 @@
       <div class="widget-header">
         <h3 class="text-h5 font-weight-medium">Project Performance</h3>
         <v-btn icon variant="text" size="small" @click="$emit('refresh')">
-          <v-icon>mdi-refresh</v-icon>
+          <v-icon icon="mdi-refresh" />
         </v-btn>
       </div>
       
@@ -48,7 +48,7 @@
               <span class="risk-text">{{ risk.type }} ({{ risk.count }})</span>
             </div>
             <div v-if="!data?.metrics?.commonRisks?.length" class="no-risks">
-              <v-icon color="success" size="16">mdi-check-circle</v-icon>
+              <v-icon color="success" size="16" icon="mdi-check-circle" />
               <span class="risk-text">No risks detected</span>
             </div>
           </div>

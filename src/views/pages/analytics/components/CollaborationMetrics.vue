@@ -67,12 +67,12 @@
                 class="cross-team-item"
               >
                 <div class="collab-icon">
-                  <v-icon color="primary" size="20">mdi-account-group</v-icon>
+                  <v-icon color="primary" size="20" icon="mdi-account-group" />
                 </div>
                 <div class="collab-content">
                   <div class="collab-teams">
                     <span class="source-team">{{ collab.sourceDepartmentId }}</span>
-                    <v-icon color="grey" size="16">mdi-arrow-right</v-icon>
+                    <v-icon color="grey" size="16" icon="mdi-arrow-right" />
                     <span class="target-team">{{ collab.targetDepartmentId }}</span>
                   </div>
                   <div class="collab-interactions">
@@ -93,7 +93,7 @@
                 class="knowledge-item"
               >
                 <div class="knowledge-icon">
-                  <v-icon color="success" size="20">mdi-book-open-variant</v-icon>
+                  <v-icon color="success" size="20" icon="mdi-book-open-variant" />
                 </div>
                 <div class="knowledge-content">
                   <div class="knowledge-topic">{{ knowledge.topic }}</div>
@@ -115,7 +115,7 @@
                 class="meeting-item"
               >
                 <div class="meeting-icon">
-                  <v-icon color="warning" size="20">mdi-video</v-icon>
+                  <v-icon color="warning" size="20" icon="mdi-video" />
                 </div>
                 <div class="meeting-content">
                   <div class="meeting-header">
@@ -169,7 +169,7 @@
 
           <!-- Empty State -->
           <div v-if="!data.communication?.length && !data.crossTeam?.length && !data.knowledgeSharing?.length && !data.meetings?.length && !data.patterns?.length" class="empty-state">
-            <v-icon size="48" color="grey">mdi-account-group</v-icon>
+            <v-icon size="48" color="grey" icon="mdi-account-group" />
             <p class="text-body-2 text-medium-emphasis">No collaboration data available</p>
             <p class="text-caption text-medium-emphasis">Collaboration metrics will appear here once available</p>
           </div>

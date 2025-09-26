@@ -95,7 +95,7 @@
                 </v-chip>
               </div>
               <div v-if="data.sync.lastError" class="sync-error">
-                <v-icon color="error" size="16" class="me-2">mdi-alert-circle</v-icon>
+                <v-icon color="error" size="16" class="me-2" icon="mdi-alert-circle" />
                 <span class="error-message">{{ data.sync.lastError }}</span>
               </div>
             </div>
@@ -122,11 +122,11 @@
                 </div>
                 <div class="schedule-details">
                   <div v-if="schedule.lastRunAt" class="schedule-detail">
-                    <v-icon color="info" size="14" class="me-1">mdi-clock-outline</v-icon>
+                    <v-icon color="info" size="14" class="me-1" icon="mdi-clock-outline" />
                     <span>Last: {{ formatDate(schedule.lastRunAt) }}</span>
                   </div>
                   <div v-if="schedule.nextRunAt" class="schedule-detail">
-                    <v-icon color="success" size="14" class="me-1">mdi-clock-alert</v-icon>
+                    <v-icon color="success" size="14" class="me-1" icon="mdi-clock-alert" />
                     <span>Next: {{ formatDate(schedule.nextRunAt) }}</span>
                   </div>
                 </div>
@@ -164,7 +164,7 @@
 
           <!-- Empty State -->
           <div v-if="!data.lastUpdate && !data.staleness && !data.sync && !data.schedules?.length" class="empty-state">
-            <v-icon size="48" color="grey">mdi-database-sync</v-icon>
+            <v-icon size="48" color="grey" icon="mdi-database-sync" />
             <p class="text-body-2 text-medium-emphasis">No freshness data available</p>
             <p class="text-caption text-medium-emphasis">Data freshness will appear here once configured</p>
           </div>
