@@ -73,12 +73,12 @@ const sidebarItem: menu[] = [
   {
     title: 'Messages',
     icon: MessageIcon,
-    to: ''
+    to: '/messages'
   },
   {
     title: 'Team Chat',
     icon: UsersIcon,
-    to: ''
+    to: '/team-chat'
   },
   { divider: true },
   { header: 'Analytics & Reports' },

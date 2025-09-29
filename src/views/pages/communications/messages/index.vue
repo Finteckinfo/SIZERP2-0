@@ -1,0 +1,834 @@
+<template>
+  <div class="messages-page">
+    <!-- Header Section -->
+    <div class="messages-header">
+      <div class="header-content">
+        <div class="header-icon">
+          <v-icon size="48" color="white">mdi-message-text</v-icon>
+        </div>
+        <h1 class="header-title">Messages</h1>
+        <p class="header-subtitle">Stay updated with system notifications and important announcements</p>
+      </div>
+    </div>
+
+    <!-- Messages Container -->
+    <div class="messages-container">
+      <!-- Filter Tabs -->
+      <div class="messages-nav">
+        <div class="nav-container">
+          <div class="tab-nav">
+            <button 
+              class="tab-button"
+              :class="{ active: activeTab === 'all' }"
+              @click="activeTab = 'all'"
+            >
+              <v-icon size="20">mdi-inbox</v-icon>
+              <span>All Messages</span>
+              <div class="tab-indicator"></div>
+            </button>
+            
+            <button 
+              class="tab-button"
+              :class="{ active: activeTab === 'notifications' }"
+              @click="activeTab = 'notifications'"
+            >
+              <v-icon size="20">mdi-bell</v-icon>
+              <span>Notifications</span>
+              <div class="tab-indicator"></div>
+            </button>
+            
+            <button 
+              class="tab-button"
+              :class="{ active: activeTab === 'alerts' }"
+              @click="activeTab = 'alerts'"
+            >
+              <v-icon size="20">mdi-alert-circle</v-icon>
+              <span>Alerts</span>
+              <div class="tab-indicator"></div>
+            </button>
+            
+            <button 
+              class="tab-button"
+              :class="{ active: activeTab === 'announcements' }"
+              @click="activeTab = 'announcements'"
+            >
+              <v-icon size="20">mdi-bullhorn</v-icon>
+              <span>Announcements</span>
+              <div class="tab-indicator"></div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages Content -->
+      <div class="messages-content">
+        <div class="messages-list">
+          <!-- Message Item -->
+          <div 
+            v-for="message in filteredMessages" 
+            :key="message.id"
+            class="message-item"
+            :class="{ 
+              'unread': !message.read, 
+              'urgent': message.priority === 'urgent',
+              'high': message.priority === 'high'
+            }"
+            @click="openMessage(message)"
+          >
+            <div class="message-avatar">
+              <v-avatar 
+                :color="getPriorityColor(message.priority)"
+                size="40"
+              >
+                <v-icon :icon="getMessageIcon(message.type)" color="white" size="20" />
+              </v-avatar>
+            </div>
+            
+            <div class="message-content">
+              <div class="message-header">
+                <h4 class="message-title">{{ message.title }}</h4>
+                <div class="message-meta">
+                  <v-chip 
+                    v-if="message.priority === 'urgent'"
+                    size="x-small" 
+                    color="error"
+                    class="priority-chip"
+                  >
+                    Urgent
+                  </v-chip>
+                  <v-chip 
+                    v-else-if="message.priority === 'high'"
+                    size="x-small" 
+                    color="warning"
+                    class="priority-chip"
+                  >
+                    High
+                  </v-chip>
+                  <span class="message-time">{{ formatTime(message.createdAt) }}</span>
+                </div>
+              </div>
+              
+              <p class="message-preview">{{ message.preview }}</p>
+              
+              <div class="message-footer">
+                <div class="message-type">
+                  <v-icon size="16" :icon="getMessageIcon(message.type)" />
+                  <span>{{ getMessageTypeLabel(message.type) }}</span>
+                </div>
+                <div v-if="!message.read" class="unread-indicator"></div>
+              </div>
+            </div>
+            
+            <div class="message-actions">
+              <v-btn
+                icon
+                size="small"
+                variant="text"
+                @click.stop="toggleRead(message)"
+              >
+                <v-icon :icon="message.read ? 'mdi-email-open' : 'mdi-email'" />
+              </v-btn>
+              <v-btn
+                icon
+                size="small"
+                variant="text"
+                @click.stop="deleteMessage(message.id)"
+              >
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div v-if="filteredMessages.length === 0" class="empty-state">
+            <v-avatar size="80" color="grey-lighten-3" class="mb-4">
+              <v-icon size="40" color="grey">mdi-inbox</v-icon>
+            </v-avatar>
+            <h5 class="text-h5 text-medium-emphasis mb-2">No Messages</h5>
+            <p class="text-body-1 text-medium-emphasis">
+              You're all caught up! No {{ activeTab === 'all' ? '' : activeTab }} messages at the moment.
+            </p>
+          </div>
+        </div>
+
+        <!-- Message Detail Panel -->
+        <div v-if="selectedMessage" class="message-detail">
+          <div class="detail-header">
+            <div class="detail-title">
+              <h3>{{ selectedMessage.title }}</h3>
+              <div class="detail-meta">
+                <span class="detail-time">{{ formatFullTime(selectedMessage.createdAt) }}</span>
+                <v-chip 
+                  size="small"
+                  :color="getPriorityColor(selectedMessage.priority)"
+                  class="detail-priority"
+                >
+                  {{ getPriorityLabel(selectedMessage.priority) }}
+                </v-chip>
+              </div>
+            </div>
+            <v-btn
+              icon
+              variant="text"
+              @click="closeMessage"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </div>
+          
+          <div class="detail-content">
+            <div class="detail-body">
+              {{ selectedMessage.content }}
+            </div>
+            
+            <div v-if="selectedMessage.attachments" class="detail-attachments">
+              <h4>Attachments</h4>
+              <div class="attachment-list">
+                <div 
+                  v-for="attachment in selectedMessage.attachments" 
+                  :key="attachment.id"
+                  class="attachment-item"
+                >
+                  <v-icon>mdi-paperclip</v-icon>
+                  <span>{{ attachment.name }}</span>
+                  <v-btn size="small" variant="text">Download</v-btn>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
+
+// Types
+interface Message {
+  id: number;
+  title: string;
+  preview: string;
+  content: string;
+  type: string;
+  priority: string;
+  read: boolean;
+  createdAt: Date;
+  attachments: any[] | null;
+}
+
+// Reactive data
+const activeTab = ref('all');
+const selectedMessage = ref<Message | null>(null);
+
+// Dummy messages data
+const messages = ref([
+  {
+    id: 1,
+    title: 'Project Deadline Approaching',
+    preview: 'The "Website Redesign" project deadline is approaching in 3 days. Please ensure all tasks are completed...',
+    content: 'The "Website Redesign" project deadline is approaching in 3 days. Please ensure all tasks are completed and ready for review. Contact your project manager if you need assistance or have any blockers.',
+    type: 'notification',
+    priority: 'high',
+    read: false,
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    attachments: null
+  },
+  {
+    id: 2,
+    title: 'System Maintenance Scheduled',
+    preview: 'Scheduled maintenance will occur on Sunday, December 15th from 2:00 AM to 4:00 AM EST...',
+    content: 'Scheduled maintenance will occur on Sunday, December 15th from 2:00 AM to 4:00 AM EST. During this time, the system may be temporarily unavailable. Please save your work and log out before the maintenance window begins.',
+    type: 'announcement',
+    priority: 'medium',
+    read: true,
+    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
+    attachments: null
+  },
+  {
+    id: 3,
+    title: 'Security Alert: Unusual Login Activity',
+    preview: 'We detected unusual login activity on your account from an unrecognized device...',
+    content: 'We detected unusual login activity on your account from an unrecognized device in New York, NY at 3:45 PM EST. If this was you, no action is required. If this was not you, please change your password immediately and contact support.',
+    type: 'alert',
+    priority: 'urgent',
+    read: false,
+    createdAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+    attachments: null
+  },
+  {
+    id: 4,
+    title: 'New Feature: Advanced Analytics Dashboard',
+    preview: 'We\'re excited to announce the release of our new Advanced Analytics Dashboard...',
+    content: 'We\'re excited to announce the release of our new Advanced Analytics Dashboard! This powerful new feature provides deeper insights into your project performance, team productivity, and resource utilization. Check it out in the Analytics section.',
+    type: 'announcement',
+    priority: 'low',
+    read: true,
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+    attachments: null
+  },
+  {
+    id: 5,
+    title: 'Team Performance Report Available',
+    preview: 'Your weekly team performance report is now available for review...',
+    content: 'Your weekly team performance report is now available for review. The report shows excellent progress across all projects with a 15% increase in task completion rates compared to last week.',
+    type: 'notification',
+    priority: 'medium',
+    read: true,
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+    attachments: [
+      { id: 1, name: 'team-performance-report.pdf' }
+    ]
+  }
+]);
+
+// Computed properties
+const filteredMessages = computed(() => {
+  if (activeTab.value === 'all') {
+    return messages.value;
+  }
+  return messages.value.filter(message => message.type === activeTab.value);
+});
+
+// Methods
+const getPriorityColor = (priority: string) => {
+  switch (priority) {
+    case 'urgent': return 'error';
+    case 'high': return 'warning';
+    case 'medium': return 'info';
+    case 'low': return 'success';
+    default: return 'grey';
+  }
+};
+
+const getPriorityLabel = (priority: string) => {
+  switch (priority) {
+    case 'urgent': return 'Urgent';
+    case 'high': return 'High Priority';
+    case 'medium': return 'Medium Priority';
+    case 'low': return 'Low Priority';
+    default: return 'Normal';
+  }
+};
+
+const getMessageIcon = (type: string) => {
+  switch (type) {
+    case 'notification': return 'mdi-bell';
+    case 'alert': return 'mdi-alert-circle';
+    case 'announcement': return 'mdi-bullhorn';
+    default: return 'mdi-message';
+  }
+};
+
+const getMessageTypeLabel = (type: string) => {
+  switch (type) {
+    case 'notification': return 'Notification';
+    case 'alert': return 'Alert';
+    case 'announcement': return 'Announcement';
+    default: return 'Message';
+  }
+};
+
+const formatTime = (date: Date) => {
+  const now = new Date();
+  const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+  
+  if (diffInHours < 1) return 'Just now';
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  return date.toLocaleDateString();
+};
+
+const formatFullTime = (date: Date) => {
+  return date.toLocaleString();
+};
+
+const openMessage = (message: Message) => {
+  selectedMessage.value = message;
+  if (!message.read) {
+    message.read = true;
+  }
+};
+
+const closeMessage = () => {
+  selectedMessage.value = null;
+};
+
+const toggleRead = (message: Message) => {
+  message.read = !message.read;
+};
+
+const deleteMessage = (messageId: number) => {
+  const index = messages.value.findIndex(msg => msg.id === messageId);
+  if (index > -1) {
+    messages.value.splice(index, 1);
+  }
+  if (selectedMessage.value?.id === messageId) {
+    selectedMessage.value = null;
+  }
+};
+
+onMounted(() => {
+  // Any initialization logic
+});
+</script>
+
+<style scoped>
+.messages-page {
+  min-height: 100vh;
+  background: var(--erp-page-bg);
+  transition: background-color 0.3s ease;
+}
+
+/* Header Section */
+.messages-header {
+  background: linear-gradient(135deg, var(--erp-accent-green) 0%, var(--erp-accent-indigo) 100%);
+  padding: 4rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.messages-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.header-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.header-icon {
+  margin-bottom: 1.5rem;
+}
+
+.header-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.025em;
+}
+
+.header-subtitle {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Messages Navigation */
+.messages-nav {
+  background: var(--erp-card-bg);
+  border-bottom: 1px solid var(--erp-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.tab-nav {
+  display: flex;
+  gap: 0;
+  position: relative;
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--erp-text);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.tab-button:hover {
+  color: var(--erp-text);
+  background: color-mix(in srgb, var(--erp-accent-green) 5%, var(--erp-surface));
+}
+
+.tab-button.active {
+  color: var(--erp-accent-green);
+  background: color-mix(in srgb, var(--erp-accent-green) 8%, var(--erp-surface));
+  border-bottom-color: var(--erp-accent-green);
+}
+
+.tab-button .v-icon {
+  transition: all 0.3s ease;
+}
+
+.tab-button.active .v-icon {
+  color: var(--erp-accent-green);
+  transform: scale(1.1);
+}
+
+.tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3px;
+  background: var(--erp-accent-green);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 2px 2px 0 0;
+}
+
+.tab-button.active .tab-indicator {
+  width: 100%;
+}
+
+.tab-button span {
+  transition: all 0.3s ease;
+  font-weight: inherit;
+}
+
+.tab-button.active span {
+  font-weight: 600;
+}
+
+/* Messages Container */
+.messages-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.messages-content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2rem;
+  height: calc(100vh - 300px);
+}
+
+.messages-list {
+  background: var(--erp-card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--erp-border);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--erp-border);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.message-item:hover {
+  background: var(--erp-surface);
+}
+
+.message-item.unread {
+  background: color-mix(in srgb, var(--erp-accent-green) 3%, var(--erp-card-bg));
+  border-left: 4px solid var(--erp-accent-green);
+}
+
+.message-item.urgent {
+  background: color-mix(in srgb, #ef4444 5%, var(--erp-card-bg));
+  border-left: 4px solid #ef4444;
+}
+
+.message-item.high {
+  background: color-mix(in srgb, #f59e0b 3%, var(--erp-card-bg));
+  border-left: 4px solid #f59e0b;
+}
+
+.message-avatar {
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.message-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.message-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.message-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--erp-text);
+  flex: 1;
+}
+
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.priority-chip {
+  font-size: 0.75rem !important;
+  height: 20px !important;
+}
+
+.message-time {
+  font-size: 0.875rem;
+  color: var(--erp-text);
+  opacity: 0.7;
+}
+
+.message-preview {
+  font-size: 0.875rem;
+  color: var(--erp-text);
+  opacity: 0.8;
+  margin: 0 0 1rem 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.message-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.message-type {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--erp-text);
+  opacity: 0.6;
+}
+
+.unread-indicator {
+  width: 8px;
+  height: 8px;
+  background: var(--erp-accent-green);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.message-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-left: 1rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.message-item:hover .message-actions {
+  opacity: 1;
+}
+
+/* Message Detail Panel */
+.message-detail {
+  background: var(--erp-card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--erp-border);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 2rem 2rem 1rem 2rem;
+  border-bottom: 1px solid var(--erp-border);
+}
+
+.detail-title h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--erp-text);
+}
+
+.detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.detail-time {
+  font-size: 0.875rem;
+  color: var(--erp-text);
+  opacity: 0.7;
+}
+
+.detail-priority {
+  font-size: 0.75rem !important;
+}
+
+.detail-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.detail-body {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--erp-text);
+  margin-bottom: 2rem;
+}
+
+.detail-attachments h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: var(--erp-text);
+}
+
+.attachment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--erp-surface);
+  border-radius: 8px;
+  border: 1px solid var(--erp-border);
+}
+
+.attachment-item span {
+  flex: 1;
+  color: var(--erp-text);
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  flex: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .messages-content {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  
+  .message-detail {
+    height: 400px;
+    margin-top: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .messages-header {
+    padding: 2rem 1rem;
+  }
+  
+  .header-title {
+    font-size: 2rem;
+  }
+  
+  .header-subtitle {
+    font-size: 1rem;
+  }
+  
+  .nav-container {
+    padding: 0 1rem;
+  }
+  
+  .tab-button {
+    padding: 0.75rem 1rem;
+    min-width: 120px;
+    font-size: 0.9rem;
+  }
+  
+  .messages-container {
+    padding: 1rem;
+  }
+  
+  .message-item {
+    padding: 1rem;
+  }
+  
+  .detail-header {
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+  }
+  
+  .detail-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-container {
+    padding: 0 0.5rem;
+  }
+  
+  .tab-button {
+    padding: 0.75rem 0.5rem;
+    min-width: 100px;
+    font-size: 0.85rem;
+    gap: 0.25rem;
+  }
+  
+  .tab-button .v-icon {
+    font-size: 18px;
+  }
+  
+  .message-item {
+    padding: 0.75rem;
+  }
+  
+  .message-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .message-meta {
+    align-self: flex-end;
+  }
+}
+</style>

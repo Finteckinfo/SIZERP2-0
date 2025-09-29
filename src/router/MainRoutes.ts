@@ -19,7 +19,9 @@ const MainRoutes = {
     { name: 'TaskCalendar', path: '/tasks/calendar', component: () => import('@/views/pages/tasks/taskCalender.vue') },
     { name: 'KanbanBoard', path: '/kanban', component: () => import('@/views/pages/kanban/KanbanBoard.vue') },
     { name: 'Analytics', path: '/analytics', component: () => import('@/views/pages/analytics/index.vue') },
-    { name: 'Settings', path: '/settings', component: () => import('@/views/pages/settings/index.vue') }
+    { name: 'Settings', path: '/settings', component: () => import('@/views/pages/settings/index.vue') },
+    { name: 'Messages', path: '/messages', component: () => import('@/views/pages/communications/messages/index.vue') },
+    { name: 'TeamChat', path: '/team-chat', component: () => import('@/views/pages/communications/teamChat/index.vue') }
   ]
 };
 
