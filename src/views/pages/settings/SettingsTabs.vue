@@ -276,9 +276,9 @@ watch(() => prefs.value.theme, () => {
 const clerkAppearance = {
   variables: {
     colorBackground: 'transparent',
-    colorText: 'var(--v-theme-on-surface)',
-    colorTextSecondary: 'var(--v-theme-on-surface-variant)',
-    colorPrimary: 'var(--v-theme-primary)',
+    colorText: 'var(--erp-text)',
+    colorTextSecondary: 'var(--erp-text)',
+    colorPrimary: 'var(--erp-accent-green)',
     borderRadius: '12px',
     fontFamily: 'inherit'
   },
@@ -300,19 +300,19 @@ const clerkAppearance = {
     headerTitle: {
       fontSize: '24px',
       fontWeight: '600',
-      color: 'var(--v-theme-on-surface)'
+      color: 'var(--erp-text)'
     },
     scrollBox: {
       maxWidth: '100%'
     },
     formFieldInput: {
       borderRadius: '8px',
-      border: '1px solid var(--v-theme-outline)',
-      backgroundColor: 'var(--v-theme-surface)',
-      color: 'var(--v-theme-on-surface)'
+      border: '1px solid var(--erp-border)',
+      backgroundColor: 'var(--erp-surface)',
+      color: 'var(--erp-text)'
     },
     formFieldLabel: {
-      color: 'var(--v-theme-on-surface-variant)'
+      color: 'var(--erp-text)'
     },
     socialButtons: {
       display: 'flex',
@@ -321,9 +321,9 @@ const clerkAppearance = {
     },
     socialButton: {
       borderRadius: '8px',
-      backgroundColor: 'var(--v-theme-surface-variant)',
-      color: 'var(--v-theme-on-surface)',
-      border: '1px solid var(--v-theme-outline)'
+      backgroundColor: 'var(--erp-surface)',
+      color: 'var(--erp-text)',
+      border: '1px solid var(--erp-border)'
     }
   }
 } as any;
@@ -332,13 +332,13 @@ const clerkAppearance = {
 <style scoped>
 .modern-settings {
   min-height: 100vh;
-  background: var(--v-theme-background);
+  background: var(--erp-page-bg);
   transition: background-color 0.3s ease;
 }
 
 /* Hero Section */
 .settings-hero {
-  background: linear-gradient(135deg, var(--v-theme-primary) 0%, var(--v-theme-secondary) 100%);
+  background: linear-gradient(135deg, var(--erp-accent-green) 0%, var(--erp-accent-indigo) 100%);
   padding: 4rem 2rem;
   text-align: center;
   position: relative;
@@ -386,8 +386,8 @@ const clerkAppearance = {
 
 /* Modern Tab Navigation */
 .settings-nav {
-  background: var(--v-theme-surface);
-  border-bottom: 1px solid var(--v-theme-outline);
+  background: var(--erp-card-bg);
+  border-bottom: 1px solid var(--erp-border);
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -411,7 +411,7 @@ const clerkAppearance = {
   background: transparent;
   border: none;
   border-bottom: 3px solid transparent;
-  color: var(--v-theme-on-surface-variant);
+  color: var(--erp-text);
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
@@ -422,14 +422,14 @@ const clerkAppearance = {
 }
 
 .tab-button:hover {
-  color: var(--v-theme-on-surface);
-  background: color-mix(in srgb, var(--v-theme-primary) 5%, var(--v-theme-surface));
+  color: var(--erp-text);
+  background: color-mix(in srgb, var(--erp-accent-green) 5%, var(--erp-surface));
 }
 
 .tab-button.active {
-  color: var(--v-theme-primary);
-  background: color-mix(in srgb, var(--v-theme-primary) 8%, var(--v-theme-surface));
-  border-bottom-color: var(--v-theme-primary);
+  color: var(--erp-accent-green);
+  background: color-mix(in srgb, var(--erp-accent-green) 8%, var(--erp-surface));
+  border-bottom-color: var(--erp-accent-green);
 }
 
 .tab-button .v-icon {
@@ -437,7 +437,7 @@ const clerkAppearance = {
 }
 
 .tab-button.active .v-icon {
-  color: var(--v-theme-primary);
+  color: var(--erp-accent-green);
   transform: scale(1.1);
 }
 
@@ -448,7 +448,7 @@ const clerkAppearance = {
   transform: translateX(-50%);
   width: 0;
   height: 3px;
-  background: var(--v-theme-primary);
+  background: var(--erp-accent-green);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 2px 2px 0 0;
 }
@@ -469,7 +469,7 @@ const clerkAppearance = {
 /* Content Area */
 .settings-content {
   padding: 2rem;
-  background: var(--v-theme-background);
+  background: var(--erp-page-bg);
   transition: background-color 0.3s ease;
 }
 
@@ -487,21 +487,21 @@ const clerkAppearance = {
   font-size: 2rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
-  color: var(--v-theme-on-surface);
+  color: var(--erp-text);
 }
 
 .panel-header p {
   font-size: 1.125rem;
-  color: var(--v-theme-on-surface-variant);
+  color: var(--erp-text);
   margin: 0;
 }
 
 /* Clerk Wrapper */
 .clerk-wrapper {
-  background: var(--v-theme-surface);
+  background: var(--erp-surface);
   border-radius: 16px;
   padding: 2rem;
-  border: 1px solid var(--v-theme-outline);
+  border: 1px solid var(--erp-border);
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -514,10 +514,10 @@ const clerkAppearance = {
 }
 
 .preference-section {
-  background: var(--v-theme-surface);
+  background: var(--erp-surface);
   border-radius: 16px;
   padding: 2rem;
-  border: 1px solid var(--v-theme-outline);
+  border: 1px solid var(--erp-border);
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -532,7 +532,7 @@ const clerkAppearance = {
   font-size: 1.25rem;
   font-weight: 600;
   margin: 0;
-  color: var(--v-theme-on-surface);
+  color: var(--erp-text);
 }
 
 /* Theme Options */
@@ -544,40 +544,40 @@ const clerkAppearance = {
 
 .theme-option {
   padding: 1.5rem;
-  border: 2px solid var(--v-theme-outline);
+  border: 2px solid var(--erp-border);
   border-radius: 12px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: var(--v-theme-surface-variant);
+  background: var(--erp-card-bg);
 }
 
 .theme-option:hover {
-  border-color: var(--v-theme-primary);
+  border-color: var(--erp-accent-green);
   transform: translateY(-2px);
 }
 
 .theme-option.active {
-  border-color: var(--v-theme-primary);
-  background: color-mix(in srgb, var(--v-theme-primary) 10%, var(--v-theme-surface));
+  border-color: var(--erp-accent-green);
+  background: color-mix(in srgb, var(--erp-accent-green) 10%, var(--erp-surface));
 }
 
 .theme-option .v-icon {
   margin-bottom: 0.75rem;
-  color: var(--v-theme-primary);
+  color: var(--erp-accent-green);
 }
 
 .theme-option span {
   display: block;
   font-weight: 600;
   margin-bottom: 0.25rem;
-  color: var(--v-theme-on-surface);
+  color: var(--erp-text);
 }
 
 .theme-option p {
   font-size: 0.875rem;
   margin: 0;
-  color: var(--v-theme-on-surface-variant);
+  color: var(--erp-text);
 }
 
 /* Setting Items */
@@ -586,7 +586,7 @@ const clerkAppearance = {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 0;
-  border-bottom: 1px solid var(--v-theme-outline);
+  border-bottom: 1px solid var(--erp-border);
 }
 
 .setting-item:last-child {
@@ -597,13 +597,62 @@ const clerkAppearance = {
   font-size: 1rem;
   font-weight: 600;
   margin: 0 0 0.25rem 0;
-  color: var(--v-theme-on-surface);
+  color: var(--erp-text);
 }
 
 .setting-info p {
   font-size: 0.875rem;
   margin: 0;
-  color: var(--v-theme-on-surface-variant);
+  color: var(--erp-text);
+  opacity: 0.7;
+}
+
+/* Form Input Styling */
+.modern-settings :deep(.v-field) {
+  background-color: var(--erp-surface) !important;
+  border: 1px solid var(--erp-border) !important;
+  color: var(--erp-text) !important;
+}
+
+.modern-settings :deep(.v-field__input) {
+  color: var(--erp-text) !important;
+}
+
+.modern-settings :deep(.v-field__input::placeholder) {
+  color: var(--erp-text) !important;
+  opacity: 0.5 !important;
+}
+
+.modern-settings :deep(.v-field__outline) {
+  border-color: var(--erp-border) !important;
+}
+
+.modern-settings :deep(.v-field--focused .v-field__outline) {
+  border-color: var(--erp-accent-green) !important;
+  border-width: 2px !important;
+}
+
+.modern-settings :deep(.v-label) {
+  color: var(--erp-text) !important;
+  opacity: 0.7 !important;
+}
+
+.modern-settings :deep(.v-field--focused .v-label) {
+  color: var(--erp-accent-green) !important;
+  opacity: 1 !important;
+}
+
+.modern-settings :deep(.v-list) {
+  background-color: var(--erp-card-bg) !important;
+  border: 1px solid var(--erp-border) !important;
+}
+
+.modern-settings :deep(.v-list-item) {
+  color: var(--erp-text) !important;
+}
+
+.modern-settings :deep(.v-list-item:hover) {
+  background-color: var(--erp-surface) !important;
 }
 
 /* Transitions */
