@@ -1,129 +1,202 @@
 <template>
-  <div class="settings-tabs-container">
-    <v-card elevation="0" class="pa-0">
-      <v-card-title class="d-flex align-center justify-space-between px-4 py-3">
-        <div class="d-flex align-center">
-          <v-icon size="24" color="primary" icon="mdi-cog" />
-          <span class="text-h6 font-weight-medium ms-2">Settings</span>
+  <div class="modern-settings">
+    <!-- Hero Section -->
+    <div class="settings-hero">
+      <div class="hero-content">
+        <div class="hero-icon">
+          <v-icon size="48" color="white">mdi-cog</v-icon>
         </div>
-      </v-card-title>
+        <h1 class="hero-title">Settings</h1>
+        <p class="hero-subtitle">Customize your experience and manage your account</p>
+      </div>
+    </div>
 
-      <v-divider />
+    <!-- Modern Tab Navigation -->
+    <div class="settings-nav">
+      <div class="nav-container">
+        <div class="tab-nav">
+          <button 
+            class="tab-button"
+            :class="{ active: activeTab === 'account' }"
+            @click="activeTab = 'account'"
+          >
+            <v-icon size="20">mdi-account-circle</v-icon>
+            <span>Account</span>
+            <div class="tab-indicator"></div>
+          </button>
+          
+          <button 
+            class="tab-button"
+            :class="{ active: activeTab === 'preferences' }"
+            @click="activeTab = 'preferences'"
+          >
+            <v-icon size="20">mdi-tune</v-icon>
+            <span>Preferences</span>
+            <div class="tab-indicator"></div>
+          </button>
+        </div>
+      </div>
+    </div>
 
-      <v-card-text class="pa-0">
-        <v-tabs
-          v-model="activeTab"
-          color="primary"
-          align-tabs="start"
-          class="px-3"
-        >
-          <v-tab value="account">
-            <v-icon start icon="mdi-account-cog" /> Account
-          </v-tab>
-          <v-tab value="preferences">
-            <v-icon start icon="mdi-tune" /> Preferences
-          </v-tab>
-        </v-tabs>
+    <!-- Content Area -->
+    <div class="settings-content">
+      <transition name="fade-slide" mode="out-in">
+        <div v-if="activeTab === 'account'" key="account" class="content-panel">
+          <div class="panel-header">
+            <h2>Account Management</h2>
+            <p>Manage your profile, security settings, and connected accounts</p>
+          </div>
+          <div class="clerk-wrapper">
+            <UserProfile
+              routing="hash"
+              :appearance="clerkAppearance"
+            />
+          </div>
+        </div>
 
-        <v-divider />
-
-        <v-window v-model="activeTab" class="settings-window">
-          <v-window-item value="account">
-            <div class="tab-content pa-4">
-              <div class="mb-3 text-body-2 text-medium-emphasis">Manage your Clerk profile, security, and connected accounts.</div>
-              <div class="profile-wrapper">
-                <UserProfile
-                  routing="hash"
-                  :appearance="clerkAppearance"
-                />
+        <div v-else-if="activeTab === 'preferences'" key="preferences" class="content-panel">
+          <div class="panel-header">
+            <h2>Preferences</h2>
+            <p>Customize how the app looks and behaves for you</p>
+          </div>
+          
+          <div class="preferences-grid">
+            <!-- Theme Settings -->
+            <div class="preference-section">
+              <div class="section-header">
+                <v-icon size="24" color="primary">mdi-palette</v-icon>
+                <h3>Appearance</h3>
+              </div>
+              <div class="theme-options">
+                <div 
+                  class="theme-option"
+                  :class="{ active: prefs.theme === 'system' }"
+                  @click="prefs.theme = 'system'"
+                >
+                  <v-icon size="32">mdi-monitor</v-icon>
+                  <span>System</span>
+                  <p>Follow system theme</p>
+                </div>
+                <div 
+                  class="theme-option"
+                  :class="{ active: prefs.theme === 'light' }"
+                  @click="prefs.theme = 'light'"
+                >
+                  <v-icon size="32">mdi-white-balance-sunny</v-icon>
+                  <span>Light</span>
+                  <p>Always light mode</p>
+                </div>
+                <div 
+                  class="theme-option"
+                  :class="{ active: prefs.theme === 'dark' }"
+                  @click="prefs.theme = 'dark'"
+                >
+                  <v-icon size="32">mdi-weather-night</v-icon>
+                  <span>Dark</span>
+                  <p>Always dark mode</p>
+                </div>
               </div>
             </div>
-          </v-window-item>
 
-        <v-window-item value="preferences">
-          <div class="tab-content pa-4">
-            <div class="mb-3 text-body-2 text-medium-emphasis">Customize how the app looks and behaves for you. These settings are local to your browser for now.</div>
-
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-card variant="flat" class="pa-4 preference-card">
-                  <div class="d-flex align-center mb-3">
-                    <v-icon icon="mdi-theme-light-dark" color="primary" class="me-2" />
-                    <span class="text-subtitle-1 font-weight-medium">Theme</span>
+            <!-- Notifications -->
+            <div class="preference-section">
+              <div class="section-header">
+                <v-icon size="24" color="primary">mdi-bell</v-icon>
+                <h3>Notifications</h3>
+              </div>
+              <div class="notification-settings">
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <h4>Email Notifications</h4>
+                    <p>Receive updates via email</p>
                   </div>
-                  <v-radio-group v-model="prefs.theme" inline>
-                    <v-radio label="System" value="system" />
-                    <v-radio label="Light" value="light" />
-                    <v-radio label="Dark" value="dark" />
-                  </v-radio-group>
-                </v-card>
-              </v-col>
-
-              <v-col cols="12" md="6">
-                <v-card variant="flat" class="pa-4 preference-card">
-                  <div class="d-flex align-center mb-3">
-                    <v-icon icon="mdi-calendar" color="primary" class="me-2" />
-                    <span class="text-subtitle-1 font-weight-medium">Date & Time</span>
-                  </div>
-                  <v-select
-                    v-model="prefs.dateFormat"
-                    :items="dateFormats"
-                    label="Date format"
-                    density="comfortable"
-                    variant="outlined"
+                  <v-switch 
+                    v-model="prefs.notifyEmail" 
+                    color="primary"
                     hide-details
-                    class="mb-3"
+                    @update:model-value="savePrefs"
                   />
-                  <v-select
-                    v-model="prefs.timeFormat"
-                    :items="timeFormats"
-                    label="Time format"
-                    density="comfortable"
-                    variant="outlined"
-                    hide-details
-                  />
-                </v-card>
-              </v-col>
-
-              <v-col cols="12" md="6">
-                <v-card variant="flat" class="pa-4 preference-card">
-                  <div class="d-flex align-center mb-3">
-                    <v-icon icon="mdi-bell-ring" color="primary" class="me-2" />
-                    <span class="text-subtitle-1 font-weight-medium">Notifications</span>
+                </div>
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <h4>In-App Notifications</h4>
+                    <p>Show notifications within the app</p>
                   </div>
-                  <v-switch v-model="prefs.notifyEmail" color="primary" hide-details label="Email notifications" />
-                  <v-switch v-model="prefs.notifyInApp" color="primary" hide-details label="In-app notifications" />
-                </v-card>
-              </v-col>
+                  <v-switch 
+                    v-model="prefs.notifyInApp" 
+                    color="primary"
+                    hide-details
+                    @update:model-value="savePrefs"
+                  />
+                </div>
+              </div>
+            </div>
 
-              <v-col cols="12" md="6">
-                <v-card variant="flat" class="pa-4 preference-card">
-                  <div class="d-flex align-center mb-3">
-                    <v-icon icon="mdi-view-dashboard-outline" color="primary" class="me-2" />
-                    <span class="text-subtitle-1 font-weight-medium">Dashboard</span>
+            <!-- Dashboard Settings -->
+            <div class="preference-section">
+              <div class="section-header">
+                <v-icon size="24" color="primary">mdi-view-dashboard</v-icon>
+                <h3>Dashboard</h3>
+              </div>
+              <div class="dashboard-settings">
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <h4>Default Start Page</h4>
+                    <p>Choose your landing page</p>
                   </div>
                   <v-select
                     v-model="prefs.startPage"
                     :items="startPages"
-                    label="Default start page"
-                    density="comfortable"
                     variant="outlined"
+                    density="compact"
                     hide-details
+                    @update:model-value="savePrefs"
                   />
-                </v-card>
-              </v-col>
+                </div>
+              </div>
+            </div>
 
-              <v-col cols="12" class="d-flex justify-end">
-                <v-btn color="primary" variant="elevated" @click="savePrefs" prepend-icon="mdi-content-save">
-                  Save Preferences
-                </v-btn>
-              </v-col>
-            </v-row>
+            <!-- Date & Time -->
+            <div class="preference-section">
+              <div class="section-header">
+                <v-icon size="24" color="primary">mdi-calendar-clock</v-icon>
+                <h3>Date & Time</h3>
+              </div>
+              <div class="datetime-settings">
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <h4>Date Format</h4>
+                    <p>How dates are displayed</p>
+                  </div>
+                  <v-select
+                    v-model="prefs.dateFormat"
+                    :items="dateFormats"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    @update:model-value="savePrefs"
+                  />
+                </div>
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <h4>Time Format</h4>
+                    <p>12-hour or 24-hour format</p>
+                  </div>
+                  <v-select
+                    v-model="prefs.timeFormat"
+                    :items="timeFormats"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    @update:model-value="savePrefs"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-        </v-window-item>
-        </v-window>
-      </v-card-text>
-    </v-card>
+        </div>
+      </transition>
+    </div>
   </div>
 </template>
 
@@ -199,66 +272,430 @@ watch(() => prefs.value.theme, () => {
   savePrefs();
 });
 
-// Tame Clerk layout so it doesn't overflow the card
+// Clerk appearance - minimal styling, centered, no scaling
 const clerkAppearance = {
   variables: {
-    colorBackground: 'transparent'
+    colorBackground: 'transparent',
+    colorText: 'var(--v-theme-on-surface)',
+    colorTextSecondary: 'var(--v-theme-on-surface-variant)',
+    colorPrimary: 'var(--v-theme-primary)',
+    borderRadius: '12px',
+    fontFamily: 'inherit'
   },
   elements: {
     rootBox: {
-      width: '100%'
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'flex-start'
     },
     card: {
       width: '100%',
-      maxWidth: '920px',
+      maxWidth: '600px',
       margin: '0 auto',
       boxShadow: 'none',
-      background: 'transparent'
+      background: 'transparent',
+      border: 'none'
     },
     headerTitle: {
-      fontSize: '20px'
+      fontSize: '24px',
+      fontWeight: '600',
+      color: 'var(--v-theme-on-surface)'
     },
     scrollBox: {
       maxWidth: '100%'
+    },
+    formFieldInput: {
+      borderRadius: '8px',
+      border: '1px solid var(--v-theme-outline)',
+      backgroundColor: 'var(--v-theme-surface)',
+      color: 'var(--v-theme-on-surface)'
+    },
+    formFieldLabel: {
+      color: 'var(--v-theme-on-surface-variant)'
+    },
+    socialButtons: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px'
+    },
+    socialButton: {
+      borderRadius: '8px',
+      backgroundColor: 'var(--v-theme-surface-variant)',
+      color: 'var(--v-theme-on-surface)',
+      border: '1px solid var(--v-theme-outline)'
     }
   }
 } as any;
 </script>
 
 <style scoped>
-.settings-tabs-container {
-  padding: 16px;
+.modern-settings {
+  min-height: 100vh;
+  background: var(--v-theme-background);
+  transition: background-color 0.3s ease;
 }
 
-.settings-window {
-  min-height: 400px;
+/* Hero Section */
+.settings-hero {
+  background: linear-gradient(135deg, var(--v-theme-primary) 0%, var(--v-theme-secondary) 100%);
+  padding: 4rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.profile-wrapper :deep(*) {
-  /* Allow Clerk profile to expand nicely */
-  width: 100%;
+.settings-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
 }
 
-.profile-wrapper {
-  max-width: 980px;
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
   margin: 0 auto;
 }
 
-/* Ensure large provider icons or images don't overflow */
-.profile-wrapper :deep(img) {
-  max-width: 100%;
-  height: auto;
+.hero-icon {
+  margin-bottom: 1.5rem;
 }
 
-.profile-wrapper :deep(.cl-socialButtonsIcon) {
-  width: 24px;
-  height: 24px;
+.hero-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.025em;
 }
 
-.preference-card {
-  background: rgba(248, 250, 252, 0.6);
-  border: 1px solid rgba(226, 232, 240, 0.5);
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Modern Tab Navigation */
+.settings-nav {
+  background: var(--v-theme-surface);
+  border-bottom: 1px solid var(--v-theme-outline);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.tab-nav {
+  display: flex;
+  gap: 0;
+  position: relative;
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--v-theme-on-surface-variant);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.tab-button:hover {
+  color: var(--v-theme-on-surface);
+  background: color-mix(in srgb, var(--v-theme-primary) 5%, var(--v-theme-surface));
+}
+
+.tab-button.active {
+  color: var(--v-theme-primary);
+  background: color-mix(in srgb, var(--v-theme-primary) 8%, var(--v-theme-surface));
+  border-bottom-color: var(--v-theme-primary);
+}
+
+.tab-button .v-icon {
+  transition: all 0.3s ease;
+}
+
+.tab-button.active .v-icon {
+  color: var(--v-theme-primary);
+  transform: scale(1.1);
+}
+
+.tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3px;
+  background: var(--v-theme-primary);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 2px 2px 0 0;
+}
+
+.tab-button.active .tab-indicator {
+  width: 100%;
+}
+
+.tab-button span {
+  transition: all 0.3s ease;
+  font-weight: inherit;
+}
+
+.tab-button.active span {
+  font-weight: 600;
+}
+
+/* Content Area */
+.settings-content {
+  padding: 2rem;
+  background: var(--v-theme-background);
+  transition: background-color 0.3s ease;
+}
+
+.content-panel {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.panel-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.panel-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: var(--v-theme-on-surface);
+}
+
+.panel-header p {
+  font-size: 1.125rem;
+  color: var(--v-theme-on-surface-variant);
+  margin: 0;
+}
+
+/* Clerk Wrapper */
+.clerk-wrapper {
+  background: var(--v-theme-surface);
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid var(--v-theme-outline);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Preferences Grid */
+.preferences-grid {
+  display: grid;
+  gap: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.preference-section {
+  background: var(--v-theme-surface);
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid var(--v-theme-outline);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--v-theme-on-surface);
+}
+
+/* Theme Options */
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.theme-option {
+  padding: 1.5rem;
+  border: 2px solid var(--v-theme-outline);
   border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--v-theme-surface-variant);
+}
+
+.theme-option:hover {
+  border-color: var(--v-theme-primary);
+  transform: translateY(-2px);
+}
+
+.theme-option.active {
+  border-color: var(--v-theme-primary);
+  background: color-mix(in srgb, var(--v-theme-primary) 10%, var(--v-theme-surface));
+}
+
+.theme-option .v-icon {
+  margin-bottom: 0.75rem;
+  color: var(--v-theme-primary);
+}
+
+.theme-option span {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--v-theme-on-surface);
+}
+
+.theme-option p {
+  font-size: 0.875rem;
+  margin: 0;
+  color: var(--v-theme-on-surface-variant);
+}
+
+/* Setting Items */
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--v-theme-outline);
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-info h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  color: var(--v-theme-on-surface);
+}
+
+.setting-info p {
+  font-size: 0.875rem;
+  margin: 0;
+  color: var(--v-theme-on-surface-variant);
+}
+
+/* Transitions */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .settings-hero {
+    padding: 2rem 1rem;
+  }
+  
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+  
+  .nav-container {
+    padding: 0 1rem;
+  }
+  
+  .tab-button {
+    padding: 0.75rem 1rem;
+    min-width: 120px;
+    font-size: 0.9rem;
+  }
+  
+  .settings-content {
+    padding: 1rem;
+  }
+  
+  .preference-section {
+    padding: 1.5rem;
+  }
+  
+  .theme-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .setting-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-hero {
+    padding: 1.5rem 1rem;
+  }
+  
+  .hero-title {
+    font-size: 1.75rem;
+  }
+  
+  .nav-container {
+    padding: 0 0.5rem;
+  }
+  
+  .tab-button {
+    padding: 0.75rem 0.5rem;
+    min-width: 100px;
+    font-size: 0.85rem;
+    gap: 0.25rem;
+  }
+  
+  .tab-button .v-icon {
+    font-size: 18px;
+  }
+  
+  .preference-section {
+    padding: 1rem;
+  }
+  
+  .theme-option {
+    padding: 1rem;
+  }
 }
 </style>
 
