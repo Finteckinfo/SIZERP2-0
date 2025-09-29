@@ -11,69 +11,68 @@
       </div>
     </div>
 
-    <!-- Project Selection -->
-    <div class="project-selection">
-      <div class="selection-container">
-        <div class="selection-header">
-          <h3>Select Project</h3>
-          <p>Choose a project to view and participate in team discussions</p>
+    <!-- Main Chat Interface -->
+    <div class="chat-interface">
+      <!-- Projects Sidebar -->
+      <v-navigation-drawer
+        v-model="showProjectsSidebar"
+        location="left"
+        :width="sidebarWidth"
+        permanent
+        class="projects-sidebar"
+      >
+        <div class="sidebar-header">
+          <div class="header-content">
+            <h3>Projects</h3>
+            <v-btn
+              icon
+              variant="text"
+              size="small"
+              @click="toggleProjectsSidebar"
+              class="toggle-btn"
+            >
+              <v-icon>{{ showProjectsSidebar ? 'mdi-chevron-left' : 'mdi-chevron-right' }}</v-icon>
+            </v-btn>
+          </div>
         </div>
         
-        <div class="project-cards">
+        <div class="projects-list">
           <div 
             v-for="project in projects" 
             :key="project.id"
-            class="project-card"
+            class="project-item"
             :class="{ active: selectedProject?.id === project.id }"
             @click="selectProject(project)"
           >
-            <div class="project-icon">
-              <v-avatar :color="getProjectColor(project.type)" size="48">
-                <v-icon :icon="getProjectIcon(project.type)" color="white" size="24" />
+            <div class="project-avatar">
+              <v-avatar :color="getProjectColor(project.type)" size="36">
+                <v-icon :icon="getProjectIcon(project.type)" color="white" size="18" />
               </v-avatar>
             </div>
             
-            <div class="project-info">
-              <h4>{{ project.name }}</h4>
-              <p>{{ project.description }}</p>
-              <div class="project-meta">
-                <div class="team-count">
-                  <v-icon size="16">mdi-account-group</v-icon>
-                  <span>{{ project.teamSize }} members</span>
-                </div>
-                <div class="unread-count" v-if="project.unreadCount > 0">
-                  <v-chip size="x-small" color="error">
-                    {{ project.unreadCount }}
-                  </v-chip>
-                </div>
-              </div>
+            <div v-if="showProjectsSidebar" class="project-details">
+              <div class="project-name">{{ project.name }}</div>
+              <div class="project-last-message">{{ getLastMessage(project.id) }}</div>
             </div>
             
-            <div class="project-status">
-              <v-chip 
-                size="small"
-                :color="getStatusColor(project.status)"
-              >
-                {{ getStatusLabel(project.status) }}
-              </v-chip>
+            <div v-if="showProjectsSidebar && project.unreadCount > 0" class="unread-badge">
+              {{ project.unreadCount }}
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </v-navigation-drawer>
 
-    <!-- Chat Interface -->
-    <div v-if="selectedProject" class="chat-interface">
-      <div class="chat-container">
+      <!-- Chat Area -->
+      <div class="chat-main">
         <!-- Chat Header -->
-        <div class="chat-header">
+        <div v-if="selectedProject" class="chat-header">
           <div class="chat-project-info">
             <v-avatar :color="getProjectColor(selectedProject.type)" size="40">
               <v-icon :icon="getProjectIcon(selectedProject.type)" color="white" size="20" />
             </v-avatar>
             <div class="chat-project-details">
               <h3>{{ selectedProject.name }}</h3>
-              <p>{{ selectedProject.teamSize }} team members online</p>
+              <p>{{ getOnlineCount() }} team members online</p>
             </div>
           </div>
           
@@ -81,7 +80,8 @@
             <v-btn
               icon
               variant="text"
-              @click="showProjectMembers = !showProjectMembers"
+              @click="toggleMembersSidebar"
+              :class="{ active: showMembersSidebar }"
             >
               <v-icon>mdi-account-group</v-icon>
             </v-btn>
@@ -96,7 +96,7 @@
         </div>
 
         <!-- Chat Content -->
-        <div class="chat-content">
+        <div v-if="selectedProject" class="chat-content">
           <!-- Messages List -->
           <div class="messages-area">
             <div class="messages-list" ref="messagesList">
@@ -175,62 +175,85 @@
             </div>
           </div>
         </div>
+
+        <!-- Empty State -->
+        <div v-else class="empty-chat-state">
+          <v-avatar size="80" color="grey-lighten-3" class="mb-4">
+            <v-icon size="40" color="grey">mdi-chat</v-icon>
+          </v-avatar>
+          <h5 class="text-h5 text-medium-emphasis mb-2">Select a Project</h5>
+          <p class="text-body-1 text-medium-emphasis">
+            Choose a project from the sidebar to start chatting with your team members.
+          </p>
+        </div>
       </div>
 
-      <!-- Project Members Sidebar -->
+      <!-- Members Sidebar -->
       <v-navigation-drawer
-        v-model="showProjectMembers"
+        v-model="showMembersSidebar"
         location="right"
-        width="300"
+        :width="sidebarWidth"
         temporary
         class="members-sidebar"
       >
-        <div class="members-header">
-          <h3>Team Members</h3>
-          <v-btn
-            icon
-            variant="text"
-            @click="showProjectMembers = false"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+        <div class="sidebar-header">
+          <div class="header-content">
+            <h3>Team Members</h3>
+            <v-btn
+              icon
+              variant="text"
+              size="small"
+              @click="toggleMembersSidebar"
+              class="toggle-btn"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </div>
         </div>
         
         <div class="members-list">
-          <div 
-            v-for="member in projectMembers" 
-            :key="member.id"
-            class="member-item"
-          >
-            <v-avatar size="40" :color="getUserColor(member.id)">
-              <v-icon>mdi-account</v-icon>
-            </v-avatar>
-            <div class="member-info">
-              <h4>{{ member.name }}</h4>
-              <p>{{ member.role }}</p>
+          <!-- Online Members -->
+          <div class="member-section">
+            <div class="section-header">
+              <span class="section-title">Online ({{ getOnlineCount() }})</span>
             </div>
-            <div class="member-status">
-              <v-chip 
-                size="x-small"
-                :color="member.online ? 'success' : 'grey'"
-              >
-                {{ member.online ? 'Online' : 'Offline' }}
-              </v-chip>
+            <div 
+              v-for="member in onlineMembers" 
+              :key="member.id"
+              class="member-item online"
+            >
+              <v-avatar size="32" :color="getUserColor(member.id)">
+                <v-icon size="16">mdi-account</v-icon>
+              </v-avatar>
+              <div class="member-info">
+                <span class="member-name">{{ member.name }}</span>
+                <span class="member-role">{{ member.role }}</span>
+              </div>
+              <div class="online-indicator"></div>
+            </div>
+          </div>
+
+          <!-- Offline Members -->
+          <div class="member-section">
+            <div class="section-header">
+              <span class="section-title">Offline ({{ getOfflineCount() }})</span>
+            </div>
+            <div 
+              v-for="member in offlineMembers" 
+              :key="member.id"
+              class="member-item offline"
+            >
+              <v-avatar size="32" :color="getUserColor(member.id)">
+                <v-icon size="16">mdi-account</v-icon>
+              </v-avatar>
+              <div class="member-info">
+                <span class="member-name">{{ member.name }}</span>
+                <span class="member-role">{{ member.role }}</span>
+              </div>
             </div>
           </div>
         </div>
       </v-navigation-drawer>
-    </div>
-
-    <!-- Empty State -->
-    <div v-else class="empty-state">
-      <v-avatar size="80" color="grey-lighten-3" class="mb-4">
-        <v-icon size="40" color="grey">mdi-chat</v-icon>
-      </v-avatar>
-      <h5 class="text-h5 text-medium-emphasis mb-2">Select a Project</h5>
-      <p class="text-body-1 text-medium-emphasis">
-        Choose a project from the list above to start chatting with your team members.
-      </p>
     </div>
   </div>
 </template>
@@ -267,10 +290,12 @@ interface ChatMessage {
 
 // Reactive data
 const selectedProject = ref<Project | null>(null);
-const showProjectMembers = ref(false);
+const showProjectsSidebar = ref(true);
+const showMembersSidebar = ref(false);
 const showChatSettings = ref(false);
 const newMessage = ref('');
 const currentUserId = ref('user-1'); // Dummy current user ID
+const sidebarWidth = ref(280);
 
 // Dummy projects data
 const projects = ref([
@@ -419,6 +444,14 @@ const currentMessages = computed(() => {
   return projectMessages.value[selectedProject.value.id as keyof typeof projectMessages.value] || [];
 });
 
+const onlineMembers = computed(() => {
+  return projectMembers.value.filter(member => member.online);
+});
+
+const offlineMembers = computed(() => {
+  return projectMembers.value.filter(member => !member.online);
+});
+
 // Methods
 const selectProject = (project: Project) => {
   selectedProject.value = project;
@@ -520,6 +553,32 @@ const scrollToBottom = () => {
   }
 };
 
+const toggleProjectsSidebar = () => {
+  showProjectsSidebar.value = !showProjectsSidebar.value;
+  sidebarWidth.value = showProjectsSidebar.value ? 280 : 60;
+};
+
+const toggleMembersSidebar = () => {
+  showMembersSidebar.value = !showMembersSidebar.value;
+};
+
+const getOnlineCount = () => {
+  return projectMembers.value.filter(member => member.online).length;
+};
+
+const getOfflineCount = () => {
+  return projectMembers.value.filter(member => !member.online).length;
+};
+
+const getLastMessage = (projectId: string) => {
+  const messages = projectMessages.value[projectId as keyof typeof projectMessages.value];
+  if (!messages || messages.length === 0) return 'No messages yet';
+  const lastMessage = messages[messages.length - 1];
+  return lastMessage.content.length > 50 
+    ? lastMessage.content.substring(0, 50) + '...'
+    : lastMessage.content;
+};
+
 // Watch for project changes to scroll to bottom
 watch(selectedProject, () => {
   nextTick(() => {
@@ -587,135 +646,147 @@ onMounted(() => {
   font-weight: 400;
 }
 
-/* Project Selection */
-.project-selection {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.selection-container {
+/* Chat Interface */
+.chat-interface {
+  display: flex;
+  height: calc(100vh - 200px);
   background: var(--erp-card-bg);
   border-radius: 16px;
   border: 1px solid var(--erp-border);
-  padding: 2rem;
+  overflow: hidden;
+  margin: 2rem;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.selection-header {
-  text-align: center;
-  margin-bottom: 2rem;
+/* Sidebar Styles */
+.projects-sidebar,
+.members-sidebar {
+  background: var(--erp-surface) !important;
+  border-right: 1px solid var(--erp-border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.selection-header h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem 0;
-  color: var(--erp-text);
+.members-sidebar {
+  border-right: none !important;
+  border-left: 1px solid var(--erp-border);
 }
 
-.selection-header p {
-  color: var(--erp-text);
-  opacity: 0.7;
-  margin: 0;
-}
-
-.project-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.project-card {
-  display: flex;
-  align-items: center;
-  padding: 1.5rem;
-  border: 2px solid var(--erp-border);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.sidebar-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--erp-border);
   background: var(--erp-surface);
 }
 
-.project-card:hover {
-  border-color: var(--erp-accent-green);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-}
-
-.project-card.active {
-  border-color: var(--erp-accent-green);
-  background: color-mix(in srgb, var(--erp-accent-green) 5%, var(--erp-surface));
-}
-
-.project-icon {
-  margin-right: 1rem;
-  flex-shrink: 0;
-}
-
-.project-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.project-info h4 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem 0;
-  color: var(--erp-text);
-}
-
-.project-info p {
-  font-size: 0.875rem;
-  color: var(--erp-text);
-  opacity: 0.8;
-  margin: 0 0 1rem 0;
-  line-height: 1.4;
-}
-
-.project-meta {
+.header-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.team-count {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.875rem;
+.sidebar-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
   color: var(--erp-text);
-  opacity: 0.7;
 }
 
-.project-status {
-  margin-left: 1rem;
+.toggle-btn {
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.toggle-btn:hover {
+  opacity: 1;
+}
+
+/* Projects List */
+.projects-list {
+  padding: 0.5rem;
+}
+
+.project-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  margin-bottom: 0.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.project-item:hover {
+  background: color-mix(in srgb, var(--erp-accent-green) 5%, var(--erp-surface));
+}
+
+.project-item.active {
+  background: color-mix(in srgb, var(--erp-accent-green) 10%, var(--erp-surface));
+  border-left: 3px solid var(--erp-accent-green);
+}
+
+.project-avatar {
+  margin-right: 0.75rem;
   flex-shrink: 0;
 }
 
-/* Chat Interface */
-.chat-interface {
-  padding: 0 2rem 2rem 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+.project-details {
+  flex: 1;
+  min-width: 0;
 }
 
-.chat-container {
-  background: var(--erp-card-bg);
-  border-radius: 16px;
-  border: 1px solid var(--erp-border);
-  height: 600px;
+.project-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--erp-text);
+  margin-bottom: 0.25rem;
+}
+
+.project-last-message {
+  font-size: 0.75rem;
+  color: var(--erp-text);
+  opacity: 0.7;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.unread-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: var(--erp-accent-green);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 10px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Chat Main Area */
+.chat-main {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  background: var(--erp-card-bg);
 }
 
 .chat-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--erp-border);
   background: var(--erp-surface);
+  flex-shrink: 0;
 }
 
 .chat-project-info {
@@ -725,7 +796,7 @@ onMounted(() => {
 }
 
 .chat-project-details h3 {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 600;
   margin: 0;
   color: var(--erp-text);
@@ -741,6 +812,11 @@ onMounted(() => {
 .chat-actions {
   display: flex;
   gap: 0.5rem;
+}
+
+.chat-actions .v-btn.active {
+  background: color-mix(in srgb, var(--erp-accent-green) 10%, var(--erp-surface));
+  color: var(--erp-accent-green);
 }
 
 .chat-content {
@@ -769,6 +845,7 @@ onMounted(() => {
   align-items: flex-start;
   gap: 0.75rem;
   max-width: 70%;
+  margin-bottom: 0.5rem;
 }
 
 .message-bubble.own-message {
@@ -814,11 +891,13 @@ onMounted(() => {
   line-height: 1.4;
   color: var(--erp-text);
   word-wrap: break-word;
+  border: 1px solid var(--erp-border);
 }
 
 .own-message .message-text {
   background: var(--erp-accent-green);
   color: white;
+  border-color: var(--erp-accent-green);
 }
 
 .system-text {
@@ -829,6 +908,7 @@ onMounted(() => {
   text-align: center;
   padding: 0.5rem 1rem;
   border-radius: 8px;
+  border: none;
 }
 
 .message-attachments {
@@ -871,40 +951,53 @@ onMounted(() => {
 }
 
 /* Members Sidebar */
-.members-sidebar {
-  background: var(--erp-card-bg) !important;
-}
-
-.members-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--erp-border);
-}
-
-.members-header h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0;
-  color: var(--erp-text);
-}
-
 .members-list {
-  padding: 1rem;
+  padding: 0.5rem;
+}
+
+.member-section {
+  margin-bottom: 1rem;
+}
+
+.section-header {
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--erp-text);
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .member-item {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem;
-  border-radius: 8px;
-  transition: background-color 0.3s ease;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  position: relative;
 }
 
 .member-item:hover {
-  background: var(--erp-surface);
+  background: color-mix(in srgb, var(--erp-accent-green) 5%, var(--erp-surface));
+}
+
+.member-item.online .member-name {
+  color: var(--erp-text);
+}
+
+.member-item.offline .member-name {
+  color: var(--erp-text);
+  opacity: 0.6;
+}
+
+.member-item.offline .member-role {
+  opacity: 0.5;
 }
 
 .member-info {
@@ -912,36 +1005,55 @@ onMounted(() => {
   min-width: 0;
 }
 
-.member-info h4 {
+.member-name {
   font-size: 0.875rem;
-  font-weight: 600;
-  margin: 0;
-  color: var(--erp-text);
+  font-weight: 500;
+  margin-bottom: 0.125rem;
+  display: block;
 }
 
-.member-info p {
+.member-role {
   font-size: 0.75rem;
   color: var(--erp-text);
   opacity: 0.7;
-  margin: 0;
+  display: block;
 }
 
-.member-status {
-  flex-shrink: 0;
+.online-indicator {
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  border: 2px solid var(--erp-surface);
+  position: absolute;
+  top: 0.75rem;
+  left: 2.5rem;
 }
 
-/* Empty State */
-.empty-state {
+/* Empty Chat State */
+.empty-chat-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
   text-align: center;
-  min-height: 400px;
+  flex: 1;
+  background: var(--erp-card-bg);
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+  .chat-interface {
+    height: calc(100vh - 150px);
+    margin: 1rem;
+  }
+  
+  .sidebarWidth {
+    width: 240px;
+  }
+}
+
 @media (max-width: 768px) {
   .team-chat-header {
     padding: 2rem 1rem;
@@ -955,32 +1067,22 @@ onMounted(() => {
     font-size: 1rem;
   }
   
-  .project-selection {
-    padding: 1rem;
-  }
-  
-  .selection-container {
-    padding: 1.5rem;
-  }
-  
-  .project-cards {
-    grid-template-columns: 1fr;
-  }
-  
-  .project-card {
-    padding: 1rem;
-  }
-  
   .chat-interface {
-    padding: 0 1rem 1rem 1rem;
+    height: calc(100vh - 120px);
+    margin: 0.5rem;
+    border-radius: 8px;
   }
   
-  .chat-container {
-    height: 500px;
+  .sidebarWidth {
+    width: 200px;
   }
   
   .chat-header {
-    padding: 1rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  .chat-project-details h3 {
+    font-size: 1rem;
   }
   
   .message-bubble {
@@ -994,34 +1096,59 @@ onMounted(() => {
   .message-input-area {
     padding: 0.75rem;
   }
+  
+  .project-details {
+    display: none;
+  }
+  
+  .project-item {
+    justify-content: center;
+    padding: 0.75rem;
+  }
 }
 
 @media (max-width: 480px) {
-  .project-card {
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
+  .chat-interface {
+    height: calc(100vh - 100px);
+    margin: 0.25rem;
   }
   
-  .project-icon {
-    margin-right: 0;
-    margin-bottom: 1rem;
+  .sidebarWidth {
+    width: 60px;
   }
   
-  .project-status {
-    margin-left: 0;
-    margin-top: 1rem;
-    align-self: flex-end;
+  .chat-header {
+    padding: 0.5rem;
   }
   
   .chat-project-info {
-    flex-direction: column;
-    align-items: flex-start;
     gap: 0.5rem;
+  }
+  
+  .chat-project-details h3 {
+    font-size: 0.875rem;
+  }
+  
+  .chat-project-details p {
+    font-size: 0.75rem;
   }
   
   .message-bubble {
     max-width: 90%;
+  }
+  
+  .message-text {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .project-item {
+    padding: 0.5rem;
+  }
+  
+  .project-avatar .v-avatar {
+    width: 28px !important;
+    height: 28px !important;
   }
 }
 </style>
