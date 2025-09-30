@@ -318,12 +318,15 @@ WS_URL=ws://localhost:3001
 
 ### 5. Frontend Configuration
 
-Update your frontend environment variables:
+The WebSocket URL is automatically derived from your backend URL:
 ```env
-VITE_WS_URL=ws://localhost:3001
-# For production:
-VITE_WS_URL=wss://your-domain.com
+VITE_BACKEND_URL=https://sizerpbackend2-0-production.up.railway.app
 ```
+
+The WebSocket service will automatically:
+- Use `wss://` for HTTPS backends
+- Use `ws://` for HTTP backends  
+- Append `/ws` to the backend URL for WebSocket endpoint
 
 ## WebSocket Message Types
 

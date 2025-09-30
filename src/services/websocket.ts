@@ -19,9 +19,10 @@ const authStore = useAuthStore();
 
 // WebSocket URL
 const getWebSocketURL = () => {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const host = import.meta.env.VITE_WS_URL || window.location.host;
-  return `${protocol}//${host}/ws`;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+  const url = new URL(backendUrl);
+  const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${protocol}//${url.host}/ws`;
 };
 
 // Connect to WebSocket
