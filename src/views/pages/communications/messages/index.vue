@@ -63,8 +63,23 @@
       <!-- Messages Content -->
       <div class="messages-content">
         <div class="messages-list">
+          <!-- Loading State -->
+          <div v-if="loading" class="loading-state">
+            <v-progress-circular indeterminate color="primary" class="mb-4"></v-progress-circular>
+            <p class="text-medium-emphasis">Loading messages...</p>
+          </div>
+
+          <!-- Error State -->
+          <div v-else-if="error" class="error-state">
+            <v-icon size="48" color="error" class="mb-4">mdi-alert-circle</v-icon>
+            <h5 class="text-h5 text-error mb-2">Error Loading Messages</h5>
+            <p class="text-body-1 text-medium-emphasis mb-4">{{ error }}</p>
+            <v-btn color="primary" @click="loadMessages">Try Again</v-btn>
+          </div>
+
           <!-- Message Item -->
           <div 
+            v-else
             v-for="message in filteredMessages" 
             :key="message.id"
             class="message-item"
@@ -132,7 +147,7 @@
                 icon
                 size="small"
                 variant="text"
-                @click.stop="deleteMessage(message.id)"
+                @click.stop="deleteMessageHandler(message.id)"
               >
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
@@ -140,7 +155,7 @@
           </div>
 
           <!-- Empty State -->
-          <div v-if="filteredMessages.length === 0" class="empty-state">
+          <div v-if="!loading && !error && filteredMessages.length === 0" class="empty-state">
             <v-avatar size="80" color="grey-lighten-3" class="mb-4">
               <v-icon size="40" color="grey">mdi-inbox</v-icon>
             </v-avatar>
@@ -204,10 +219,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useAuthStore } from '@/stores/auth';
 
 // Types
 interface Message {
-  id: number;
+  id: string;
   title: string;
   preview: string;
   content: string;
@@ -218,70 +234,36 @@ interface Message {
   attachments: any[] | null;
 }
 
+interface ChatRoom {
+  id: string;
+  roomName: string;
+  roomType: string;
+  projectId?: string;
+  createdAt: string;
+}
+
 // Reactive data
 const activeTab = ref('all');
 const selectedMessage = ref<Message | null>(null);
+const messages = ref<Message[]>([]);
+const chatRooms = ref<ChatRoom[]>([]);
+const loading = ref(false);
+const error = ref<string | null>(null);
 
-// Dummy messages data
-const messages = ref([
-  {
-    id: 1,
-    title: 'Project Deadline Approaching',
-    preview: 'The "Website Redesign" project deadline is approaching in 3 days. Please ensure all tasks are completed...',
-    content: 'The "Website Redesign" project deadline is approaching in 3 days. Please ensure all tasks are completed and ready for review. Contact your project manager if you need assistance or have any blockers.',
-    type: 'notification',
-    priority: 'high',
-    read: false,
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    attachments: null
-  },
-  {
-    id: 2,
-    title: 'System Maintenance Scheduled',
-    preview: 'Scheduled maintenance will occur on Sunday, December 15th from 2:00 AM to 4:00 AM EST...',
-    content: 'Scheduled maintenance will occur on Sunday, December 15th from 2:00 AM to 4:00 AM EST. During this time, the system may be temporarily unavailable. Please save your work and log out before the maintenance window begins.',
-    type: 'announcement',
-    priority: 'medium',
-    read: true,
-    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
-    attachments: null
-  },
-  {
-    id: 3,
-    title: 'Security Alert: Unusual Login Activity',
-    preview: 'We detected unusual login activity on your account from an unrecognized device...',
-    content: 'We detected unusual login activity on your account from an unrecognized device in New York, NY at 3:45 PM EST. If this was you, no action is required. If this was not you, please change your password immediately and contact support.',
-    type: 'alert',
-    priority: 'urgent',
-    read: false,
-    createdAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-    attachments: null
-  },
-  {
-    id: 4,
-    title: 'New Feature: Advanced Analytics Dashboard',
-    preview: 'We\'re excited to announce the release of our new Advanced Analytics Dashboard...',
-    content: 'We\'re excited to announce the release of our new Advanced Analytics Dashboard! This powerful new feature provides deeper insights into your project performance, team productivity, and resource utilization. Check it out in the Analytics section.',
-    type: 'announcement',
-    priority: 'low',
-    read: true,
-    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-    attachments: null
-  },
-  {
-    id: 5,
-    title: 'Team Performance Report Available',
-    preview: 'Your weekly team performance report is now available for review...',
-    content: 'Your weekly team performance report is now available for review. The report shows excellent progress across all projects with a 15% increase in task completion rates compared to last week.',
-    type: 'notification',
-    priority: 'medium',
-    read: true,
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    attachments: [
-      { id: 1, name: 'team-performance-report.pdf' }
-    ]
-  }
-]);
+// Auth store
+const authStore = useAuthStore();
+
+// API Base URL
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+
+// Helper function to get auth headers
+const getAuthHeaders = () => {
+  const token = authStore.user?.token || '';
+  return {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  };
+};
 
 // Computed properties
 const filteredMessages = computed(() => {
@@ -290,6 +272,105 @@ const filteredMessages = computed(() => {
   }
   return messages.value.filter(message => message.type === activeTab.value);
 });
+
+// API Methods
+const fetchChatRooms = async () => {
+  try {
+    loading.value = true;
+    error.value = null;
+    
+    const response = await fetch(`${API_BASE}/api/chat/rooms`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch chat rooms: ${response.statusText}`);
+    }
+    
+    chatRooms.value = await response.json();
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to fetch chat rooms';
+    console.error('Error fetching chat rooms:', err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const fetchMessages = async (roomId: string) => {
+  try {
+    loading.value = true;
+    error.value = null;
+    
+    const response = await fetch(`${API_BASE}/api/chat/rooms/${roomId}/messages`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch messages: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    // Convert API messages to our Message format
+    messages.value = data.messages.map((msg: any) => ({
+      id: msg.id,
+      title: msg.content.substring(0, 50) + (msg.content.length > 50 ? '...' : ''),
+      preview: msg.content.substring(0, 100) + (msg.content.length > 100 ? '...' : ''),
+      content: msg.content,
+      type: msg.messageType || 'notification',
+      priority: 'medium', // Default priority since API doesn't have this
+      read: false, // Default to unread
+      createdAt: new Date(msg.timestamp),
+      attachments: msg.attachments || null
+    }));
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to fetch messages';
+    console.error('Error fetching messages:', err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const markMessageAsRead = async (messageId: string) => {
+  try {
+    // This would be a custom endpoint for system messages
+    // For now, just update locally
+    const message = messages.value.find(msg => msg.id === messageId);
+    if (message) {
+      message.read = true;
+    }
+  } catch (err) {
+    console.error('Error marking message as read:', err);
+  }
+};
+
+const deleteMessage = async (messageId: string) => {
+  try {
+    // This would be a custom endpoint for system messages
+    // For now, just remove locally
+    const index = messages.value.findIndex(msg => msg.id === messageId);
+    if (index > -1) {
+      messages.value.splice(index, 1);
+    }
+    if (selectedMessage.value?.id === messageId) {
+      selectedMessage.value = null;
+    }
+  } catch (err) {
+    console.error('Error deleting message:', err);
+  }
+};
+
+const loadMessages = async () => {
+  await fetchChatRooms();
+  
+  // Load messages from the first available room (system messages)
+  if (chatRooms.value.length > 0) {
+    const systemRoom = chatRooms.value.find(room => room.roomType === 'system');
+    if (systemRoom) {
+      await fetchMessages(systemRoom.id);
+    }
+  }
+};
 
 // Methods
 const getPriorityColor = (priority: string) => {
@@ -345,10 +426,10 @@ const formatFullTime = (date: Date) => {
   return date.toLocaleString();
 };
 
-const openMessage = (message: Message) => {
+const openMessage = async (message: Message) => {
   selectedMessage.value = message;
   if (!message.read) {
-    message.read = true;
+    await markMessageAsRead(message.id);
   }
 };
 
@@ -356,22 +437,19 @@ const closeMessage = () => {
   selectedMessage.value = null;
 };
 
-const toggleRead = (message: Message) => {
+const toggleRead = async (message: Message) => {
   message.read = !message.read;
-};
-
-const deleteMessage = (messageId: number) => {
-  const index = messages.value.findIndex(msg => msg.id === messageId);
-  if (index > -1) {
-    messages.value.splice(index, 1);
-  }
-  if (selectedMessage.value?.id === messageId) {
-    selectedMessage.value = null;
+  if (message.read) {
+    await markMessageAsRead(message.id);
   }
 };
 
-onMounted(() => {
-  // Any initialization logic
+const deleteMessageHandler = async (messageId: string) => {
+  await deleteMessage(messageId);
+};
+
+onMounted(async () => {
+  await loadMessages();
 });
 </script>
 
@@ -533,6 +611,22 @@ onMounted(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* Loading and Error States */
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  flex: 1;
+}
+
+.error-state .v-icon {
+  margin-bottom: 1rem;
 }
 
 .message-item {

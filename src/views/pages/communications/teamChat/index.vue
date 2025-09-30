@@ -37,26 +37,39 @@
         </div>
         
         <div class="projects-list">
+          <!-- Loading State -->
+          <div v-if="loadingRooms" class="loading-state">
+            <v-progress-circular indeterminate size="24" color="primary"></v-progress-circular>
+          </div>
+
+          <!-- Error State -->
+          <div v-else-if="error" class="error-state">
+            <v-icon color="error" size="24">mdi-alert-circle</v-icon>
+            <p class="error-text">{{ error }}</p>
+          </div>
+
+          <!-- Projects List -->
           <div 
-            v-for="project in projects" 
+            v-else
+            v-for="project in chatRooms" 
             :key="project.id"
             class="project-item"
-            :class="{ active: selectedProject?.id === project.id }"
-            @click="selectProject(project)"
+            :class="{ active: selectedRoom?.id === project.id }"
+            @click="selectRoom(project)"
           >
             <div class="project-avatar">
-              <v-avatar :color="getProjectColor(project.type)" size="36">
-                <v-icon :icon="getProjectIcon(project.type)" color="white" size="18" />
+              <v-avatar :color="getProjectColor(project.roomType)" size="36">
+                <v-icon :icon="getProjectIcon(project.roomType)" color="white" size="18" />
               </v-avatar>
             </div>
             
             <div v-if="showProjectsSidebar" class="project-details">
-              <div class="project-name">{{ project.name }}</div>
+              <div class="project-name">{{ project.roomName }}</div>
               <div class="project-last-message">{{ getLastMessage(project.id) }}</div>
             </div>
             
-            <div v-if="showProjectsSidebar && project.unreadCount > 0" class="unread-badge">
-              {{ project.unreadCount }}
+            <div v-if="showProjectsSidebar && getUnreadCount(project.id) > 0" class="unread-badge">
+              {{ getUnreadCount(project.id) }}
             </div>
           </div>
         </div>
@@ -65,14 +78,14 @@
       <!-- Chat Area -->
       <div class="chat-main">
         <!-- Chat Header -->
-        <div v-if="selectedProject" class="chat-header">
+        <div v-if="selectedRoom" class="chat-header">
           <div class="chat-project-info">
-            <v-avatar :color="getProjectColor(selectedProject.type)" size="40">
-              <v-icon :icon="getProjectIcon(selectedProject.type)" color="white" size="20" />
+            <v-avatar :color="getProjectColor(selectedRoom.roomType)" size="40">
+              <v-icon :icon="getProjectIcon(selectedRoom.roomType)" color="white" size="20" />
             </v-avatar>
             <div class="chat-project-details">
-              <h3>{{ selectedProject.name }}</h3>
-              <p>{{ getOnlineCount() }} team members online</p>
+              <h3>{{ selectedRoom.roomName }}</h3>
+              <p>{{ onlineMembers.length }} team members online</p>
             </div>
           </div>
           
@@ -96,28 +109,36 @@
         </div>
 
         <!-- Chat Content -->
-        <div v-if="selectedProject" class="chat-content">
+        <div v-if="selectedRoom" class="chat-content">
           <!-- Messages List -->
           <div class="messages-area">
             <div class="messages-list" ref="messagesList">
+              <!-- Loading Messages -->
+              <div v-if="loadingMessages" class="loading-messages">
+                <v-progress-circular indeterminate size="24" color="primary"></v-progress-circular>
+                <span class="ml-2">Loading messages...</span>
+              </div>
+
+              <!-- Messages -->
               <div 
+                v-else
                 v-for="message in currentMessages" 
                 :key="message.id"
                 class="message-bubble"
                 :class="{ 
-                  'own-message': message.senderId === currentUserId,
+                  'own-message': (message.senderId || message.sender_user_id) === currentUserId,
                   'system-message': message.type === 'system'
                 }"
               >
                 <div v-if="message.type !== 'system'" class="message-avatar">
-                  <v-avatar size="32" :color="getUserColor(message.senderId)">
+                  <v-avatar size="32" :color="getUserColor(message.senderId || message.sender_user_id)">
                     <v-icon>mdi-account</v-icon>
                   </v-avatar>
                 </div>
                 
                 <div class="message-content">
                   <div v-if="message.type !== 'system'" class="message-header">
-                    <span class="sender-name">{{ getSenderName(message.senderId) }}</span>
+                    <span class="sender-name">{{ getSenderName(message.senderId || message.sender_user_id) }}</span>
                     <span class="message-time">{{ formatMessageTime(message.timestamp) }}</span>
                   </div>
                   
@@ -125,20 +146,65 @@
                     {{ message.content }}
                   </div>
                   
-                  <div v-if="message.attachments" class="message-attachments">
+                  <div v-if="message.attachments && message.attachments.length > 0" class="message-attachments">
                     <div 
-                      v-for="attachment in message.attachments" 
-                      :key="attachment.id"
+                      v-for="(attachment, index) in message.attachments" 
+                      :key="index"
                       class="attachment-item"
                     >
                       <v-icon>mdi-paperclip</v-icon>
-                      <span>{{ attachment.name }}</span>
+                      <span>{{ typeof attachment === 'string' ? attachment : (attachment as any)?.name || attachment }}</span>
                       <v-btn size="x-small" variant="text">Download</v-btn>
                     </div>
+                  </div>
+
+                  <!-- Message Reactions -->
+                  <div v-if="message.reactions && Object.keys(message.reactions).length > 0" class="message-reactions">
+                    <v-chip
+                      v-for="(users, emoji) in message.reactions"
+                      :key="emoji"
+                      size="x-small"
+                      variant="outlined"
+                      class="reaction-chip"
+                    >
+                      {{ emoji }} {{ users.length }}
+                    </v-chip>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Typing Indicator -->
+          <div v-if="typingUsers.length > 0" class="typing-indicator">
+            <div class="typing-content">
+              <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <span class="typing-text">
+                {{ typingUsers.length === 1 ? getSenderName(typingUsers[0]) : `${typingUsers.length} people` }} 
+                {{ typingUsers.length === 1 ? 'is' : 'are' }} typing...
+              </span>
+            </div>
+          </div>
+
+          <!-- Connection Status -->
+          <div v-if="!isConnected" class="connection-status">
+            <v-alert
+              :type="connectionError ? 'error' : 'warning'"
+              variant="tonal"
+              density="compact"
+              class="mb-2"
+            >
+              <template v-if="connectionError">
+                Connection Error: {{ connectionError }}
+              </template>
+              <template v-else>
+                Connecting to chat...
+              </template>
+            </v-alert>
           </div>
 
           <!-- Message Input -->
@@ -161,6 +227,7 @@
                 hide-details
                 class="message-input"
                 @keydown.enter.prevent="sendMessage"
+                @input="handleTypingInput"
               />
               
               <v-btn
@@ -215,19 +282,19 @@
           <!-- Online Members -->
           <div class="member-section">
             <div class="section-header">
-              <span class="section-title">Online ({{ getOnlineCount() }})</span>
+              <span class="section-title">Online ({{ onlineMembers.length }})</span>
             </div>
             <div 
-              v-for="member in onlineMembers" 
-              :key="member.id"
+              v-for="memberId in onlineMembers" 
+              :key="memberId"
               class="member-item online"
             >
-              <v-avatar size="32" :color="getUserColor(member.id)">
+              <v-avatar size="32" :color="getUserColor(memberId)">
                 <v-icon size="16">mdi-account</v-icon>
               </v-avatar>
               <div class="member-info">
-                <span class="member-name">{{ member.name }}</span>
-                <span class="member-role">{{ member.role }}</span>
+                <span class="member-name">{{ getSenderName(memberId) }}</span>
+                <span class="member-role">{{ projectMembers.find(m => m.id === memberId)?.role || 'Member' }}</span>
               </div>
               <div class="online-indicator"></div>
             </div>
@@ -236,7 +303,7 @@
           <!-- Offline Members -->
           <div class="member-section">
             <div class="section-header">
-              <span class="section-title">Offline ({{ getOfflineCount() }})</span>
+              <span class="section-title">Offline ({{ offlineMembers.length }})</span>
             </div>
             <div 
               v-for="member in offlineMembers" 
@@ -259,17 +326,43 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, watch } from 'vue';
+import { ref, computed, onMounted, nextTick, watch, onUnmounted } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+import { 
+  initializeWebSocket, 
+  cleanupWebSocket, 
+  joinRoom as wsJoinRoom, 
+  leaveRoom as wsLeaveRoom, 
+  sendTypingStart, 
+  sendTypingStop,
+  sendReaction,
+  on as wsOn,
+  off as wsOff,
+  isConnected,
+  connectionError
+} from '@/services/websocket';
 
 // Types
-interface Project {
+interface ChatRoom {
   id: string;
-  name: string;
-  description: string;
-  type: string;
-  status: string;
-  teamSize: number;
-  unreadCount: number;
+  roomName: string;
+  roomType: string;
+  projectId?: string;
+  createdAt: string;
+}
+
+interface ChatMessage {
+  id: string;
+  content: string;
+  attachments: string[];
+  reactions: { [emoji: string]: string[] };
+  reply_to?: string;
+  edited: boolean;
+  timestamp: number;
+  sender_user_id: string;
+  senderId?: string; // For compatibility
+  type?: string; // For compatibility
+  messageType?: string;
 }
 
 interface TeamMember {
@@ -279,222 +372,350 @@ interface TeamMember {
   online: boolean;
 }
 
-interface ChatMessage {
-  id: number;
-  senderId: string;
-  content: string;
-  timestamp: Date;
-  type: string;
-  attachments: any[] | null;
-}
-
 // Reactive data
-const selectedProject = ref<Project | null>(null);
+const selectedRoom = ref<ChatRoom | null>(null);
 const showProjectsSidebar = ref(true);
 const showMembersSidebar = ref(false);
 const showChatSettings = ref(false);
 const newMessage = ref('');
-const currentUserId = ref('user-1'); // Dummy current user ID
+const currentUserId = ref('user-1'); // This should come from auth
 const sidebarWidth = ref(280);
 
-// Dummy projects data
-const projects = ref([
-  {
-    id: 'project-1',
-    name: 'Website Redesign',
-    description: 'Modernize the company website with improved UX and mobile responsiveness',
-    type: 'PROGRESSIVE',
-    status: 'ACTIVE',
-    teamSize: 5,
-    unreadCount: 3
-  },
-  {
-    id: 'project-2',
-    name: 'Mobile App Development',
-    description: 'Create a cross-platform mobile application for customer engagement',
-    type: 'PARALLEL',
-    status: 'ACTIVE',
-    teamSize: 8,
-    unreadCount: 0
-  },
-  {
-    id: 'project-3',
-    name: 'Database Migration',
-    description: 'Migrate legacy database systems to modern cloud infrastructure',
-    type: 'SEQUENTIAL',
-    status: 'PENDING',
-    teamSize: 3,
-    unreadCount: 1
-  }
-]);
+// Real-time states
+const isTyping = ref(false);
+const typingUsers = ref<string[]>([]);
+const typingTimeout = ref<NodeJS.Timeout | null>(null);
 
-// Dummy team members data
-const projectMembers = ref([
-  {
-    id: 'user-1',
-    name: 'John Smith',
-    role: 'Project Manager',
-    online: true
-  },
-  {
-    id: 'user-2',
-    name: 'Sarah Johnson',
-    role: 'Frontend Developer',
-    online: true
-  },
-  {
-    id: 'user-3',
-    name: 'Mike Davis',
-    role: 'Backend Developer',
-    online: false
-  },
-  {
-    id: 'user-4',
-    name: 'Emily Wilson',
-    role: 'UI/UX Designer',
-    online: true
-  },
-  {
-    id: 'user-5',
-    name: 'Alex Brown',
-    role: 'QA Tester',
-    online: false
-  }
-]);
+// API data
+const chatRooms = ref<ChatRoom[]>([]);
+const currentMessages = ref<ChatMessage[]>([]);
+const onlineMembers = ref<string[]>([]);
+const projectMembers = ref<TeamMember[]>([]);
+const unreadCounts = ref<{ [roomId: string]: number }>({});
 
-// Dummy messages data for different projects
-const projectMessages = ref({
-  'project-1': [
-    {
-      id: 1,
-      senderId: 'user-2',
-      content: 'Hey team! I\'ve finished the header component redesign. Should I push it to the dev branch?',
-      timestamp: new Date(Date.now() - 30 * 60 * 1000),
-      type: 'user',
-      attachments: null
-    },
-    {
-      id: 2,
-      senderId: 'user-1',
-      content: 'Great work Sarah! Yes, please push it to dev. I\'ll review it this afternoon.',
-      timestamp: new Date(Date.now() - 25 * 60 * 1000),
-      type: 'user',
-      attachments: null
-    },
-    {
-      id: 3,
-      senderId: 'user-4',
-      content: 'I\'ve updated the design mockups based on the client feedback. Check the shared folder.',
-      timestamp: new Date(Date.now() - 20 * 60 * 1000),
-      type: 'user',
-      attachments: [
-        { id: 1, name: 'mockups-v2.zip' }
-      ]
-    },
-    {
-      id: 4,
-      senderId: 'system',
-      content: 'Mike Davis joined the chat',
-      timestamp: new Date(Date.now() - 15 * 60 * 1000),
-      type: 'system',
-      attachments: null
-    },
-    {
-      id: 5,
-      senderId: 'user-3',
-      content: 'Thanks for the updates everyone. I\'ll start working on the backend integration tomorrow.',
-      timestamp: new Date(Date.now() - 10 * 60 * 1000),
-      type: 'user',
-      attachments: null
-    }
-  ],
-  'project-2': [
-    {
-      id: 1,
-      senderId: 'user-1',
-      content: 'Welcome to the Mobile App Development project chat! Let\'s coordinate our work here.',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      type: 'user',
-      attachments: null
-    },
-    {
-      id: 2,
-      senderId: 'user-2',
-      content: 'I\'m working on the React Native setup. Should be ready by end of week.',
-      timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
-      type: 'user',
-      attachments: null
-    }
-  ],
-  'project-3': [
-    {
-      id: 1,
-      senderId: 'user-1',
-      content: 'Database migration project is starting next week. Please review the migration plan.',
-      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-      type: 'user',
-      attachments: null
-    }
-  ]
-});
+// Loading states
+const loadingRooms = ref(false);
+const loadingMessages = ref(false);
+const error = ref<string | null>(null);
+
+// Auth store
+const authStore = useAuthStore();
+
+// API Base URL
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+
+// Helper function to get auth headers
+const getAuthHeaders = () => {
+  const token = authStore.user?.token || '';
+  return {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  };
+};
 
 // Computed properties
-const currentMessages = computed(() => {
-  if (!selectedProject.value) return [];
-  return projectMessages.value[selectedProject.value.id as keyof typeof projectMessages.value] || [];
-});
-
-const onlineMembers = computed(() => {
-  return projectMembers.value.filter(member => member.online);
-});
-
 const offlineMembers = computed(() => {
   return projectMembers.value.filter(member => !member.online);
 });
 
+// API Methods
+const fetchChatRooms = async () => {
+  try {
+    loadingRooms.value = true;
+    error.value = null;
+    
+    const response = await fetch(`${API_BASE}/api/chat/rooms`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch chat rooms: ${response.statusText}`);
+    }
+    
+    chatRooms.value = await response.json();
+    
+    // Filter to only show project rooms
+    chatRooms.value = chatRooms.value.filter(room => room.roomType === 'project');
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to fetch chat rooms';
+    console.error('Error fetching chat rooms:', err);
+  } finally {
+    loadingRooms.value = false;
+  }
+};
+
+const fetchMessages = async (roomId: string) => {
+  try {
+    loadingMessages.value = true;
+    error.value = null;
+    
+    const response = await fetch(`${API_BASE}/api/chat/rooms/${roomId}/messages`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch messages: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    currentMessages.value = data.messages;
+    
+    // Clear unread count for this room
+    unreadCounts.value[roomId] = 0;
+    
+    nextTick(() => {
+      scrollToBottom();
+    });
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to fetch messages';
+    console.error('Error fetching messages:', err);
+  } finally {
+    loadingMessages.value = false;
+  }
+};
+
+const fetchOnlineMembers = async (roomId: string) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/chat/rooms/${roomId}/online`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch online members: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    onlineMembers.value = data.online;
+    
+    // Update project members online status
+    projectMembers.value.forEach(member => {
+      member.online = onlineMembers.value.includes(member.id);
+    });
+  } catch (err) {
+    console.error('Error fetching online members:', err);
+  }
+};
+
+const fetchUnreadCount = async (roomId: string) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/chat/rooms/${roomId}/unread`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch unread count: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    unreadCounts.value[roomId] = data.count;
+  } catch (err) {
+    console.error('Error fetching unread count:', err);
+  }
+};
+
+const sendMessage = async () => {
+  if (!newMessage.value.trim() || !selectedRoom.value) return;
+  
+  try {
+    const response = await fetch(`${API_BASE}/api/chat/rooms/${selectedRoom.value.id}/messages`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        content: newMessage.value.trim(),
+        messageType: 'text'
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to send message: ${response.statusText}`);
+    }
+    
+    // Message will be received via WebSocket, so we just clear the input
+    newMessage.value = '';
+    
+    // Stop typing indicator
+    if (isTyping.value) {
+      sendTypingStop(selectedRoom.value.id);
+      isTyping.value = false;
+    }
+    
+  } catch (err) {
+    console.error('Error sending message:', err);
+    error.value = err instanceof Error ? err.message : 'Failed to send message';
+  }
+};
+
+const joinRoom = async (roomId: string) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/chat/rooms/${roomId}/join`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to join room: ${response.statusText}`);
+    }
+  } catch (err) {
+    console.error('Error joining room:', err);
+  }
+};
+
+const resetUnreadCount = async (roomId: string) => {
+  try {
+    await fetch(`${API_BASE}/api/chat/rooms/${roomId}/unread/reset`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    
+    unreadCounts.value[roomId] = 0;
+  } catch (err) {
+    console.error('Error resetting unread count:', err);
+  }
+};
+
+// WebSocket Event Handlers
+const handleNewMessage = (data: any) => {
+  if (data.roomId === selectedRoom.value?.id) {
+    const newMsg: ChatMessage = {
+      id: data.id,
+      content: data.content,
+      attachments: data.attachments || [],
+      reactions: data.reactions || {},
+      reply_to: data.reply_to,
+      edited: data.edited || false,
+      timestamp: data.timestamp,
+      sender_user_id: data.sender_user_id,
+      messageType: data.messageType || 'text'
+    };
+    
+    currentMessages.value.push(newMsg);
+    nextTick(() => {
+      scrollToBottom();
+    });
+  }
+};
+
+const handleUserJoined = (data: any) => {
+  if (data.roomId === selectedRoom.value?.id) {
+    const systemMessage: ChatMessage = {
+      id: `system-${Date.now()}`,
+      content: `${getSenderName(data.userId)} joined the chat`,
+      attachments: [],
+      reactions: {},
+      edited: false,
+      timestamp: Date.now(),
+      sender_user_id: 'system',
+      messageType: 'system'
+    };
+    
+    currentMessages.value.push(systemMessage);
+    nextTick(() => {
+      scrollToBottom();
+    });
+  }
+};
+
+const handleUserLeft = (data: any) => {
+  if (data.roomId === selectedRoom.value?.id) {
+    const systemMessage: ChatMessage = {
+      id: `system-${Date.now()}`,
+      content: `${getSenderName(data.userId)} left the chat`,
+      attachments: [],
+      reactions: {},
+      edited: false,
+      timestamp: Date.now(),
+      sender_user_id: 'system',
+      messageType: 'system'
+    };
+    
+    currentMessages.value.push(systemMessage);
+    nextTick(() => {
+      scrollToBottom();
+    });
+  }
+};
+
+const handleTypingStart = (data: any) => {
+  if (data.roomId === selectedRoom.value?.id && data.userId !== currentUserId.value) {
+    if (!typingUsers.value.includes(data.userId)) {
+      typingUsers.value.push(data.userId);
+    }
+  }
+};
+
+const handleTypingStop = (data: any) => {
+  if (data.roomId === selectedRoom.value?.id) {
+    const index = typingUsers.value.indexOf(data.userId);
+    if (index > -1) {
+      typingUsers.value.splice(index, 1);
+    }
+  }
+};
+
+const handleOnlineUpdate = (data: any) => {
+  if (data.roomId === selectedRoom.value?.id) {
+    onlineMembers.value = data.online;
+    
+    // Update project members online status
+    projectMembers.value.forEach(member => {
+      member.online = onlineMembers.value.includes(member.id);
+    });
+  }
+};
+
+const handleReaction = (data: any) => {
+  if (data.roomId === selectedRoom.value?.id) {
+    const message = currentMessages.value.find(msg => msg.id === data.messageId);
+    if (message) {
+      if (!message.reactions) {
+        message.reactions = {};
+      }
+      if (!message.reactions[data.emoji]) {
+        message.reactions[data.emoji] = [];
+      }
+      
+      if (!message.reactions[data.emoji].includes(data.userId)) {
+        message.reactions[data.emoji].push(data.userId);
+      }
+    }
+  }
+};
+
 // Methods
-const selectProject = (project: Project) => {
-  selectedProject.value = project;
-  // Clear unread count when selecting project
-  project.unreadCount = 0;
-  nextTick(() => {
-    scrollToBottom();
-  });
+const selectRoom = async (room: ChatRoom) => {
+  // Leave previous room if any
+  if (selectedRoom.value) {
+    wsLeaveRoom(selectedRoom.value.id);
+  }
+  
+  selectedRoom.value = room;
+  
+  // Join the new room via WebSocket
+  wsJoinRoom(room.id);
+  
+  // Fetch messages and online members
+  await Promise.all([
+    fetchMessages(room.id),
+    fetchOnlineMembers(room.id),
+    resetUnreadCount(room.id)
+  ]);
 };
 
 const getProjectColor = (type: string) => {
   switch (type) {
-    case 'PROGRESSIVE': return 'primary';
-    case 'PARALLEL': return 'success';
-    case 'SEQUENTIAL': return 'warning';
+    case 'project': return 'primary';
+    case 'direct': return 'success';
+    case 'group': return 'warning';
     default: return 'grey';
   }
 };
 
 const getProjectIcon = (type: string) => {
   switch (type) {
-    case 'PROGRESSIVE': return 'mdi-trending-up';
-    case 'PARALLEL': return 'mdi-source-branch';
-    case 'SEQUENTIAL': return 'mdi-format-list-numbered';
+    case 'project': return 'mdi-folder';
+    case 'direct': return 'mdi-account';
+    case 'group': return 'mdi-account-group';
     default: return 'mdi-folder';
-  }
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'ACTIVE': return 'success';
-    case 'PENDING': return 'warning';
-    case 'COMPLETED': return 'info';
-    default: return 'grey';
-  }
-};
-
-const getStatusLabel = (status: string) => {
-  switch (status) {
-    case 'ACTIVE': return 'Active';
-    case 'PENDING': return 'Pending';
-    case 'COMPLETED': return 'Completed';
-    default: return status;
   }
 };
 
@@ -507,43 +728,18 @@ const getUserColor = (userId: string) => {
 const getSenderName = (senderId: string) => {
   if (senderId === 'system') return 'System';
   const member = projectMembers.value.find(m => m.id === senderId);
-  return member ? member.name : 'Unknown User';
+  return member ? member.name : `User ${senderId}`;
 };
 
-const formatMessageTime = (timestamp: Date) => {
-  const now = new Date();
-  const diffInMinutes = Math.floor((now.getTime() - timestamp.getTime()) / (1000 * 60));
+const formatMessageTime = (timestamp: number) => {
+  const now = Date.now();
+  const diffInMinutes = Math.floor((now - timestamp) / (1000 * 60));
   
   if (diffInMinutes < 1) return 'Just now';
   if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) return `${diffInHours}h ago`;
-  return timestamp.toLocaleDateString();
-};
-
-const sendMessage = () => {
-  if (!newMessage.value.trim() || !selectedProject.value) return;
-  
-  const message = {
-    id: Date.now(),
-    senderId: currentUserId.value,
-    content: newMessage.value.trim(),
-    timestamp: new Date(),
-    type: 'user',
-    attachments: null
-  };
-  
-  const projectId = selectedProject.value.id as keyof typeof projectMessages.value;
-  if (!projectMessages.value[projectId]) {
-    projectMessages.value[projectId] = [];
-  }
-  
-  projectMessages.value[projectId].push(message);
-  newMessage.value = '';
-  
-  nextTick(() => {
-    scrollToBottom();
-  });
+  return new Date(timestamp).toLocaleDateString();
 };
 
 const scrollToBottom = () => {
@@ -562,32 +758,123 @@ const toggleMembersSidebar = () => {
   showMembersSidebar.value = !showMembersSidebar.value;
 };
 
-const getOnlineCount = () => {
-  return projectMembers.value.filter(member => member.online).length;
+const getUnreadCount = (roomId: string) => {
+  return unreadCounts.value[roomId] || 0;
 };
 
-const getOfflineCount = () => {
-  return projectMembers.value.filter(member => !member.online).length;
+const getLastMessage = (roomId: string) => {
+  // This would need to be implemented with a separate API call
+  // or stored in the room data
+  return 'No messages yet';
 };
 
-const getLastMessage = (projectId: string) => {
-  const messages = projectMessages.value[projectId as keyof typeof projectMessages.value];
-  if (!messages || messages.length === 0) return 'No messages yet';
-  const lastMessage = messages[messages.length - 1];
-  return lastMessage.content.length > 50 
-    ? lastMessage.content.substring(0, 50) + '...'
-    : lastMessage.content;
+// Typing indicator functions
+const handleTypingInput = () => {
+  if (!selectedRoom.value) return;
+  
+  if (!isTyping.value) {
+    isTyping.value = true;
+    sendTypingStart(selectedRoom.value.id);
+  }
+  
+  // Clear existing timeout
+  if (typingTimeout.value) {
+    clearTimeout(typingTimeout.value);
+  }
+  
+  // Set new timeout to stop typing indicator
+  typingTimeout.value = setTimeout(() => {
+    if (isTyping.value) {
+      sendTypingStop(selectedRoom.value!.id);
+      isTyping.value = false;
+    }
+  }, 3000); // Stop typing after 3 seconds of inactivity
 };
 
-// Watch for project changes to scroll to bottom
-watch(selectedProject, () => {
+// Add reaction to message
+const addReaction = (messageId: string, emoji: string) => {
+  if (selectedRoom.value) {
+    sendReaction(selectedRoom.value.id, messageId, emoji);
+  }
+};
+
+// Watch for room changes to scroll to bottom
+watch(selectedRoom, () => {
   nextTick(() => {
     scrollToBottom();
   });
 });
 
-onMounted(() => {
-  // Any initialization logic
+onMounted(async () => {
+  // Initialize WebSocket connection
+  initializeWebSocket();
+  
+  // Set up WebSocket event listeners
+  wsOn('new_message', handleNewMessage);
+  wsOn('user_joined', handleUserJoined);
+  wsOn('user_left', handleUserLeft);
+  wsOn('typing_start', handleTypingStart);
+  wsOn('typing_stop', handleTypingStop);
+  wsOn('online_update', handleOnlineUpdate);
+  wsOn('reaction', handleReaction);
+  
+  await fetchChatRooms();
+  
+  // Initialize with dummy team members for now
+  // In real implementation, this would come from project API
+  projectMembers.value = [
+    {
+      id: 'user-1',
+      name: 'John Smith',
+      role: 'Project Manager',
+      online: true
+    },
+    {
+      id: 'user-2',
+      name: 'Sarah Johnson',
+      role: 'Frontend Developer',
+      online: true
+    },
+    {
+      id: 'user-3',
+      name: 'Mike Davis',
+      role: 'Backend Developer',
+      online: false
+    },
+    {
+      id: 'user-4',
+      name: 'Emily Wilson',
+      role: 'UI/UX Designer',
+      online: true
+    },
+    {
+      id: 'user-5',
+      name: 'Alex Brown',
+      role: 'QA Tester',
+      online: false
+    }
+  ];
+});
+
+onUnmounted(() => {
+  // Clean up WebSocket listeners
+  wsOff('new_message', handleNewMessage);
+  wsOff('user_joined', handleUserJoined);
+  wsOff('user_left', handleUserLeft);
+  wsOff('typing_start', handleTypingStart);
+  wsOff('typing_stop', handleTypingStop);
+  wsOff('online_update', handleOnlineUpdate);
+  wsOff('reaction', handleReaction);
+  
+  // Leave current room if any
+  if (selectedRoom.value) {
+    wsLeaveRoom(selectedRoom.value.id);
+  }
+  
+  // Clean up typing timeout
+  if (typingTimeout.value) {
+    clearTimeout(typingTimeout.value);
+  }
 });
 </script>
 
@@ -704,6 +991,23 @@ onMounted(() => {
 /* Projects List */
 .projects-list {
   padding: 0.5rem;
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.error-text {
+  font-size: 0.75rem;
+  color: var(--erp-text);
+  opacity: 0.7;
+  margin-top: 0.5rem;
 }
 
 .project-item {
@@ -840,6 +1144,15 @@ onMounted(() => {
   gap: 1rem;
 }
 
+.loading-messages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: var(--erp-text);
+  opacity: 0.7;
+}
+
 .message-bubble {
   display: flex;
   align-items: flex-start;
@@ -924,6 +1237,18 @@ onMounted(() => {
   border-radius: 6px;
   font-size: 0.75rem;
   color: var(--erp-text);
+}
+
+.message-reactions {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.reaction-chip {
+  font-size: 0.75rem !important;
+  height: 24px !important;
 }
 
 .message-input-area {
@@ -1028,6 +1353,66 @@ onMounted(() => {
   position: absolute;
   top: 0.75rem;
   left: 2.5rem;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--erp-border);
+  background: var(--erp-surface);
+}
+
+.typing-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.typing-dots {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.typing-dots span {
+  width: 6px;
+  height: 6px;
+  background: var(--erp-text);
+  opacity: 0.6;
+  border-radius: 50%;
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes typing {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.typing-text {
+  font-size: 0.875rem;
+  color: var(--erp-text);
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* Connection Status */
+.connection-status {
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--erp-border);
+  background: var(--erp-surface);
 }
 
 /* Empty Chat State */
