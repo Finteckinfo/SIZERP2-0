@@ -220,6 +220,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { api } from '@/services/projectApi';
 
 // Types
 interface Message {
@@ -253,17 +254,7 @@ const error = ref<string | null>(null);
 // Auth store
 const authStore = useAuthStore();
 
-// API Base URL
-const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-
-// Helper function to get auth headers
-const getAuthHeaders = () => {
-  const token = authStore.user?.token || '';
-  return {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  };
-};
+// Remove manual auth handling - api instance handles it automatically
 
 // Computed properties
 const filteredMessages = computed(() => {
@@ -279,15 +270,8 @@ const fetchChatRooms = async () => {
     loading.value = true;
     error.value = null;
     
-    const response = await fetch(`${API_BASE}/api/chat/rooms`, {
-      headers: getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch chat rooms: ${response.statusText}`);
-    }
-    
-    chatRooms.value = await response.json();
+    const response = await api.get('/chat/rooms');
+    chatRooms.value = response.data;
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to fetch chat rooms';
     console.error('Error fetching chat rooms:', err);
@@ -301,18 +285,10 @@ const fetchMessages = async (roomId: string) => {
     loading.value = true;
     error.value = null;
     
-    const response = await fetch(`${API_BASE}/api/chat/rooms/${roomId}/messages`, {
-      headers: getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch messages: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
+    const response = await api.get(`/chat/rooms/${roomId}/messages`);
     
     // Convert API messages to our Message format
-    messages.value = data.messages.map((msg: any) => ({
+    messages.value = response.data.messages.map((msg: any) => ({
       id: msg.id,
       title: msg.content.substring(0, 50) + (msg.content.length > 50 ? '...' : ''),
       preview: msg.content.substring(0, 100) + (msg.content.length > 100 ? '...' : ''),

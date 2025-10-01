@@ -328,6 +328,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { api } from '@/services/projectApi';
 import { 
   initializeWebSocket, 
   cleanupWebSocket, 
@@ -401,17 +402,7 @@ const error = ref<string | null>(null);
 // Auth store
 const authStore = useAuthStore();
 
-// API Base URL
-const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-
-// Helper function to get auth headers
-const getAuthHeaders = () => {
-  const token = authStore.user?.token || '';
-  return {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  };
-};
+// Remove manual auth handling - api instance handles it automatically
 
 // Computed properties
 const offlineMembers = computed(() => {
@@ -424,15 +415,8 @@ const fetchChatRooms = async () => {
     loadingRooms.value = true;
     error.value = null;
     
-    const response = await fetch(`${API_BASE}/api/chat/rooms`, {
-      headers: getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch chat rooms: ${response.statusText}`);
-    }
-    
-    chatRooms.value = await response.json();
+    const response = await api.get('/chat/rooms');
+    chatRooms.value = response.data;
     
     // Filter to only show project rooms
     chatRooms.value = chatRooms.value.filter(room => room.roomType === 'project');
@@ -449,16 +433,8 @@ const fetchMessages = async (roomId: string) => {
     loadingMessages.value = true;
     error.value = null;
     
-    const response = await fetch(`${API_BASE}/api/chat/rooms/${roomId}/messages`, {
-      headers: getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch messages: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    currentMessages.value = data.messages;
+    const response = await api.get(`/chat/rooms/${roomId}/messages`);
+    currentMessages.value = response.data.messages;
     
     // Clear unread count for this room
     unreadCounts.value[roomId] = 0;
@@ -476,16 +452,8 @@ const fetchMessages = async (roomId: string) => {
 
 const fetchOnlineMembers = async (roomId: string) => {
   try {
-    const response = await fetch(`${API_BASE}/api/chat/rooms/${roomId}/online`, {
-      headers: getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch online members: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    onlineMembers.value = data.online;
+    const response = await api.get(`/chat/rooms/${roomId}/online`);
+    onlineMembers.value = response.data.online;
     
     // Update project members online status
     projectMembers.value.forEach(member => {
@@ -498,16 +466,8 @@ const fetchOnlineMembers = async (roomId: string) => {
 
 const fetchUnreadCount = async (roomId: string) => {
   try {
-    const response = await fetch(`${API_BASE}/api/chat/rooms/${roomId}/unread`, {
-      headers: getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch unread count: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    unreadCounts.value[roomId] = data.count;
+    const response = await api.get(`/chat/rooms/${roomId}/unread`);
+    unreadCounts.value[roomId] = response.data.count;
   } catch (err) {
     console.error('Error fetching unread count:', err);
   }
@@ -517,18 +477,10 @@ const sendMessage = async () => {
   if (!newMessage.value.trim() || !selectedRoom.value) return;
   
   try {
-    const response = await fetch(`${API_BASE}/api/chat/rooms/${selectedRoom.value.id}/messages`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
-        content: newMessage.value.trim(),
-        messageType: 'text'
-      })
+    await api.post(`/chat/rooms/${selectedRoom.value.id}/messages`, {
+      content: newMessage.value.trim(),
+      messageType: 'text'
     });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to send message: ${response.statusText}`);
-    }
     
     // Message will be received via WebSocket, so we just clear the input
     newMessage.value = '';
@@ -547,14 +499,7 @@ const sendMessage = async () => {
 
 const joinRoom = async (roomId: string) => {
   try {
-    const response = await fetch(`${API_BASE}/api/chat/rooms/${roomId}/join`, {
-      method: 'POST',
-      headers: getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to join room: ${response.statusText}`);
-    }
+    await api.post(`/chat/rooms/${roomId}/join`);
   } catch (err) {
     console.error('Error joining room:', err);
   }
@@ -562,11 +507,7 @@ const joinRoom = async (roomId: string) => {
 
 const resetUnreadCount = async (roomId: string) => {
   try {
-    await fetch(`${API_BASE}/api/chat/rooms/${roomId}/unread/reset`, {
-      method: 'POST',
-      headers: getAuthHeaders()
-    });
-    
+    await api.post(`/chat/rooms/${roomId}/unread/reset`);
     unreadCounts.value[roomId] = 0;
   } catch (err) {
     console.error('Error resetting unread count:', err);
