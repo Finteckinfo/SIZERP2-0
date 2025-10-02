@@ -71,6 +71,9 @@
         </v-col>
       </v-row>
     </v-container>
+    
+    <!-- Connect Wallet Modal -->
+    <ConnectWallet />
   </div>
   
   <div 
@@ -86,6 +89,7 @@ import { computed, onMounted } from 'vue';
 import { useTheme } from '@/composables/useTheme';
 import { connectedWallet, isWalletConnected, openWalletModal, getWalletStatus } from '@/stores/walletStore';
 import { activeAccount, clearWalletConnection } from '@/lib/walletManager';
+import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue';
 
 const { isDark } = useTheme();
 
