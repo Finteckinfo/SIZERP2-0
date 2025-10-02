@@ -510,14 +510,58 @@ onMounted(async () => {
 
 /* Responsive design */
 @media (max-width: 768px) {
+  .task-calendar-container {
+    height: auto;
+    min-height: 100vh;
+  }
+  
   .calendar-content {
     flex-direction: column;
+    height: auto;
   }
+  
   .sidebar {
     width: 100%;
-    height: 300px;
+    height: 250px;
     border-right: none;
     border-bottom: 1px solid var(--erp-border);
+    order: 2;
+  }
+  
+  .calendar-main {
+    order: 1;
+    height: calc(100vh - 250px);
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    height: 200px;
+  }
+  
+  .calendar-main {
+    height: calc(100vh - 200px);
+    min-height: 350px;
+  }
+  
+  .loading-container,
+  .error-container {
+    padding: 1rem;
+  }
+  
+  .loading-spinner {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .error-message {
+    font-size: 0.9rem;
+  }
+  
+  .retry-btn {
+    padding: 6px 12px;
+    font-size: 0.9rem;
   }
 }
 </style>

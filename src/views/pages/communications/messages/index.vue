@@ -823,11 +823,17 @@ onMounted(async () => {
   .messages-content {
     grid-template-columns: 1fr;
     height: auto;
+    gap: 1rem;
   }
   
   .message-detail {
     height: 400px;
-    margin-top: 2rem;
+    margin-top: 1rem;
+    order: 2;
+  }
+  
+  .messages-list {
+    order: 1;
   }
 }
 
@@ -858,6 +864,15 @@ onMounted(async () => {
     padding: 1rem;
   }
   
+  .messages-content {
+    gap: 0.75rem;
+  }
+  
+  .message-detail {
+    height: 350px;
+    margin-top: 0.75rem;
+  }
+  
   .message-item {
     padding: 1rem;
   }
@@ -872,6 +887,18 @@ onMounted(async () => {
 }
 
 @media (max-width: 480px) {
+  .messages-header {
+    padding: 1.5rem 1rem;
+  }
+  
+  .header-title {
+    font-size: 1.75rem;
+  }
+  
+  .header-subtitle {
+    font-size: 0.9rem;
+  }
+  
   .nav-container {
     padding: 0 0.5rem;
   }
@@ -887,6 +914,19 @@ onMounted(async () => {
     font-size: 18px;
   }
   
+  .messages-container {
+    padding: 0.75rem;
+  }
+  
+  .messages-content {
+    gap: 0.5rem;
+  }
+  
+  .message-detail {
+    height: 300px;
+    margin-top: 0.5rem;
+  }
+  
   .message-item {
     padding: 0.75rem;
   }
@@ -899,6 +939,42 @@ onMounted(async () => {
   
   .message-meta {
     align-self: flex-end;
+  }
+  
+  .message-title {
+    font-size: 0.9rem;
+  }
+  
+  .message-preview {
+    font-size: 0.8rem;
+  }
+  
+  .message-time {
+    font-size: 0.75rem;
+  }
+  
+  .detail-header {
+    padding: 1rem 1rem 0.75rem 1rem;
+  }
+  
+  .detail-content {
+    padding: 1rem;
+  }
+  
+  .detail-title h3 {
+    font-size: 1.25rem;
+  }
+  
+  .detail-body {
+    font-size: 0.9rem;
+  }
+  
+  .attachment-item {
+    padding: 0.75rem;
+  }
+  
+  .attachment-item span {
+    font-size: 0.85rem;
   }
 }
 </style>

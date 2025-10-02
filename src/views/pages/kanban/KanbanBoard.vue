@@ -480,6 +480,16 @@ onMounted(() => {
   .columns-container {
     gap: 0.75rem;
     padding: 0 1rem 0.5rem 1rem;
+    flex-direction: column;
+    height: auto;
+    overflow-x: visible;
+    overflow-y: auto;
+    align-items: stretch;
+  }
+  
+  .columns-container::before,
+  .columns-container::after {
+    display: none;
   }
   
   .analytics-fab {

@@ -843,27 +843,127 @@ onMounted(() => {
 @media (max-width: 768px) {
   .analytics-tabs {
     padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .global-filters {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  
+  .filter-card {
+    border-radius: 12px;
   }
   
   .filters-row {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .filter-group {
+    width: 100%;
+  }
+  
+  .filter-group .v-select {
+    width: 100% !important;
+    min-width: auto !important;
   }
   
   .filter-actions {
     margin-left: 0;
     align-self: flex-end;
   }
-}
-
-@media (max-width: 480px) {
+  
+  .tabs-card {
+    border-radius: 12px;
+  }
+  
   .analytics-tabs-nav {
     overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .analytics-tabs-nav::-webkit-scrollbar {
+    display: none;
   }
   
   .tab-item {
     min-width: 120px;
     flex-shrink: 0;
+    font-size: 0.9rem;
+  }
+  
+  .section-container {
+    margin-bottom: 1rem;
+  }
+  
+  .section-header {
+    padding: 1rem;
+  }
+  
+  .section-title {
+    font-size: 1rem;
+  }
+  
+  .section-description {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics-tabs {
+    padding: 0.25rem;
+    gap: 0.25rem;
+  }
+  
+  .filter-card {
+    border-radius: 8px;
+  }
+  
+  .filters-row {
+    gap: 0.5rem;
+  }
+  
+  .filter-group .v-select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  .tabs-card {
+    border-radius: 8px;
+  }
+  
+  .tab-item {
+    min-width: 100px;
+    font-size: 0.8rem;
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .tab-item .v-icon {
+    font-size: 18px;
+  }
+  
+  .section-header {
+    padding: 0.75rem;
+  }
+  
+  .section-title {
+    font-size: 0.9rem;
+  }
+  
+  .section-description {
+    font-size: 0.8rem;
+  }
+  
+  .section-actions .v-btn {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .section-actions .v-icon {
+    font-size: 16px;
   }
 }
 </style>

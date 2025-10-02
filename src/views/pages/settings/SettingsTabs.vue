@@ -272,7 +272,7 @@ watch(() => prefs.value.theme, () => {
   savePrefs();
 });
 
-// Clerk appearance - minimal styling, centered, no scaling
+// Clerk appearance - responsive styling with mobile popup behavior
 const clerkAppearance = {
   variables: {
     colorBackground: 'transparent',
@@ -712,6 +712,26 @@ const clerkAppearance = {
     align-items: flex-start;
     gap: 1rem;
   }
+  
+  /* Clerk mobile optimization */
+  .clerk-wrapper {
+    padding: 1rem;
+    margin: 0 -0.5rem;
+  }
+  
+  .clerk-wrapper :deep(.cl-card) {
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  .clerk-wrapper :deep(.cl-formField) {
+    margin-bottom: 1rem;
+  }
+  
+  .clerk-wrapper :deep(.cl-formFieldInput) {
+    width: 100% !important;
+    min-width: auto !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -744,6 +764,48 @@ const clerkAppearance = {
   
   .theme-option {
     padding: 1rem;
+  }
+  
+  /* Enhanced Clerk mobile optimization */
+  .clerk-wrapper {
+    padding: 0.75rem;
+    margin: 0 -0.25rem;
+    border-radius: 12px;
+  }
+  
+  .clerk-wrapper :deep(.cl-card) {
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    border: 1px solid var(--erp-border) !important;
+  }
+  
+  .clerk-wrapper :deep(.cl-headerTitle) {
+    font-size: 20px !important;
+    text-align: center;
+  }
+  
+  .clerk-wrapper :deep(.cl-formFieldLabel) {
+    font-size: 14px !important;
+  }
+  
+  .clerk-wrapper :deep(.cl-formFieldInput) {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+    padding: 12px !important;
+  }
+  
+  .clerk-wrapper :deep(.cl-socialButtons) {
+    gap: 8px !important;
+  }
+  
+  .clerk-wrapper :deep(.cl-socialButton) {
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+  
+  .clerk-wrapper :deep(.cl-button) {
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
   }
 }
 </style>

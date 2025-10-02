@@ -51,20 +51,20 @@
           <!-- Projects List -->
           <div 
             v-else
-            v-for="project in chatRooms" 
+            v-for="project in projects" 
             :key="project.id"
             class="project-item"
-            :class="{ active: selectedRoom?.id === project.id }"
-            @click="selectRoom(project)"
+            :class="{ active: selectedRoom?.projectId === project.id }"
+            @click="selectProject(project)"
           >
             <div class="project-avatar">
-              <v-avatar :color="getProjectColor(project.roomType)" size="36">
-                <v-icon :icon="getProjectIcon(project.roomType)" color="white" size="18" />
+              <v-avatar :color="getProjectColor(project.type)" size="36">
+                <v-icon :icon="getProjectIcon(project.type)" color="white" size="18" />
               </v-avatar>
             </div>
             
             <div v-if="showProjectsSidebar" class="project-details">
-              <div class="project-name">{{ project.roomName }}</div>
+              <div class="project-name">{{ project.name }}</div>
               <div class="project-last-message">{{ getLastMessage(project.id) }}</div>
             </div>
             
@@ -328,7 +328,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import { api } from '@/services/projectApi';
+import { api, projectApi } from '@/services/projectApi';
 import { 
   initializeWebSocket, 
   cleanupWebSocket, 
@@ -344,6 +344,19 @@ import {
 } from '@/services/websocket';
 
 // Types
+interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  type: 'PROGRESSIVE' | 'PARALLEL';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  startDate: string;
+  endDate: string;
+  ownerId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface ChatRoom {
   id: string;
   roomName: string;
@@ -374,6 +387,7 @@ interface TeamMember {
 }
 
 // Reactive data
+const projects = ref<Project[]>([]);
 const selectedRoom = ref<ChatRoom | null>(null);
 const showProjectsSidebar = ref(true);
 const showMembersSidebar = ref(false);
@@ -410,21 +424,33 @@ const offlineMembers = computed(() => {
 });
 
 // API Methods
-const fetchChatRooms = async () => {
+const fetchProjects = async () => {
   try {
     loadingRooms.value = true;
     error.value = null;
     
+    const response = await projectApi.getUserProjectsSimple();
+    projects.value = response.projects || response || [];
+    
+    console.log('Fetched projects for team chat:', projects.value);
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to fetch projects';
+    console.error('Error fetching projects:', err);
+  } finally {
+    loadingRooms.value = false;
+  }
+};
+
+const fetchChatRooms = async () => {
+  try {
     const response = await api.get('/chat/rooms');
     chatRooms.value = response.data;
     
     // Filter to only show project rooms
     chatRooms.value = chatRooms.value.filter(room => room.roomType === 'project');
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to fetch chat rooms';
     console.error('Error fetching chat rooms:', err);
-  } finally {
-    loadingRooms.value = false;
+    // Don't set error for chat rooms as projects are the primary source
   }
 };
 
@@ -623,6 +649,40 @@ const handleReaction = (data: any) => {
 };
 
 // Methods
+const selectProject = async (project: Project) => {
+  // Find or create chat room for this project
+  let room = chatRooms.value.find(r => r.projectId === project.id);
+  
+  if (!room) {
+    // Create a virtual room for the project
+    room = {
+      id: `project-${project.id}`,
+      roomName: project.name,
+      roomType: 'project',
+      projectId: project.id,
+      createdAt: project.createdAt
+    };
+    chatRooms.value.push(room);
+  }
+  
+  // Leave previous room if any
+  if (selectedRoom.value) {
+    wsLeaveRoom(selectedRoom.value.id);
+  }
+  
+  selectedRoom.value = room;
+  
+  // Join the new room via WebSocket
+  wsJoinRoom(room.id);
+  
+  // Fetch messages and online members
+  await Promise.all([
+    fetchMessages(room.id),
+    fetchOnlineMembers(room.id),
+    resetUnreadCount(room.id)
+  ]);
+};
+
 const selectRoom = async (room: ChatRoom) => {
   // Leave previous room if any
   if (selectedRoom.value) {
@@ -644,6 +704,8 @@ const selectRoom = async (room: ChatRoom) => {
 
 const getProjectColor = (type: string) => {
   switch (type) {
+    case 'PROGRESSIVE': return 'primary';
+    case 'PARALLEL': return 'success';
     case 'project': return 'primary';
     case 'direct': return 'success';
     case 'group': return 'warning';
@@ -653,6 +715,8 @@ const getProjectColor = (type: string) => {
 
 const getProjectIcon = (type: string) => {
   switch (type) {
+    case 'PROGRESSIVE': return 'mdi-timeline';
+    case 'PARALLEL': return 'mdi-layers';
     case 'project': return 'mdi-folder';
     case 'direct': return 'mdi-account';
     case 'group': return 'mdi-account-group';
@@ -759,7 +823,10 @@ onMounted(async () => {
   wsOn('online_update', handleOnlineUpdate);
   wsOn('reaction', handleReaction);
   
-  await fetchChatRooms();
+  await Promise.all([
+    fetchProjects(),
+    fetchChatRooms()
+  ]);
   
   // Initialize with dummy team members for now
   // In real implementation, this would come from project API
@@ -1397,10 +1464,20 @@ onUnmounted(() => {
     height: calc(100vh - 120px);
     margin: 0.5rem;
     border-radius: 8px;
+    flex-direction: column;
   }
   
-  .sidebarWidth {
-    width: 200px;
+  .projects-sidebar {
+    width: 100% !important;
+    height: 200px !important;
+    position: relative !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--erp-border) !important;
+  }
+  
+  .chat-main {
+    flex: 1;
+    height: calc(100% - 200px);
   }
   
   .chat-header {
@@ -1424,39 +1501,79 @@ onUnmounted(() => {
   }
   
   .project-details {
-    display: none;
+    display: block;
   }
   
   .project-item {
-    justify-content: center;
+    justify-content: flex-start;
     padding: 0.75rem;
+  }
+  
+  .members-sidebar {
+    width: 100% !important;
+    height: 300px !important;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 1000 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
   }
 }
 
 @media (max-width: 480px) {
+  .team-chat-header {
+    padding: 1.5rem 1rem;
+  }
+  
+  .header-title {
+    font-size: 1.75rem;
+  }
+  
+  .header-subtitle {
+    font-size: 0.9rem;
+  }
+  
   .chat-interface {
     height: calc(100vh - 100px);
     margin: 0.25rem;
+    border-radius: 6px;
   }
   
-  .sidebarWidth {
-    width: 60px;
+  .projects-sidebar {
+    height: 150px !important;
+  }
+  
+  .chat-main {
+    height: calc(100% - 150px);
   }
   
   .chat-header {
     padding: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
   
   .chat-project-info {
     gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
   }
   
   .chat-project-details h3 {
     font-size: 0.875rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .chat-project-details p {
     font-size: 0.75rem;
+  }
+  
+  .chat-actions {
+    flex-shrink: 0;
   }
   
   .message-bubble {
@@ -1475,6 +1592,28 @@ onUnmounted(() => {
   .project-avatar .v-avatar {
     width: 28px !important;
     height: 28px !important;
+  }
+  
+  .project-name {
+    font-size: 0.8rem;
+  }
+  
+  .project-last-message {
+    font-size: 0.7rem;
+  }
+  
+  .input-container {
+    gap: 0.5rem;
+  }
+  
+  .message-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  .members-sidebar {
+    height: 80vh !important;
+    width: 95vw !important;
+    max-width: 400px !important;
   }
 }
 </style>
