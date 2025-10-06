@@ -785,7 +785,7 @@ onMounted(() => {
       <v-col cols="12">
         <div class="d-flex align-center justify-space-between mb-4">
           <h3 class="text-h4 font-weight-medium">My Projects</h3>
-          <div class="d-flex gap-3">
+          <div class="project-actions d-flex gap-3">
             <v-btn 
               color="secondary" 
               variant="outlined" 
@@ -1341,6 +1341,19 @@ onMounted(() => {
     flex-direction: row !important;
     width: 100%;
     justify-content: space-between;
+  }
+
+  /* Stack project actions vertically on mobile */
+  .project-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    width: 100%;
+    max-width: 420px;
+  }
+  .project-actions .v-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>
