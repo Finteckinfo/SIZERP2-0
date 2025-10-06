@@ -89,7 +89,7 @@
       </v-navigation-drawer>
 
       <!-- Chat Area -->
-      <div class="chat-main">
+      <div class="chat-main" :class="{ 'has-members-sheet': isMobile && showMembersSidebar }">
         <!-- Chat Header -->
         <div v-if="selectedRoom" class="chat-header">
           <div class="chat-project-info">
@@ -266,6 +266,13 @@
             Choose a project from the sidebar to start chatting with your team members.
           </p>
         </div>
+
+        <!-- Mobile Members FAB -->
+        <div v-if="isMobile" class="members-fab">
+          <v-btn color="primary" icon variant="flat" @click="toggleMembersSidebar">
+            <v-icon>{{ showMembersSidebar ? 'mdi-chevron-down' : 'mdi-account-group' }}</v-icon>
+          </v-btn>
+        </div>
       </div>
 
       <!-- Members Sidebar -->
@@ -275,7 +282,7 @@
         :width="sidebarWidth"
         :permanent="!isMobile"
         :temporary="isMobile"
-        :scrim="isMobile"
+        :scrim="false"
         class="members-sidebar"
       >
         <div class="sidebar-header">
@@ -888,7 +895,8 @@ onMounted(async () => {
   window.addEventListener('resize', updateIsMobile);
   // Ensure sidebar defaults
   showProjectsSidebar.value = !isMobile.value;
-  showMembersSidebar.value = !isMobile.value;
+  // Show members as a section on both, especially mobile
+  showMembersSidebar.value = true;
 });
 
 onUnmounted(() => {
@@ -1478,6 +1486,43 @@ onUnmounted(() => {
   text-align: center;
   flex: 1;
   background: var(--erp-card-bg);
+}
+
+/* FAB */
+.members-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1100;
+}
+
+@media (max-width: 768px) {
+  /* Hide FAB when members list is a static section */
+  .members-fab { display: none; }
+}
+
+/* Prevent content from being hidden behind bottom sheet (only used if overlay mode is re-enabled) */
+.has-members-sheet {
+  padding-bottom: 62vh;
+}
+
+@media (max-width: 768px) {
+  /* Members as a normal section at the bottom on mobile */
+  .members-sidebar {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    top: auto !important;
+    transform: none !important;
+    z-index: auto !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    margin-top: 0.75rem;
+  }
+  .members-list { max-height: none; overflow: visible; }
 }
 
 /* Responsive Design */
