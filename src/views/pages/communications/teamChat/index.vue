@@ -13,12 +13,25 @@
 
     <!-- Main Chat Interface -->
     <div class="chat-interface">
+      <!-- Mobile Toolbar -->
+      <div class="mobile-chat-actions" v-if="isMobile">
+        <v-btn icon variant="text" @click="toggleProjectsSidebar">
+          <v-icon>mdi-view-list</v-icon>
+        </v-btn>
+        <div class="spacer"></div>
+        <v-btn icon variant="text" @click="toggleMembersSidebar">
+          <v-icon>mdi-account-group</v-icon>
+        </v-btn>
+      </div>
+
       <!-- Projects Sidebar -->
       <v-navigation-drawer
         v-model="showProjectsSidebar"
         location="left"
         :width="sidebarWidth"
-        permanent
+        :permanent="!isMobile"
+        :temporary="isMobile"
+        :scrim="isMobile"
         class="projects-sidebar"
       >
         <div class="sidebar-header">
@@ -422,6 +435,12 @@ const authStore = useAuthStore();
 const offlineMembers = computed(() => {
   return projectMembers.value.filter(member => !member.online);
 });
+
+const isMobile = ref(false);
+
+const updateIsMobile = () => {
+  isMobile.value = window.innerWidth <= 768;
+};
 
 // API Methods
 const fetchProjects = async () => {
@@ -862,6 +881,11 @@ onMounted(async () => {
       online: false
     }
   ];
+
+  updateIsMobile();
+  window.addEventListener('resize', updateIsMobile);
+  // Ensure sidebar defaults
+  showProjectsSidebar.value = !isMobile.value;
 });
 
 onUnmounted(() => {
@@ -953,6 +977,23 @@ onUnmounted(() => {
   max-width: 1400px;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* Mobile toolbar */
+.mobile-chat-actions {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-chat-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--erp-surface);
+    border-bottom: 1px solid var(--erp-border);
+  }
+  .mobile-chat-actions .spacer { flex: 1; }
 }
 
 /* Sidebar Styles */
@@ -1456,8 +1497,8 @@ onUnmounted(() => {
   
   .team-chat-header {
     padding: 1.5rem 1rem;
-    background: transparent !important;
-    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--erp-accent-green) 0%, var(--erp-accent-indigo) 100%) !important;
+    margin-bottom: 0.5rem;
   }
   
   .header-title {
