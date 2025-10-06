@@ -572,15 +572,120 @@ const handleFilterChange = () => {
 @media (max-width: 768px) {
   .calendar-header {
     flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
   }
   
-  .header-left,
-  .header-center,
-  .header-right {
+  .header-left {
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .page-title {
+    font-size: 1.25rem;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .view-controls {
+    background: var(--erp-surface) !important;
+    border-radius: 6px;
+    padding: 0.125rem;
     width: 100%;
     justify-content: center;
+  }
+  
+  .view-btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8rem;
+    min-width: 60px;
+  }
+  
+  .header-center {
+    width: 100%;
+    order: 3;
+  }
+  
+  .date-navigation {
+    width: 100%;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .nav-btn {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  
+  .current-date {
+    font-size: 1rem;
+    padding: 0.375rem 0.75rem;
+    text-align: center;
+    flex: 1;
+    max-width: 200px;
+  }
+  
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+    flex-direction: column;
+    gap: 0.5rem;
+    order: 2;
+  }
+  
+  .project-filter {
+    width: 100%;
+  }
+  
+  .project-select {
+    width: 100%;
+    font-size: 0.8rem;
+  }
+  
+  .filter-controls {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+  
+  .filter-select,
+  .search-input {
+    min-width: 80px;
+    flex: 1;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.375rem;
+  }
+  
+  .create-task-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.8rem;
+    padding: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-header {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .header-left {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .page-title {
+    font-size: 1.125rem;
+    text-align: center;
+    width: 100%;
   }
   
   .view-controls {
@@ -588,27 +693,41 @@ const handleFilterChange = () => {
     justify-content: center;
   }
   
-  .date-navigation {
-    width: 100%;
-    justify-content: center;
+  .view-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    min-width: 50px;
   }
   
-  .header-right {
-    justify-content: space-between;
-    flex-direction: column;
-    gap: 0.5rem;
+  .date-navigation {
+    gap: 0.25rem;
+  }
+  
+  .nav-btn {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  
+  .current-date {
+    font-size: 0.9rem;
+    padding: 0.25rem 0.5rem;
+    max-width: 150px;
   }
   
   .filter-controls {
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
+    gap: 0.25rem;
   }
   
   .filter-select,
   .search-input {
-    min-width: 100px;
-    flex: 1;
+    min-width: 70px;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.3rem;
+  }
+  
+  .create-task-btn {
+    font-size: 0.75rem;
+    padding: 0.4rem;
   }
 }
 </style>
