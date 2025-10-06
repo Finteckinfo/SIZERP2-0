@@ -119,8 +119,8 @@
           v-model="localFilters.status" 
           @change="handleFilterChange"
           class="filter-select"
-          multiple
         >
+          <option value="">All Status</option>
           <option value="PENDING">Pending</option>
           <option value="IN_PROGRESS">In Progress</option>
           <option value="COMPLETED">Completed</option>
@@ -132,8 +132,8 @@
           v-model="localFilters.priority" 
           @change="handleFilterChange"
           class="filter-select"
-          multiple
         >
+          <option value="">All Priority</option>
           <option value="LOW">Low</option>
           <option value="MEDIUM">Medium</option>
           <option value="HIGH">High</option>
@@ -177,8 +177,8 @@ interface Props {
     scope: 'all' | 'department' | 'assigned_to_me' | 'user'
     userRoleId: string | undefined
     departmentId: string | undefined
-    status: string[]
-    priority: string[]
+    status: string
+    priority: string
     search: string
   }
 }
@@ -203,8 +203,8 @@ const localFilters = ref({
   scope: props.filters.scope,
   userRoleId: props.filters.userRoleId,
   departmentId: props.filters.departmentId,
-  status: [...props.filters.status],
-  priority: [...props.filters.priority],
+  status: props.filters.status,
+  priority: props.filters.priority,
   search: props.filters.search
 })
 
@@ -214,8 +214,8 @@ watch(() => props.filters, (newFilters) => {
     scope: newFilters.scope,
     userRoleId: newFilters.userRoleId,
     departmentId: newFilters.departmentId,
-    status: [...newFilters.status],
-    priority: [...newFilters.priority],
+    status: newFilters.status,
+    priority: newFilters.priority,
     search: newFilters.search
   }
 }, { deep: true })
@@ -666,7 +666,14 @@ const handleFilterChange = () => {
     width: 100%;
     justify-content: center;
     font-size: 0.8rem;
-    padding: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    height: auto;
+    min-height: 36px;
+  }
+  
+  .create-task-btn svg {
+    width: 16px;
+    height: 16px;
   }
 }
 
@@ -727,7 +734,14 @@ const handleFilterChange = () => {
   
   .create-task-btn {
     font-size: 0.75rem;
-    padding: 0.4rem;
+    padding: 0.3rem 0.6rem;
+    height: auto;
+    min-height: 32px;
+  }
+  
+  .create-task-btn svg {
+    width: 14px;
+    height: 14px;
   }
 }
 </style>
