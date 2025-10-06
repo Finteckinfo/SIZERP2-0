@@ -513,11 +513,14 @@ onMounted(async () => {
   .task-calendar-container {
     height: auto;
     min-height: 100vh;
+    background: transparent !important;
+    padding: 0 !important;
   }
   
   .calendar-content {
     flex-direction: column;
     height: auto;
+    background: transparent !important;
   }
   
   .sidebar {
@@ -526,18 +529,24 @@ onMounted(async () => {
     border-right: none;
     border-bottom: 1px solid var(--erp-border);
     order: 2;
+    background: var(--erp-surface) !important;
+    border-radius: 8px;
+    margin-bottom: 1rem;
   }
   
   .calendar-main {
     order: 1;
     height: calc(100vh - 250px);
     min-height: 400px;
+    background: var(--erp-surface) !important;
+    border-radius: 8px;
   }
 }
 
 @media (max-width: 480px) {
   .sidebar {
     height: 200px;
+    margin-bottom: 0.75rem;
   }
   
   .calendar-main {

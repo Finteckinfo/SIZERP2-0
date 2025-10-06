@@ -673,34 +673,56 @@ const clerkAppearance = {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .modern-settings {
+    background: transparent !important;
+  }
+  
   .settings-hero {
-    padding: 2rem 1rem;
+    padding: 1.5rem 1rem;
+    background: transparent !important;
+    margin-bottom: 1rem;
   }
   
   .hero-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
   
   .hero-subtitle {
-    font-size: 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .settings-nav {
+    background: transparent !important;
+    border: none !important;
+    margin-bottom: 1rem;
   }
   
   .nav-container {
-    padding: 0 1rem;
+    padding: 0;
   }
   
   .tab-button {
     padding: 0.75rem 1rem;
     min-width: 120px;
     font-size: 0.9rem;
+    background: var(--erp-surface) !important;
+    border-radius: 8px;
+    margin-right: 0.5rem;
   }
   
   .settings-content {
-    padding: 1rem;
+    padding: 0;
+    background: transparent !important;
+  }
+  
+  .content-panel {
+    max-width: 100%;
   }
   
   .preference-section {
-    padding: 1.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
   }
   
   .theme-options {
@@ -716,7 +738,9 @@ const clerkAppearance = {
   /* Clerk mobile optimization */
   .clerk-wrapper {
     padding: 1rem;
-    margin: 0 -0.5rem;
+    margin: 0;
+    background: var(--erp-surface) !important;
+    border-radius: 8px;
   }
   
   .clerk-wrapper :deep(.cl-card) {
@@ -736,51 +760,58 @@ const clerkAppearance = {
 
 @media (max-width: 480px) {
   .settings-hero {
-    padding: 1.5rem 1rem;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
   }
   
   .hero-title {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 0.85rem;
   }
   
   .nav-container {
-    padding: 0 0.5rem;
+    padding: 0;
   }
   
   .tab-button {
-    padding: 0.75rem 0.5rem;
-    min-width: 100px;
-    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+    min-width: 90px;
+    font-size: 0.8rem;
     gap: 0.25rem;
+    margin-right: 0.25rem;
   }
   
   .tab-button .v-icon {
-    font-size: 18px;
+    font-size: 16px;
   }
   
   .preference-section {
-    padding: 1rem;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
   }
   
   .theme-option {
-    padding: 1rem;
+    padding: 0.75rem;
   }
   
   /* Enhanced Clerk mobile optimization */
   .clerk-wrapper {
     padding: 0.75rem;
-    margin: 0 -0.25rem;
-    border-radius: 12px;
+    margin: 0;
+    border-radius: 8px;
   }
   
   .clerk-wrapper :deep(.cl-card) {
-    border-radius: 12px !important;
+    border-radius: 8px !important;
     box-shadow: none !important;
     border: 1px solid var(--erp-border) !important;
   }
   
   .clerk-wrapper :deep(.cl-headerTitle) {
-    font-size: 20px !important;
+    font-size: 18px !important;
     text-align: center;
   }
   

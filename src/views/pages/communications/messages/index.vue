@@ -838,39 +838,48 @@ onMounted(async () => {
 }
 
 @media (max-width: 768px) {
+  .messages-container {
+    background: transparent !important;
+    padding: 0 !important;
+  }
+  
   .messages-header {
-    padding: 2rem 1rem;
+    padding: 1.5rem 1rem;
+    background: transparent !important;
+    margin-bottom: 1rem;
   }
   
   .header-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
   
   .header-subtitle {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
   
   .nav-container {
-    padding: 0 1rem;
+    padding: 0;
   }
   
   .tab-button {
     padding: 0.75rem 1rem;
     min-width: 120px;
     font-size: 0.9rem;
-  }
-  
-  .messages-container {
-    padding: 1rem;
+    background: var(--erp-surface) !important;
+    border-radius: 8px;
+    margin-right: 0.5rem;
   }
   
   .messages-content {
     gap: 0.75rem;
+    background: transparent !important;
   }
   
   .message-detail {
     height: 350px;
     margin-top: 0.75rem;
+    background: var(--erp-surface) !important;
+    border-radius: 8px;
   }
   
   .message-item {
@@ -888,34 +897,36 @@ onMounted(async () => {
 
 @media (max-width: 480px) {
   .messages-header {
-    padding: 1.5rem 1rem;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
   }
   
   .header-title {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
   }
   
   .header-subtitle {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
   
   .nav-container {
-    padding: 0 0.5rem;
+    padding: 0;
   }
   
   .tab-button {
-    padding: 0.75rem 0.5rem;
-    min-width: 100px;
-    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+    min-width: 90px;
+    font-size: 0.8rem;
     gap: 0.25rem;
+    margin-right: 0.25rem;
   }
   
   .tab-button .v-icon {
-    font-size: 18px;
+    font-size: 16px;
   }
   
   .messages-container {
-    padding: 0.75rem;
+    padding: 0;
   }
   
   .messages-content {

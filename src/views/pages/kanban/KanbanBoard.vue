@@ -452,8 +452,15 @@ onMounted(() => {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .kanban-container {
+    background: transparent !important;
+    padding: 0 !important;
+  }
+  
   .kanban-header {
     padding: 1rem;
+    background: transparent !important;
+    margin-bottom: 1rem;
   }
   
   .header-content {
@@ -474,7 +481,8 @@ onMounted(() => {
   }
   
   .kanban-columns {
-    padding: 0.5rem 0;
+    padding: 0;
+    background: transparent !important;
   }
   
   .columns-container {
@@ -503,6 +511,7 @@ onMounted(() => {
 @media (max-width: 480px) {
   .kanban-header {
     padding: 0.75rem;
+    margin-bottom: 0.5rem;
   }
   
   .board-title {
@@ -526,7 +535,7 @@ onMounted(() => {
   }
   
   .kanban-columns {
-    padding: 0.25rem 0;
+    padding: 0;
   }
   
   .columns-container {

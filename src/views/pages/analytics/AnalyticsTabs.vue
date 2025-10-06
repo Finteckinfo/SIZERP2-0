@@ -842,18 +842,22 @@ onMounted(() => {
 /* Responsive design */
 @media (max-width: 768px) {
   .analytics-tabs {
-    padding: 0.5rem;
+    padding: 0;
     gap: 0.5rem;
+    background: transparent !important;
   }
   
   .global-filters {
     position: sticky;
     top: 0;
     z-index: 100;
+    background: transparent !important;
+    margin-bottom: 1rem;
   }
   
   .filter-card {
-    border-radius: 12px;
+    border-radius: 8px;
+    background: var(--erp-surface) !important;
   }
   
   .filters-row {
@@ -877,7 +881,8 @@ onMounted(() => {
   }
   
   .tabs-card {
-    border-radius: 12px;
+    border-radius: 8px;
+    background: var(--erp-surface) !important;
   }
   
   .analytics-tabs-nav {
@@ -915,7 +920,7 @@ onMounted(() => {
 
 @media (max-width: 480px) {
   .analytics-tabs {
-    padding: 0.25rem;
+    padding: 0;
     gap: 0.25rem;
   }
   

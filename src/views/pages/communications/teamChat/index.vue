@@ -1062,6 +1062,7 @@ onUnmounted(() => {
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1448,23 +1449,31 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
+  .team-chat-container {
+    background: transparent !important;
+    padding: 0 !important;
+  }
+  
   .team-chat-header {
-    padding: 2rem 1rem;
+    padding: 1.5rem 1rem;
+    background: transparent !important;
+    margin-bottom: 1rem;
   }
   
   .header-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
   
   .header-subtitle {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
   
   .chat-interface {
-    height: calc(100vh - 120px);
-    margin: 0.5rem;
+    height: calc(100vh - 100px);
+    margin: 0;
     border-radius: 8px;
     flex-direction: column;
+    background: var(--erp-surface) !important;
   }
   
   .projects-sidebar {
@@ -1473,6 +1482,7 @@ onUnmounted(() => {
     position: relative !important;
     border-right: none !important;
     border-bottom: 1px solid var(--erp-border) !important;
+    background: var(--erp-surface) !important;
   }
   
   .chat-main {
@@ -1524,20 +1534,21 @@ onUnmounted(() => {
 
 @media (max-width: 480px) {
   .team-chat-header {
-    padding: 1.5rem 1rem;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
   }
   
   .header-title {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
   }
   
   .header-subtitle {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
   
   .chat-interface {
-    height: calc(100vh - 100px);
-    margin: 0.25rem;
+    height: calc(100vh - 80px);
+    margin: 0;
     border-radius: 6px;
   }
   
