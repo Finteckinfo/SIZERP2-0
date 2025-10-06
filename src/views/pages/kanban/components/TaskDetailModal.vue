@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="localValue" max-width="800" scrollable persistent>
+  <v-dialog v-model="localValue" max-width="800" scrollable>
     <v-card v-if="task">
       <!-- Header -->
       <v-card-title class="task-header">
@@ -29,6 +29,8 @@
               icon
               variant="text"
               @click="localValue = false"
+              aria-label="Close"
+              title="Close"
             >
               <v-icon>mdi-close</v-icon>
             </v-btn>
