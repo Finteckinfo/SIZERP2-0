@@ -273,7 +273,9 @@
         v-model="showMembersSidebar"
         location="right"
         :width="sidebarWidth"
-        temporary
+        :permanent="!isMobile"
+        :temporary="isMobile"
+        :scrim="isMobile"
         class="members-sidebar"
       >
         <div class="sidebar-header">
@@ -886,6 +888,7 @@ onMounted(async () => {
   window.addEventListener('resize', updateIsMobile);
   // Ensure sidebar defaults
   showProjectsSidebar.value = !isMobile.value;
+  showMembersSidebar.value = !isMobile.value;
 });
 
 onUnmounted(() => {
@@ -1562,15 +1565,18 @@ onUnmounted(() => {
   
   .members-sidebar {
     width: 100% !important;
-    height: 300px !important;
+    height: 60vh !important;
     position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    transform: none !important;
     z-index: 1000 !important;
-    border-radius: 12px !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+    border-radius: 12px 12px 0 0 !important;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2) !important;
   }
+  .members-list { height: calc(60vh - 64px); overflow-y: auto; }
 }
 
 @media (max-width: 480px) {
