@@ -719,6 +719,8 @@ const clerkAppearance = {
     max-width: 100%;
   }
   
+  .panel-header { margin-bottom: 1rem; }
+  
   .preference-section {
     padding: 1rem;
     margin-bottom: 1rem;
@@ -735,17 +737,21 @@ const clerkAppearance = {
     gap: 1rem;
   }
   
-  /* Clerk mobile optimization */
+  /* Clerk mobile full-width */
   .clerk-wrapper {
-    padding: 1rem;
+    padding: 0;
     margin: 0;
-    background: var(--erp-surface) !important;
-    border-radius: 8px;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0;
   }
   
   .clerk-wrapper :deep(.cl-card) {
     max-width: 100% !important;
     margin: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
   }
   
   .clerk-wrapper :deep(.cl-formField) {
@@ -797,17 +803,17 @@ const clerkAppearance = {
     padding: 0.75rem;
   }
   
-  /* Enhanced Clerk mobile optimization */
+  /* Clerk full-bleed on very small screens */
   .clerk-wrapper {
-    padding: 0.75rem;
+    padding: 0;
     margin: 0;
-    border-radius: 8px;
+    border-radius: 0;
   }
   
   .clerk-wrapper :deep(.cl-card) {
-    border-radius: 8px !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
-    border: 1px solid var(--erp-border) !important;
+    border: none !important;
   }
   
   .clerk-wrapper :deep(.cl-headerTitle) {
