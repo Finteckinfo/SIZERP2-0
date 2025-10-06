@@ -16,6 +16,14 @@
       <!-- Filter Tabs -->
       <div class="messages-nav">
         <div class="nav-container">
+          <div class="mobile-tabs">
+            <select v-model="activeTab" class="mobile-tab-select">
+              <option value="all">All Messages</option>
+              <option value="notifications">Notifications</option>
+              <option value="alerts">Alerts</option>
+              <option value="announcements">Announcements</option>
+            </select>
+          </div>
           <div class="tab-nav">
             <button 
               class="tab-button"
@@ -497,6 +505,21 @@ onMounted(async () => {
   padding: 0 2rem;
 }
 
+.mobile-tabs {
+  display: none;
+  padding: 0.75rem 0;
+}
+
+.mobile-tab-select {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.95rem;
+  color: var(--erp-text);
+  background: var(--erp-surface);
+  border: 1px solid var(--erp-border);
+  border-radius: 8px;
+}
+
 .tab-nav {
   display: flex;
   gap: 0;
@@ -845,7 +868,7 @@ onMounted(async () => {
   
   .messages-header {
     padding: 1.5rem 1rem;
-    background: transparent !important;
+    background: linear-gradient(135deg, var(--erp-accent-green) 0%, var(--erp-accent-indigo) 100%) !important;
     margin-bottom: 1rem;
   }
   
@@ -860,6 +883,9 @@ onMounted(async () => {
   .nav-container {
     padding: 0;
   }
+
+  .mobile-tabs { display: block; }
+  .tab-nav { display: none; }
   
   .tab-button {
     padding: 0.75rem 1rem;
@@ -911,6 +937,11 @@ onMounted(async () => {
   
   .nav-container {
     padding: 0;
+  }
+
+  .mobile-tab-select {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.625rem;
   }
   
   .tab-button {
