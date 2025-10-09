@@ -1,14 +1,58 @@
 <template>
   <div class="project-view">
     <v-container fluid class="pa-0">
-      <!-- Header -->
-      <ProjectHeader
-        project-name="My Projects"
-        :team-members="headerTeamMembers"
-        search-placeholder="Search Projects"
-        back-route="/dashboard/default"
-        @search="handleSearch"
-      />
+      <!-- Hero Section with Retro Grid -->
+      <div class="projects-hero">
+        <RetroGrid />
+        <div class="hero-content">
+          <div class="hero-icon">
+            <v-icon size="48">mdi-folder-multiple</v-icon>
+          </div>
+          <h1 class="hero-title">My Projects</h1>
+          <p class="hero-subtitle">Manage and track all your projects in one place</p>
+        </div>
+      </div>
+
+      <!-- Navigation Bar with Search and Invite -->
+      <div class="projects-nav">
+        <div class="nav-content">
+          <div class="nav-left">
+            <div class="team-avatars" v-if="headerTeamMembers.length > 0">
+              <v-avatar 
+                v-for="(member, index) in headerTeamMembers.slice(0, 5)" 
+                :key="index"
+                size="32" 
+                :color="getAvatarColor(member.color)"
+                class="mr-n2"
+              >
+                <v-icon color="white" size="16">mdi-account</v-icon>
+              </v-avatar>
+              <span v-if="headerTeamMembers.length > 5" class="ml-3 text-caption">
+                +{{ headerTeamMembers.length - 5 }} more
+              </span>
+            </div>
+          </div>
+          
+          <v-spacer />
+          
+          <div class="nav-right">
+            <v-text-field
+              v-model="searchQuery"
+              placeholder="Search Projects"
+              variant="outlined"
+              density="compact"
+              hide-details
+              class="search-field mr-3"
+              prepend-inner-icon="mdi-magnify"
+              @input="handleSearch"
+            />
+            <v-btn color="primary" variant="flat">
+              <v-icon class="mr-2">mdi-account-plus</v-icon>
+              Invite
+            </v-btn>
+          </div>
+        </div>
+      </div>
 
       <!-- Main Content -->
       <div class="main-content">
@@ -236,8 +280,9 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUser } from '@clerk/vue';
-import { ProjectHeader, ProjectStats } from './components';
+import { ProjectStats } from './components';
 import { projectApi, taskApi, userRoleApi, type Project, type Task, type UserRole } from '@/services/projectApi';
+import { RetroGrid } from '@/components/ui/retro-grid';
 
 const router = useRouter();
 const { user } = useUser();
@@ -615,8 +660,87 @@ const openProjectWorkspace = (project: Project) => {
   min-height: 100vh;
 }
 
+/* Hero Section */
+.projects-hero {
+  position: relative;
+  background: transparent;
+  padding: 3rem 2rem;
+  text-align: center;
+  overflow: hidden;
+  border: 1px solid var(--erp-border);
+  border-radius: 16px;
+  margin: 1rem 1.5rem;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-icon {
+  margin-bottom: 1rem;
+}
+
+.hero-icon .v-icon {
+  color: var(--erp-accent-green);
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--erp-text);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.025em;
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  color: var(--erp-text);
+  opacity: 0.8;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Navigation Bar */
+.projects-nav {
+  background: var(--erp-card-bg);
+  border: 1px solid var(--erp-border);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.nav-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+}
+
+.team-avatars {
+  display: flex;
+  align-items: center;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.search-field {
+  max-width: 300px;
+  min-width: 200px;
+}
+
 .main-content {
-  padding: 24px;
+  padding: 0 24px 24px 24px;
   position: relative;
 }
 
@@ -732,8 +856,44 @@ const openProjectWorkspace = (project: Project) => {
 }
 
 @media (max-width: 768px) {
+  .projects-hero {
+    padding: 2rem 1rem;
+    margin: 0.5rem 1rem 1rem 1rem;
+  }
+  
+  .hero-title {
+    font-size: 1.75rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .projects-nav {
+    padding: 0.75rem 1rem;
+    margin: 0 1rem 1rem 1rem;
+  }
+  
+  .nav-content {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .nav-left,
+  .nav-right {
+    width: 100%;
+  }
+  
+  .search-field {
+    max-width: 100%;
+    min-width: auto;
+    width: 100%;
+    margin-right: 0 !important;
+    margin-bottom: 0.5rem;
+  }
+  
   .main-content {
-    padding: 16px;
+    padding: 0 16px 16px 16px;
   }
   
   .customize-btn {
