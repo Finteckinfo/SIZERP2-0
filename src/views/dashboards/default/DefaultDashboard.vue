@@ -13,6 +13,7 @@ import StatsSkeleton from './components/StatsSkeleton.vue';
 import ProjectCardSkeleton from './components/ProjectCardSkeleton.vue';
 import ActivitySkeleton from './components/ActivitySkeleton.vue';
 import OnboardingModal from '@/components/OnboardingModal.vue';
+import { Meteors } from '@/components/ui/meteors';
 
 // Import centralized API services
 import { projectApi, taskApi, userRoleApi, projectInviteApi, type Project, type Task, type UserRole } from '@/services/projectApi';
@@ -764,6 +765,7 @@ onMounted(() => {
   <div class="erp-dashboard">
     <!-- Welcome Header - Always visible -->
     <div class="welcome-header mb-6">
+      <Meteors :number="30" />
       <h1 class="text-h3 font-weight-bold mb-2">
         Welcome back, {{ userDisplayName }}! 👋
       </h1>
@@ -1187,11 +1189,20 @@ onMounted(() => {
 }
 
 .welcome-header {
+  position: relative;
   background: linear-gradient(135deg, #6ec207 0%, #39b84c 100%);
   color: white;
   padding: 32px;
   border-radius: 16px;
   margin-bottom: 32px;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.welcome-header h1,
+.welcome-header p {
+  position: relative;
+  z-index: 2;
 }
 
 /* Dashboard-wide defaults for cards, lists, dividers */

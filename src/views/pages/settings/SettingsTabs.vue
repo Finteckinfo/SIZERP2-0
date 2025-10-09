@@ -2,6 +2,7 @@
   <div class="modern-settings">
     <!-- Hero Section -->
     <div class="settings-hero">
+      <Meteors :number="25" />
       <div class="hero-content">
         <div class="hero-icon">
           <v-icon size="48" color="white">mdi-cog</v-icon>
@@ -204,6 +205,7 @@
 import { ref, onMounted, watch } from 'vue';
 import { useTheme } from 'vuetify';
 import { UserProfile } from '@clerk/vue';
+import { Meteors } from '@/components/ui/meteors';
 
 const activeTab = ref('account');
 

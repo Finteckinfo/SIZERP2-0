@@ -2,6 +2,7 @@
   <div class="team-chat-page">
     <!-- Header Section -->
     <div class="team-chat-header">
+      <Meteors :number="25" />
       <div class="header-content">
         <div class="header-icon">
           <v-icon size="48" color="white">mdi-chat</v-icon>
@@ -351,6 +352,7 @@
 import { ref, computed, onMounted, nextTick, watch, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { api, projectApi } from '@/services/projectApi';
+import { Meteors } from '@/components/ui/meteors';
 import { 
   initializeWebSocket, 
   cleanupWebSocket, 
