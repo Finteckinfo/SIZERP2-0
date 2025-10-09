@@ -785,15 +785,16 @@ onMounted(() => {
     <!-- Projects Grid - Progressive loading -->
     <v-row class="mb-6">
       <v-col cols="12">
-        <div class="d-flex align-center justify-space-between mb-4">
-          <h3 class="text-h4 font-weight-medium">My Projects</h3>
-          <div class="project-actions d-flex gap-3">
+        <div class="projects-header-section mb-4">
+          <h3 class="text-h4 font-weight-medium mb-3 mb-md-0">My Projects</h3>
+          <div class="project-actions">
             <v-btn 
               color="secondary" 
               variant="outlined" 
               prepend-icon="mdi-refresh" 
               :loading="projectsLoading"
               @click="refreshData"
+              size="small"
             >
               Refresh
             </v-btn>
@@ -802,6 +803,7 @@ onMounted(() => {
               variant="outlined" 
               prepend-icon="mdi-view-column" 
               @click="navigateToProjectsList"
+              size="small"
             >
               View All Projects
             </v-btn>
@@ -810,6 +812,7 @@ onMounted(() => {
               variant="flat" 
               prepend-icon="mdi-plus" 
               @click="navigateToCreateProject"
+              size="small"
             >
               Create New Project
             </v-btn>
@@ -1356,16 +1359,38 @@ onMounted(() => {
   }
 
   /* Stack project actions vertically on mobile */
+  .projects-header-section {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  
   .project-actions {
     flex-direction: column !important;
     align-items: stretch !important;
-    gap: 8px !important;
+    gap: 0.5rem !important;
     width: 100%;
-    max-width: 420px;
+    margin-top: 0.75rem;
   }
+  
   .project-actions .v-btn {
     width: 100%;
-    justify-content: center;
+    justify-content: flex-start !important;
+  }
+}
+
+/* Desktop and larger screens */
+@media (min-width: 769px) {
+  .projects-header-section {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .project-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
   }
 }
 </style>
