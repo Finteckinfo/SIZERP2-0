@@ -1,102 +1,140 @@
 <template>
-  <div class="retro-grid-container">
-    <div 
-      class="retro-grid" 
-      :style="{
-        '--grid-angle': `${angle}deg`
-      }"
-    ></div>
+  <div 
+    class="retro-grid-container"
+    :style="{
+      '--grid-angle': `${angle}deg`,
+      '--cell-size': `${cellSize}px`,
+      '--opacity': opacity,
+      '--light-line': lightLineColor,
+      '--dark-line': darkLineColor
+    }"
+  >
+    <div class="perspective-wrapper">
+      <div class="grid-animation-wrapper">
+        <div class="grid-background"></div>
+      </div>
+    </div>
+    
+    <!-- Gradient fade overlay -->
+    <div class="gradient-overlay"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 interface RetroGridProps {
   angle?: number
+  cellSize?: number
+  opacity?: number
+  lightLineColor?: string
+  darkLineColor?: string
 }
 
 const props = withDefaults(defineProps<RetroGridProps>(), {
-  angle: 65
+  angle: 65,
+  cellSize: 60,
+  opacity: 0.5,
+  lightLineColor: 'rgba(128, 128, 128, 0.3)',
+  darkLineColor: 'rgba(128, 128, 128, 0.3)'
 })
 </script>
 
 <style scoped>
 .retro-grid-container {
+  pointer-events: none;
   position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.5;
+  perspective: 200px;
+  opacity: var(--opacity);
+  inset: 0;
 }
 
-.retro-grid {
+.perspective-wrapper {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  transform: perspective(1000px) rotateX(var(--grid-angle));
-  transform-origin: bottom;
+  transform: rotateX(var(--grid-angle));
+}
+
+.grid-animation-wrapper {
+  position: absolute;
+  inset: 0% 0px;
+  margin-left: -200%;
+  height: 300vh;
+  width: 600vw;
+  transform-origin: 100% 0 0;
+  animation: grid-animation 15s linear infinite;
+}
+
+.grid-background {
+  position: absolute;
+  inset: 0;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-  background-size: 80px 80px;
-  background-position: center center;
-  animation: retro-grid-animation 20s linear infinite;
+    linear-gradient(to right, var(--light-line) 1px, transparent 0),
+    linear-gradient(to bottom, var(--light-line) 1px, transparent 0);
+  background-size: var(--cell-size) var(--cell-size);
+  background-repeat: repeat;
 }
 
-/* Add a gradient fade at the top and bottom */
-.retro-grid::before {
-  content: '';
+/* Dark mode grid lines */
+@media (prefers-color-scheme: dark) {
+  .grid-background {
+    background-image: 
+      linear-gradient(to right, var(--dark-line) 1px, transparent 0),
+      linear-gradient(to bottom, var(--dark-line) 1px, transparent 0);
+  }
+}
+
+/* For Vue apps with explicit dark mode class */
+:deep(.dark) .grid-background {
+  background-image: 
+    linear-gradient(to right, var(--dark-line) 1px, transparent 0),
+    linear-gradient(to bottom, var(--dark-line) 1px, transparent 0);
+}
+
+/* Gradient overlay for fade effect */
+.gradient-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0) 40%,
-    rgba(0, 0, 0, 0.3) 100%
+    to top,
+    var(--erp-page-bg, white) 0%,
+    transparent 10%,
+    transparent 90%,
+    var(--erp-page-bg, white) 100%
   );
   pointer-events: none;
 }
 
-/* Glowing horizon line effect */
-.retro-grid::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.6) 20%,
-    rgba(255, 255, 255, 0.8) 50%,
-    rgba(255, 255, 255, 0.6) 80%,
-    transparent 100%
-  );
-  box-shadow: 
-    0 0 20px rgba(255, 255, 255, 0.5),
-    0 0 40px rgba(255, 255, 255, 0.3);
-  animation: horizon-glow 3s ease-in-out infinite;
+/* Dark mode gradient overlay */
+@media (prefers-color-scheme: dark) {
+  .gradient-overlay {
+    background: linear-gradient(
+      to top,
+      var(--erp-page-bg, black) 0%,
+      transparent 10%,
+      transparent 90%,
+      var(--erp-page-bg, black) 100%
+    );
+  }
 }
 
-@keyframes retro-grid-animation {
+:deep(.dark) .gradient-overlay {
+  background: linear-gradient(
+    to top,
+    var(--erp-page-bg, black) 0%,
+    transparent 10%,
+    transparent 90%,
+    var(--erp-page-bg, black) 100%
+  );
+}
+
+@keyframes grid-animation {
   0% {
-    background-position: center 0;
+    transform: translateY(-50%);
   }
   100% {
-    background-position: center 80px;
-  }
-}
-
-@keyframes horizon-glow {
-  0%, 100% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>
