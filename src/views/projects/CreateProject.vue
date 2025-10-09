@@ -1,15 +1,17 @@
 <template>
   <div class="kanban-project-creator">
     <v-container fluid class="pa-0">
-      <!-- Header -->
-      <v-app-bar elevation="0" class="px-6 border-b erp-header">
-        <v-btn icon @click="$router.push('/dashboard/default')" class="mr-4">
-          <v-icon>mdi-arrow-left</v-icon>
-        </v-btn>
-        <div class="flex-grow-1">
-          <h1 class="text-h4 font-weight-bold" :style="{ color: 'var(--erp-text)' }">New Kanban Board</h1>
+      <!-- Hero Section with Retro Grid -->
+      <div class="create-project-hero">
+        <RetroGrid />
+        <div class="hero-content">
+          <div class="hero-icon">
+            <v-icon size="48">mdi-rocket-launch</v-icon>
+          </div>
+          <h1 class="hero-title">Create New Project</h1>
+          <p class="hero-subtitle">Set up your Kanban board and start managing tasks</p>
         </div>
-      </v-app-bar>
+      </div>
 
       <!-- Progress Steps Bar -->
       <div class="progress-container">
@@ -451,6 +453,7 @@ import { useRouter } from 'vue-router';
 import { useUser } from '@clerk/vue';
 import { connectedWallet } from '@/stores/walletStore';
 import { projectApi } from '@/services/projectApi';
+import { RetroGrid } from '@/components/ui/retro-grid';
 
 const router = useRouter();
 const { user } = useUser();
@@ -970,8 +973,51 @@ onMounted(async () => {
   background: var(--erp-page-bg);
 }
 
+/* Hero Section */
+.create-project-hero {
+  position: relative;
+  background: transparent;
+  padding: 3rem 2rem;
+  text-align: center;
+  overflow: hidden;
+  border: 1px solid var(--erp-border);
+  border-radius: 16px;
+  margin: 1rem 1.5rem;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-icon {
+  margin-bottom: 1rem;
+}
+
+.hero-icon .v-icon {
+  color: var(--erp-accent-green);
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--erp-text);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.025em;
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  color: var(--erp-text);
+  opacity: 0.8;
+  margin: 0;
+  font-weight: 400;
+}
+
 .main-content {
-  padding: 32px;
+  padding: 0 32px 32px 32px;
 }
 
 .step-content-container {
@@ -1290,5 +1336,56 @@ onMounted(async () => {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .create-project-hero {
+    padding: 2rem 1rem;
+    margin: 0.5rem 1rem 1rem 1rem;
+  }
+  
+  .hero-title {
+    font-size: 1.75rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .main-content {
+    padding: 0 16px 16px 16px;
+  }
+  
+  .progress-container {
+    padding: 1rem;
+  }
+  
+  .step-content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .create-project-hero {
+    padding: 1.5rem 1rem;
+    margin: 0.5rem 0.75rem 0.75rem 0.75rem;
+  }
+  
+  .hero-title {
+    font-size: 1.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 0.85rem;
+  }
+  
+  .main-content {
+    padding: 0 12px 12px 12px;
+  }
+  
+  .step-content {
+    padding: 12px;
+  }
 }
 </style>
