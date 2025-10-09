@@ -1190,13 +1190,14 @@ onMounted(() => {
 
 .welcome-header {
   position: relative;
-  background: linear-gradient(135deg, #6ec207 0%, #39b84c 100%);
-  color: white;
+  background: transparent;
+  color: var(--erp-text);
   padding: 32px;
   border-radius: 16px;
   margin-bottom: 32px;
   overflow: hidden;
   z-index: 1;
+  border: 1px solid var(--erp-border);
 }
 
 .welcome-header h1,

@@ -448,24 +448,14 @@ onMounted(async () => {
 
 /* Header Section */
 .messages-header {
-  background: linear-gradient(135deg, var(--erp-accent-green) 0%, var(--erp-accent-indigo) 100%);
+  background: transparent;
   padding: 4rem 2rem;
   text-align: center;
   position: relative;
   overflow: hidden;
-}
-
-.messages-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-  pointer-events: none;
+  border: 1px solid var(--erp-border);
+  border-radius: 16px;
+  margin-bottom: 2rem;
 }
 
 .header-content {
@@ -479,17 +469,22 @@ onMounted(async () => {
   margin-bottom: 1.5rem;
 }
 
+.header-icon .v-icon {
+  color: var(--erp-accent-green);
+}
+
 .header-title {
   font-size: 3rem;
   font-weight: 700;
-  color: white;
+  color: var(--erp-text);
   margin: 0 0 1rem 0;
   letter-spacing: -0.025em;
 }
 
 .header-subtitle {
   font-size: 1.25rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--erp-text);
+  opacity: 0.8;
   margin: 0;
   font-weight: 400;
 }
@@ -870,7 +865,6 @@ onMounted(async () => {
   
   .messages-header {
     padding: 1.5rem 1rem;
-    background: linear-gradient(135deg, var(--erp-accent-green) 0%, var(--erp-accent-indigo) 100%) !important;
     margin-bottom: 1rem;
   }
   
