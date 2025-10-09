@@ -100,6 +100,12 @@ export interface Project {
   type: 'PROGRESSIVE' | 'PARALLEL';
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   budgetRange?: string;
+  // Payment/Escrow fields
+  budgetAmount?: number;
+  escrowAddress?: string;
+  escrowFunded?: boolean;
+  allocatedFunds?: number;
+  releasedFunds?: number;
   startDate: string;
   endDate: string;
   ownerId: string;
@@ -143,6 +149,11 @@ export interface Task {
   checklistCount?: number;
   checklistCompleted?: number;
   createdByRoleId?: string;
+  // Payment fields
+  paymentAmount?: number;
+  paymentStatus?: 'PENDING' | 'ALLOCATED' | 'PROCESSING' | 'PAID' | 'FAILED' | 'REFUNDED';
+  paidAt?: string;
+  paymentTxHash?: string;
   createdAt: string;
   updatedAt: string;
   // Additional fields for role-aware responses
@@ -229,6 +240,8 @@ export interface CreateTaskData {
   progress?: number;
   checklistCount?: number;
   checklistCompleted?: number;
+  // Payment field
+  paymentAmount?: number;
 }
 
 // Project Management APIs
