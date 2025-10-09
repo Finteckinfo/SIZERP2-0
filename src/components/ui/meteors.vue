@@ -32,10 +32,10 @@ interface MeteorsProps {
 
 const props = withDefaults(defineProps<MeteorsProps>(), {
   number: 20,
-  minDelay: 0.2,
-  maxDelay: 1.2,
-  minDuration: 2,
-  maxDuration: 10,
+  minDelay: 0.5,
+  maxDelay: 2,
+  minDuration: 5,
+  maxDuration: 15,
   angle: 215
 })
 
