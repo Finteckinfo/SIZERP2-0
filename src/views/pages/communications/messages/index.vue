@@ -2,7 +2,7 @@
   <div class="messages-page">
     <!-- Header Section -->
     <div class="messages-header">
-      <Meteors :number="25" />
+      <RetroGrid />
       <div class="header-content">
         <div class="header-icon">
           <v-icon size="48" color="white">mdi-message-text</v-icon>
@@ -230,7 +230,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { api } from '@/services/projectApi';
-import { Meteors } from '@/components/ui/meteors';
+import { RetroGrid } from '@/components/ui/retro-grid';
 
 // Types
 interface Message {

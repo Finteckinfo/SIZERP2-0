@@ -13,7 +13,7 @@ import StatsSkeleton from './components/StatsSkeleton.vue';
 import ProjectCardSkeleton from './components/ProjectCardSkeleton.vue';
 import ActivitySkeleton from './components/ActivitySkeleton.vue';
 import OnboardingModal from '@/components/OnboardingModal.vue';
-import { Meteors } from '@/components/ui/meteors';
+import { RetroGrid } from '@/components/ui/retro-grid';
 
 // Import centralized API services
 import { projectApi, taskApi, userRoleApi, projectInviteApi, type Project, type Task, type UserRole } from '@/services/projectApi';
@@ -765,7 +765,7 @@ onMounted(() => {
   <div class="erp-dashboard">
     <!-- Welcome Header - Always visible -->
     <div class="welcome-header mb-6">
-      <Meteors :number="30" />
+      <RetroGrid />
       <h1 class="text-h3 font-weight-bold mb-2">
         Welcome back, {{ userDisplayName }}! 👋
       </h1>
