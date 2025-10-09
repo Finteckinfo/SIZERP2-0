@@ -91,8 +91,8 @@ function searchbox() {
     <!---right part -->
     <!-- ---------------------------------------------- -->
 
-    <!-- Theme Toggle moved here -->
-    <div class="mx-2 d-none d-md-flex align-center">
+    <!-- Theme Toggle - Always visible, label hidden on mobile -->
+    <div class="theme-toggle-wrapper">
       <ThemeToggle :show-label="false" size="small" />
     </div>
 
@@ -135,3 +135,44 @@ function searchbox() {
     </v-menu>
   </v-app-bar>
 </template>
+
+<style scoped>
+.theme-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  margin: 0 0.5rem;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .theme-toggle-wrapper {
+    margin: 0 0.25rem;
+  }
+  
+  /* Make the theme toggle button smaller on mobile */
+  .theme-toggle-wrapper :deep(.theme-toggle-btn) {
+    padding: 0.25rem;
+  }
+  
+  .theme-toggle-wrapper :deep(.toggle-icon-container) {
+    width: 36px;
+    height: 36px;
+  }
+  
+  /* Hide the label text on mobile */
+  .theme-toggle-wrapper :deep(.theme-label) {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .theme-toggle-wrapper {
+    margin: 0;
+  }
+  
+  .theme-toggle-wrapper :deep(.toggle-icon-container) {
+    width: 32px;
+    height: 32px;
+  }
+}
+</style>
