@@ -49,10 +49,11 @@ const meteors = ref<Meteor[]>([])
 
 const generateMeteors = () => {
   const newMeteors: Meteor[] = []
+  const width = typeof window !== 'undefined' ? window.innerWidth : 1000
   
   for (let i = 0; i < props.number; i++) {
     newMeteors.push({
-      left: Math.floor(Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000)),
+      left: Math.floor(Math.random() * (width + 400)), // Extended range to cover full width
       delay: Math.random() * (props.maxDelay - props.minDelay) + props.minDelay,
       duration: Math.floor(Math.random() * (props.maxDuration - props.minDuration) + props.minDuration)
     })
@@ -76,13 +77,12 @@ watch(() => props.number, () => {
 <style scoped>
 .meteors-container {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
 }
 
 .meteor {
@@ -90,9 +90,8 @@ watch(() => props.number, () => {
   width: 2px;
   height: 2px;
   border-radius: 9999px;
-  background-color: rgb(113, 113, 122);
+  background-color: rgba(255, 255, 255, 0.8);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
-  transform: rotate(var(--angle));
   animation: meteor-animation linear infinite;
   pointer-events: none;
 }
@@ -100,24 +99,27 @@ watch(() => props.number, () => {
 .meteor-tail {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
+  left: 0;
+  transform: translateY(-50%) translateX(-100%);
   width: 50px;
   height: 1px;
-  background: linear-gradient(to right, rgb(113, 113, 122), transparent);
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.8), transparent);
   pointer-events: none;
-  z-index: -10;
 }
 
 @keyframes meteor-animation {
   0% {
-    transform: rotate(var(--angle)) translateX(0);
+    transform: rotate(var(--angle)) translateX(0) translateY(0);
+    opacity: 0;
+  }
+  10% {
     opacity: 1;
   }
-  70% {
+  90% {
     opacity: 1;
   }
   100% {
-    transform: rotate(var(--angle)) translateX(-500px);
+    transform: rotate(var(--angle)) translateX(-500px) translateY(500px);
     opacity: 0;
   }
 }
