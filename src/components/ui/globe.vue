@@ -49,7 +49,7 @@ onMounted(() => {
   if (!globeContainer.value) return
 
   // Initialize globe
-  globeInstance = createGlobe()(globeContainer.value)
+  globeInstance = new createGlobe(globeContainer.value)
     .globeImageUrl(props.globeImageUrl)
     .bumpImageUrl(props.bumpImageUrl)
     .backgroundColor(props.backgroundColor)
