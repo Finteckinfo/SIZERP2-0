@@ -3,14 +3,22 @@
     <!-- Skip to content link for accessibility -->
     <a href="#kanban-columns" class="skip-to-content">Skip to Kanban Board</a>
     
-    <!-- Header -->
-    <div class="kanban-header">
-      <div class="header-content">
-        <div class="header-left">
-          <h1 class="board-title">
-            <v-icon class="mr-3" color="primary">mdi-view-column</v-icon>
-            Kanban Board
-          </h1>
+    <!-- Hero Section with Retro Grid -->
+    <div class="kanban-hero">
+      <RetroGrid />
+      <div class="hero-content">
+        <div class="hero-icon">
+          <v-icon size="48">mdi-view-column</v-icon>
+        </div>
+        <h1 class="hero-title">Kanban Board</h1>
+        <p class="hero-subtitle">Visualize your workflow and manage tasks efficiently</p>
+      </div>
+    </div>
+    
+    <!-- Action Bar -->
+    <div class="kanban-actions">
+      <div class="actions-content">
+        <div class="actions-left">
           <div class="board-stats" v-if="!loading">
             <v-chip size="small" variant="outlined" class="mr-2">
               <v-icon start size="16">mdi-format-list-bulleted</v-icon>
@@ -29,7 +37,7 @@
           </div>
         </div>
         
-        <div class="header-right">
+        <div class="actions-right">
           <v-btn
             v-if="hasSelectedTasks"
             variant="outlined"
@@ -205,6 +213,7 @@ import KanbanColumn from './components/KanbanColumn.vue';
 import TaskDetailModal from './components/TaskDetailModal.vue';
 import CreateTaskModal from './components/CreateTaskModal.vue';
 import BulkActionsModal from './components/BulkActionsModal.vue';
+import { RetroGrid } from '@/components/ui/retro-grid';
 import KanbanAnalytics from './components/KanbanAnalytics.vue';
 
 // Kanban composable (no project ID needed for cross-project view)
@@ -303,62 +312,78 @@ onMounted(() => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: var(--erp-page-bg);
   overflow: hidden;
   position: relative;
 }
 
-.kanban-board::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
-  pointer-events: none;
-}
-
-.kanban-header {
-  flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-  padding: 2rem 3rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+/* Hero Section */
+.kanban-hero {
   position: relative;
-  z-index: 10;
+  background: transparent;
+  padding: 3rem 2rem;
+  text-align: center;
+  overflow: hidden;
+  border: 1px solid var(--erp-border);
+  border-radius: 16px;
+  margin: 1rem 2rem;
 }
 
-.header-content {
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-icon {
+  margin-bottom: 1rem;
+}
+
+.hero-icon .v-icon {
+  color: var(--erp-accent-green);
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--erp-text);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.025em;
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  color: var(--erp-text);
+  opacity: 0.8;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Action Bar */
+.kanban-actions {
+  flex-shrink: 0;
+  background: var(--erp-card-bg);
+  border-bottom: 1px solid var(--erp-border);
+  padding: 1rem 2rem;
+  margin: 0 2rem 1rem 2rem;
+  border-radius: 12px;
+  border: 1px solid var(--erp-border);
+}
+
+.actions-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
   max-width: 100%;
 }
 
-.header-left {
+.actions-left {
   display: flex;
   align-items: center;
   gap: 1rem;
   flex: 1;
   min-width: 0;
-}
-
-.board-title {
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  letter-spacing: -0.025em;
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .board-stats {
@@ -368,10 +393,10 @@ onMounted(() => {
   flex-wrap: wrap;
 }
 
-.header-right {
+.actions-right {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
   flex-shrink: 0;
 }
 
@@ -457,23 +482,35 @@ onMounted(() => {
     padding: 0 !important;
   }
   
-  .kanban-header {
-    padding: 1rem;
-    background: transparent !important;
-    margin-bottom: 1rem;
+  .kanban-hero {
+    padding: 2rem 1rem;
+    margin: 0.5rem 1rem 1rem 1rem;
   }
   
-  .header-content {
+  .hero-title {
+    font-size: 1.75rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .kanban-actions {
+    padding: 0.75rem 1rem;
+    margin: 0 1rem 1rem 1rem;
+  }
+  
+  .actions-content {
     flex-direction: column;
     gap: 1rem;
     align-items: flex-start;
   }
   
-  .header-left {
+  .actions-left {
     width: 100%;
   }
   
-  .header-right {
+  .actions-right {
     width: 100%;
     justify-content: flex-start;
     flex-wrap: wrap;
@@ -509,13 +546,22 @@ onMounted(() => {
 }
 
 @media (max-width: 480px) {
-  .kanban-header {
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
+  .kanban-hero {
+    padding: 1.5rem 1rem;
+    margin: 0.5rem 0.75rem 0.75rem 0.75rem;
   }
   
-  .board-title {
-    font-size: 1.25rem;
+  .hero-title {
+    font-size: 1.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 0.85rem;
+  }
+  
+  .kanban-actions {
+    padding: 0.5rem 0.75rem;
+    margin: 0 0.75rem 0.75rem 0.75rem;
   }
   
   .board-stats {
@@ -523,12 +569,12 @@ onMounted(() => {
     gap: 0.25rem;
   }
   
-  .header-right {
+  .actions-right {
     flex-wrap: wrap;
     gap: 0.25rem;
   }
   
-  .header-right .v-btn {
+  .actions-right .v-btn {
     min-width: auto;
     padding: 0.5rem;
     font-size: 0.75rem;
@@ -553,8 +599,18 @@ onMounted(() => {
 
 /* Large screen optimizations */
 @media (min-width: 1440px) {
-  .kanban-header {
-    padding: 3rem 4rem;
+  .kanban-hero {
+    padding: 4rem 3rem;
+    margin: 1.5rem 3rem;
+  }
+  
+  .hero-title {
+    font-size: 3rem;
+  }
+  
+  .kanban-actions {
+    padding: 1.5rem 3rem;
+    margin: 0 3rem 1.5rem 3rem;
   }
   
   .kanban-columns {
@@ -569,11 +625,7 @@ onMounted(() => {
     padding: 0 3rem 2rem 3rem;
   }
   
-  .board-title {
-    font-size: 2.75rem;
-  }
-  
-  .header-right .v-btn {
+  .actions-right .v-btn {
     padding: 1rem 2rem;
     font-size: 1rem;
     border-radius: 12px;
@@ -587,16 +639,22 @@ onMounted(() => {
     padding: 0 4rem 2rem 4rem;
   }
   
-  .kanban-header {
-    padding: 3.5rem 5rem;
+  .kanban-hero {
+    padding: 4.5rem 4rem;
+    margin: 2rem 4rem;
+  }
+  
+  .hero-title {
+    font-size: 3.5rem;
+  }
+  
+  .kanban-actions {
+    padding: 2rem 4rem;
+    margin: 0 4rem 2rem 4rem;
   }
   
   .kanban-columns {
     padding: 3rem 0;
-  }
-  
-  .board-title {
-    font-size: 3rem;
   }
 }
 </style>
