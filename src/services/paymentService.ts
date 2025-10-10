@@ -298,8 +298,8 @@ export function getExplorerUrl(txHash: string, network?: 'mainnet' | 'testnet'):
   // Import network utils to get current network if not specified
   const currentNetwork = network || (localStorage.getItem('algorand_network') || 'testnet');
   const baseUrl = currentNetwork === 'mainnet' 
-    ? 'https://algoexplorer.io/tx/'
-    : 'https://testnet.algoexplorer.io/tx/';
+    ? 'https://explorer.perawallet.app/tx/'
+    : 'https://explorer.perawallet.app/tx/';
   return baseUrl + txHash;
 }
 
@@ -309,8 +309,8 @@ export function getExplorerUrl(txHash: string, network?: 'mainnet' | 'testnet'):
 export function getAddressExplorerUrl(address: string, network?: 'mainnet' | 'testnet'): string {
   const currentNetwork = network || (localStorage.getItem('algorand_network') || 'testnet');
   const baseUrl = currentNetwork === 'mainnet' 
-    ? 'https://algoexplorer.io/address/'
-    : 'https://testnet.algoexplorer.io/address/';
+    ? 'https://explorer.perawallet.app/address/'
+    : 'https://explorer.perawallet.app/address/';
   return baseUrl + address;
 }
 

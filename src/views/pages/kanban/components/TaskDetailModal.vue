@@ -715,8 +715,8 @@ const getPaymentStatusIcon = (status: string) => {
 const getExplorerUrl = (txHash: string) => {
   const network = localStorage.getItem('algorand_network') || 'testnet';
   const baseUrl = network === 'mainnet' 
-    ? 'https://algoexplorer.io/tx/'
-    : 'https://testnet.algoexplorer.io/tx/';
+    ? 'https://explorer.perawallet.app/tx/'
+    : 'https://explorer.perawallet.app/tx/';
   return baseUrl + txHash;
 };
 
