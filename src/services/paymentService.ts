@@ -4,6 +4,51 @@ import { api } from './projectApi';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 // ============================================
+// SIZCOIN ASSET CONFIGURATION
+// ============================================
+/**
+ * SIZCOIN - The official project token
+ * Asset ID: 2905622564
+ * Created on Algorand MainNet at Block #48747393
+ */
+export const SIZCOIN_CONFIG = {
+  ASSET_ID: 2905622564,
+  UNIT_NAME: 'SIZ',
+  DECIMALS: 2,
+  ASSET_URL: 'https://ipfs.io/ipfs/bafybeiex5cvfmggxjyjaxpdxevyhhzvrrsjw5xnee2ydw5metghl3y6fvq',
+  CREATED_BLOCK: 48747393,
+  DEFAULT_FROZEN: true,
+} as const;
+
+/**
+ * Formats SIZCOIN amount with proper decimals
+ * @param microAmount - Amount in micro units (1 SIZ = 100 micro units)
+ */
+export function formatSIZCOIN(microAmount: number): string {
+  const sizAmount = microAmount / Math.pow(10, SIZCOIN_CONFIG.DECIMALS);
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: SIZCOIN_CONFIG.DECIMALS,
+    maximumFractionDigits: SIZCOIN_CONFIG.DECIMALS
+  }).format(sizAmount);
+}
+
+/**
+ * Converts SIZ to micro units for blockchain transactions
+ * @param sizAmount - Amount in SIZ
+ */
+export function sizToMicroUnits(sizAmount: number): number {
+  return Math.floor(sizAmount * Math.pow(10, SIZCOIN_CONFIG.DECIMALS));
+}
+
+/**
+ * Converts micro units to SIZ
+ * @param microAmount - Amount in micro units
+ */
+export function microUnitsToSiz(microAmount: number): number {
+  return microAmount / Math.pow(10, SIZCOIN_CONFIG.DECIMALS);
+}
+
+// ============================================
 // ESCROW MANAGEMENT
 // ============================================
 
@@ -251,15 +296,6 @@ export async function getProjectTransactions(
 // HELPER FUNCTIONS
 // ============================================
 
-/**
- * Formats SIZCOIN amount with proper decimals
- */
-export function formatSIZCOIN(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 6
-  }).format(amount) + ' SIZ';
-}
 
 /**
  * Gets payment status color for UI
@@ -295,11 +331,10 @@ export function getPaymentStatusLabel(status: string): string {
  * Gets Algorand explorer URL for transaction
  */
 export function getExplorerUrl(txHash: string, network?: 'mainnet' | 'testnet'): string {
-  // Import network utils to get current network if not specified
   const currentNetwork = network || (localStorage.getItem('algorand_network') || 'testnet');
   const baseUrl = currentNetwork === 'mainnet' 
     ? 'https://explorer.perawallet.app/tx/'
-    : 'https://explorer.perawallet.app/tx/';
+    : 'https://testnet.explorer.perawallet.app/tx/';
   return baseUrl + txHash;
 }
 
@@ -310,7 +345,18 @@ export function getAddressExplorerUrl(address: string, network?: 'mainnet' | 'te
   const currentNetwork = network || (localStorage.getItem('algorand_network') || 'testnet');
   const baseUrl = currentNetwork === 'mainnet' 
     ? 'https://explorer.perawallet.app/address/'
-    : 'https://explorer.perawallet.app/address/';
+    : 'https://testnet.explorer.perawallet.app/address/';
   return baseUrl + address;
+}
+
+/**
+ * Gets SIZCOIN asset page on Algorand explorer
+ */
+export function getSIZCOINExplorerUrl(network?: 'mainnet' | 'testnet'): string {
+  const currentNetwork = network || (localStorage.getItem('algorand_network') || 'testnet');
+  const baseUrl = currentNetwork === 'mainnet' 
+    ? 'https://explorer.perawallet.app/asset/'
+    : 'https://testnet.explorer.perawallet.app/asset/';
+  return baseUrl + SIZCOIN_CONFIG.ASSET_ID;
 }
 

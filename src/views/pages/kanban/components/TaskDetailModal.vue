@@ -716,7 +716,7 @@ const getExplorerUrl = (txHash: string) => {
   const network = localStorage.getItem('algorand_network') || 'testnet';
   const baseUrl = network === 'mainnet' 
     ? 'https://explorer.perawallet.app/tx/'
-    : 'https://explorer.perawallet.app/tx/';
+    : 'https://testnet.explorer.perawallet.app/tx/';
   return baseUrl + txHash;
 };
 
