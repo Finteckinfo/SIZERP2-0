@@ -1,57 +1,71 @@
 <template>
   <div class="project-details">
     <v-container fluid class="pa-0">
-      <!-- Header -->
-      <v-app-bar elevation="0" class="px-6 border-b erp-header">
-        <div class="d-flex align-center">
-          <v-btn icon @click="$router.push('/projects')" class="mr-4">
+      <!-- Hero Section with Back Button -->
+      <div class="project-hero">
+        <RetroGrid />
+        
+        <!-- Back Button -->
+        <div class="hero-back-btn">
+          <v-btn icon variant="text" @click="$router.push('/projects')" size="small">
             <v-icon>mdi-arrow-left</v-icon>
           </v-btn>
-          <div class="d-flex align-center">
-            <v-icon :color="'var(--erp-accent-green)'" class="mr-2">mdi-folder</v-icon>
-            <h1 class="text-h5 font-weight-bold" :style="{ color: 'var(--erp-text)' }">{{ project?.name || 'Loading...' }}</h1>
+        </div>
+
+        <div class="hero-content">
+          <!-- Project Icon -->
+          <div class="hero-icon">
+            <v-icon size="48">mdi-folder-open</v-icon>
+          </div>
+          
+          <!-- Project Title & Status -->
+          <div class="hero-title-section">
+            <h1 class="hero-title">{{ project?.name || 'Loading...' }}</h1>
             <v-chip 
               v-if="project"
               :color="getStatusColor(getProjectStatus(project))" 
-              size="small" 
-              class="ml-3"
+              size="small"
+              class="mt-2"
             >
               {{ getStatusLabel(getProjectStatus(project)) }}
             </v-chip>
           </div>
+          
+          <!-- Action Buttons -->
+          <div class="hero-actions">
+            <v-btn 
+              :color="'var(--erp-accent-green)'" 
+              variant="elevated" 
+              size="large"
+              @click="openWorkspace"
+              class="action-btn"
+            >
+              <v-icon class="mr-2">mdi-application</v-icon>
+              Open Workspace
+            </v-btn>
+            <v-btn 
+              color="secondary" 
+              variant="outlined" 
+              size="large"
+              @click="editProject"
+              class="action-btn"
+            >
+              <v-icon class="mr-2">mdi-pencil</v-icon>
+              Edit Project
+            </v-btn>
+            <v-btn 
+              color="info" 
+              variant="outlined"
+              size="large"
+              @click="shareProject"
+              class="action-btn"
+            >
+              <v-icon class="mr-2">mdi-share-variant</v-icon>
+              Share
+            </v-btn>
+          </div>
         </div>
-        
-        <v-spacer />
-        
-        <div class="d-flex align-center">
-          <v-btn 
-            :color="'var(--erp-accent-green)'" 
-            variant="outlined" 
-            class="mr-3"
-            @click="openWorkspace"
-          >
-            <v-icon class="mr-2">mdi-application</v-icon>
-            Open Workspace
-          </v-btn>
-          <v-btn 
-            color="secondary" 
-            variant="outlined" 
-            class="mr-3"
-            @click="editProject"
-          >
-            <v-icon class="mr-2">mdi-pencil</v-icon>
-            Edit Project
-          </v-btn>
-          <v-btn 
-            color="info" 
-            variant="outlined"
-            @click="shareProject"
-          >
-            <v-icon class="mr-2">mdi-share-variant</v-icon>
-            Share
-          </v-btn>
-        </div>
-      </v-app-bar>
+      </div>
 
       <!-- Main Content -->
       <div class="main-content">
@@ -388,6 +402,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUser } from '@clerk/vue';
 import { projectApi, taskApi, userRoleApi, departmentApi, projectAccessApi, type Project, type Task, type UserRole, type Department } from '@/services/projectApi';
+import { RetroGrid } from '@/components/ui/retro-grid';
 
 const router = useRouter();
 const route = useRoute();
@@ -725,8 +740,74 @@ watch(() => route.params.id, (newId) => {
   min-height: 100vh;
 }
 
+/* Hero Section */
+.project-hero {
+  position: relative;
+  background: transparent;
+  padding: 3rem 2rem;
+  text-align: center;
+  overflow: hidden;
+  border: 1px solid var(--erp-border);
+  border-radius: 16px;
+  margin: 1rem 1.5rem;
+}
+
+.hero-back-btn {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 3;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.hero-icon {
+  margin-bottom: 0.5rem;
+}
+
+.hero-icon .v-icon {
+  color: var(--erp-accent-green);
+}
+
+.hero-title-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--erp-text);
+  margin: 0;
+  letter-spacing: -0.025em;
+  text-align: center;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.action-btn {
+  min-width: 160px;
+}
+
 .main-content {
-  padding: 24px;
+  padding: 0 24px 24px 24px;
 }
 
 .border {
@@ -1010,7 +1091,28 @@ watch(() => route.params.id, (newId) => {
   color: var(--erp-text);
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
+  .project-hero {
+    padding: 2rem 1rem;
+    margin: 0.5rem;
+  }
+
+  .hero-title {
+    font-size: 1.75rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .action-btn {
+    width: 100%;
+    min-width: auto;
+  }
+
   .main-content {
     padding: 16px;
   }
@@ -1035,6 +1137,26 @@ watch(() => route.params.id, (newId) => {
   
   .task-meta {
     align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .project-hero {
+    padding: 1.5rem 0.75rem;
+    margin: 0.25rem;
+  }
+
+  .hero-icon .v-icon {
+    font-size: 36px !important;
+  }
+
+  .hero-title {
+    font-size: 1.5rem;
+  }
+
+  .action-btn {
+    font-size: 0.875rem;
+    padding: 8px 16px;
   }
 }
 </style>
