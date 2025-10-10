@@ -457,8 +457,31 @@ export const projectInviteApi = {
 export const userRoleApi = {
   // Get user role in project
   getUserRoleInProject: async (projectId: string, userId: string) => {
-    const response = await api.get(`/user-roles/project/${projectId}/user/${userId}`);
-    return response.data;
+    try {
+      // Try the specific endpoint first
+      const response = await api.get(`/user-roles/project/${projectId}/user/${userId}`);
+      return response.data;
+    } catch (error: any) {
+      // If 404, fallback to getting all roles and filtering
+      if (error.response?.status === 404) {
+        console.log(`⚠️ Endpoint not found, falling back to filtering all project roles`);
+        const response = await api.get(`/user-roles/project/${projectId}`);
+        const roles = response.data;
+        
+        // Find the role for the specific user
+        const userRole = Array.isArray(roles) 
+          ? roles.find((role: UserRole) => role.userId === userId)
+          : null;
+        
+        // If no role found, throw 404 to maintain expected behavior
+        if (!userRole) {
+          throw error; // Re-throw original 404
+        }
+        
+        return userRole;
+      }
+      throw error; // Re-throw other errors
+    }
   },
 
   // Update user role

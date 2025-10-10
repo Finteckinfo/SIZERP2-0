@@ -4,6 +4,8 @@ import QuickActions from './components/QuickActions.vue';
 import ProjectOverview from './components/ProjectOverview.vue';
 import ProjectCard from './components/ProjectCard.vue';
 import RecentActivity from './components/RecentActivity.vue';
+import EarningsWidget from './components/EarningsWidget.vue';
+import ProjectBudgetWidget from './components/ProjectBudgetWidget.vue';
 import { ref, onMounted, computed, watch } from 'vue';
 import { useUser } from '@clerk/vue';
 import { useRouter } from 'vue-router';
@@ -779,6 +781,19 @@ onMounted(() => {
       <v-col cols="12">
         <StatsSkeleton v-if="statsLoading" />
         <ProjectOverview v-else :stats="projectStats" />
+      </v-col>
+    </v-row>
+
+    <!-- Earnings & Budget Widgets -->
+    <v-row class="mb-6">
+      <!-- Earnings Widget (for employees) -->
+      <v-col cols="12" md="6">
+        <EarningsWidget />
+      </v-col>
+      
+      <!-- Budget Widget (for project owners/managers) -->
+      <v-col cols="12" md="6">
+        <ProjectBudgetWidget :project-ids="projects.map(p => p.id)" />
       </v-col>
     </v-row>
 

@@ -96,16 +96,6 @@ function selectNetwork(networkId: string) {
   // Show notification
   console.log(`Switched to ${networkLabel.value}`);
 }
-
-// Export for use in other components
-export function getCurrentNetwork(): NetworkId {
-  const network = localStorage.getItem('algorand_network') || 'testnet';
-  return network as NetworkId;
-}
-
-export function isMainNet(): boolean {
-  return getCurrentNetwork() === 'mainnet';
-}
 </script>
 
 <style scoped>

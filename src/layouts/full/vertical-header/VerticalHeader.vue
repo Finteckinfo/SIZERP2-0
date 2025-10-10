@@ -10,6 +10,7 @@ import NotificationDD from './NotificationDD.vue';
 import ProfileDD from './ProfileDD.vue';
 import Searchbar from './SearchBarPanel.vue';
 import ThemeToggle from '@/components/shared/ThemeToggle.vue';
+import NetworkSelector from '@/components/shared/NetworkSelector.vue';
 
 const customizer = useCustomizerStore();
 const showSearch = ref(false);
@@ -90,6 +91,11 @@ function searchbox() {
     <!-- ---------------------------------------------- -->
     <!---right part -->
     <!-- ---------------------------------------------- -->
+
+    <!-- Network Selector -->
+    <div class="network-selector-wrapper mr-2">
+      <NetworkSelector />
+    </div>
 
     <!-- Theme Toggle - Always visible, label hidden on mobile -->
     <div class="theme-toggle-wrapper">

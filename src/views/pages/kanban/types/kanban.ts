@@ -34,6 +34,11 @@ export interface KanbanTask {
   };
   checklistCount?: number;
   checklistCompleted?: number;
+  // Payment fields
+  paymentAmount?: number;
+  paymentStatus?: 'PENDING' | 'ALLOCATED' | 'PROCESSING' | 'PAID' | 'FAILED' | 'REFUNDED';
+  paidAt?: string;
+  paymentTxHash?: string;
   createdAt: string;
   updatedAt: string;
   canView?: boolean;
@@ -125,6 +130,8 @@ export interface CreateTaskData {
   progress?: number;
   checklistCount?: number;
   checklistCompleted?: number;
+  // Payment field
+  paymentAmount?: number;
 }
 
 export interface BulkTaskUpdate {

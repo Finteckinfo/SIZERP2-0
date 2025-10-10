@@ -128,6 +128,25 @@
               />
             </v-col>
 
+            <!-- Payment Amount -->
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model.number="(newTask as any).paymentAmount"
+                label="Payment Amount"
+                type="number"
+                :min="0"
+                :step="0.01"
+                variant="outlined"
+                suffix="SIZ"
+                hide-details="auto"
+                hint="Amount to pay when task is completed"
+              >
+                <template v-slot:prepend-inner>
+                  <v-icon color="success" size="20">mdi-cash</v-icon>
+                </template>
+              </v-text-field>
+            </v-col>
+
             <!-- Progress -->
             <v-col cols="12">
               <div class="progress-section">

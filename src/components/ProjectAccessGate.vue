@@ -210,11 +210,38 @@ const checkProjectAccess = async () => {
         emit('accessDenied');
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to check project access:', error);
-    hasAccess.value = false;
-    needsAcceptance.value = false;
-    emit('accessDenied');
+    
+    // If 404, user doesn't have a role - check for pending invites
+    if (error.response?.status === 404) {
+      try {
+        const invites = await projectInviteApi.getUserInvites();
+        const pendingInvite = invites.find((invite: any) => 
+          invite.projectId === props.projectId && invite.status === 'PENDING'
+        );
+        
+        if (pendingInvite) {
+          projectInvite.value = pendingInvite;
+          hasAccess.value = true;
+          needsAcceptance.value = true;
+        } else {
+          hasAccess.value = false;
+          needsAcceptance.value = false;
+          emit('accessDenied');
+        }
+      } catch (inviteError) {
+        console.error('Failed to check pending invites:', inviteError);
+        hasAccess.value = false;
+        needsAcceptance.value = false;
+        emit('accessDenied');
+      }
+    } else {
+      // Other errors (network, 500, etc.) - deny access
+      hasAccess.value = false;
+      needsAcceptance.value = false;
+      emit('accessDenied');
+    }
   } finally {
     loading.value = false;
   }

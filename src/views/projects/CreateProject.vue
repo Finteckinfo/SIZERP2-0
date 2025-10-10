@@ -332,13 +332,36 @@
                 <v-form ref="settingsForm" v-model="settingsValid">
                   <v-text-field
                     v-model="projectData.budgetRange"
-                    label="Budget"
-                    placeholder="Enter budget amount"
+                    label="Total Project Budget (SIZCOIN)"
+                    placeholder="Enter total budget for all tasks and team"
                     variant="outlined"
                     class="mb-4"
                     type="number"
-                    prefix="$"
-                  />
+                    suffix="SIZ"
+                    hint="This will be held in escrow and released as tasks are completed"
+                    persistent-hint
+                  >
+                    <template v-slot:prepend-inner>
+                      <v-icon color="warning" size="20">mdi-currency-usd</v-icon>
+                    </template>
+                  </v-text-field>
+                  
+                  <!-- Escrow Info Alert -->
+                  <v-alert 
+                    v-if="projectData.budgetRange && parseFloat(projectData.budgetRange) > 0"
+                    type="info" 
+                    variant="tonal" 
+                    class="mb-4"
+                    density="compact"
+                  >
+                    <template v-slot:prepend>
+                      <v-icon>mdi-shield-lock</v-icon>
+                    </template>
+                    <div class="text-caption">
+                      <strong>{{ parseFloat(projectData.budgetRange).toFixed(2) }} SIZ</strong> will be held in escrow.
+                      Funds are released automatically when tasks are approved.
+                    </div>
+                  </v-alert>
                   
                   <v-select
                     v-model="projectData.priority"
@@ -841,6 +864,7 @@ const createProject = async () => {
       type: projectData.type,
       priority: projectData.priority,
       budgetRange: projectData.budgetRange,
+      budgetAmount: projectData.budgetRange ? parseFloat(projectData.budgetRange) : undefined, // Numeric budget for escrow
       startDate: projectData.startDate,
       endDate: projectData.endDate,
       ownerId: user.value.id, // Required by backend
@@ -901,9 +925,27 @@ const createProject = async () => {
       // Draft cleanup removed
       
       success.value = 'Project created successfully!';
+      
+      // If project has budget, create escrow account
+      if (projectPayload.budgetAmount && projectPayload.budgetAmount > 0) {
+        try {
+          console.log('[CreateProject] Creating escrow account for project...');
+          const { createProjectEscrow } = await import('@/services/paymentService');
+          const escrowAccount = await createProjectEscrow(response.id);
+          console.log('[CreateProject] Escrow account created:', escrowAccount.escrowAddress);
+          
+          // Show escrow address to user for funding
+          success.value = `Project created! Escrow address: ${escrowAccount.escrowAddress}`;
+        } catch (escrowError) {
+          console.error('[CreateProject] Failed to create escrow:', escrowError);
+          // Don't fail project creation if escrow fails - user can create it later
+          success.value = 'Project created successfully! (Note: Escrow setup pending)';
+        }
+      }
+      
       setTimeout(() => {
         router.push('/projects');
-      }, 1500);
+      }, 3000); // Increased timeout to show escrow address
     } else {
       throw new Error('Failed to create project');
     }

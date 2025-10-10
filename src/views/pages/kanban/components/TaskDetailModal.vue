@@ -292,6 +292,40 @@
                 </div>
               </div>
 
+              <!-- Payment Information -->
+              <div v-if="task.paymentAmount" class="sidebar-section payment-section">
+                <h4 class="sidebar-title">
+                  <v-icon size="18" color="success" class="mr-1">mdi-cash</v-icon>
+                  Payment
+                </h4>
+                <div class="payment-info">
+                  <div class="payment-amount">
+                    <span class="amount-value">{{ task.paymentAmount.toFixed(2) }} SIZ</span>
+                  </div>
+                  <v-chip
+                    :color="getPaymentStatusColor(task.paymentStatus || 'PENDING')"
+                    size="small"
+                    variant="tonal"
+                    class="mt-2"
+                  >
+                    <v-icon start size="14">{{ getPaymentStatusIcon(task.paymentStatus || 'PENDING') }}</v-icon>
+                    {{ getPaymentStatusLabel(task.paymentStatus || 'PENDING') }}
+                  </v-chip>
+                  
+                  <!-- Show transaction link if paid -->
+                  <div v-if="task.paymentTxHash" class="mt-2">
+                    <a 
+                      :href="getExplorerUrl(task.paymentTxHash)" 
+                      target="_blank" 
+                      class="tx-link"
+                    >
+                      <v-icon size="14" class="mr-1">mdi-open-in-new</v-icon>
+                      View Transaction
+                    </a>
+                  </div>
+                </div>
+              </div>
+
               <!-- Timestamps -->
               <div class="sidebar-section">
                 <h4 class="sidebar-title">Created</h4>
@@ -333,7 +367,77 @@
           Save Changes
         </v-btn>
       </v-card-actions>
+
+      <!-- Approve & Pay Action (for managers/owners when task is completed) -->
+      <v-card-actions 
+        v-else-if="canApproveAndPay" 
+        class="px-6 pb-4 bg-success-lighten-5"
+      >
+        <div class="approve-pay-info">
+          <v-icon color="success" class="mr-2">mdi-information</v-icon>
+          <span class="text-caption">
+            Task completed. Approve to release payment of <strong>{{ task.paymentAmount?.toFixed(2) }} SIZ</strong>
+          </span>
+        </div>
+        <v-spacer />
+        <v-btn
+          color="success"
+          variant="elevated"
+          :loading="approving"
+          @click="confirmApproveAndPay = true"
+        >
+          <v-icon start>mdi-check-circle</v-icon>
+          Approve & Pay
+        </v-btn>
+      </v-card-actions>
     </v-card>
+
+    <!-- Approve & Pay Confirmation -->
+    <v-dialog v-model="confirmApproveAndPay" max-width="500">
+      <v-card>
+        <v-card-title class="text-success">
+          <v-icon class="mr-2" color="success">mdi-check-circle</v-icon>
+          Approve Task & Release Payment
+        </v-card-title>
+        <v-card-text>
+          <v-alert type="info" variant="tonal" class="mb-4">
+            <div class="text-body-2">
+              <strong>Task:</strong> {{ task?.title }}
+            </div>
+            <div class="text-body-2 mt-2">
+              <strong>Payment Amount:</strong> {{ task?.paymentAmount?.toFixed(2) }} SIZ
+            </div>
+            <div class="text-body-2 mt-2">
+              <strong>Assignee:</strong> {{ task?.assignedUser?.name || task?.assignedUser?.email || 'Unassigned' }}
+            </div>
+          </v-alert>
+          
+          <p class="text-body-2">
+            By approving this task, you confirm that:
+          </p>
+          <ul class="text-body-2 mt-2 ml-4">
+            <li>The task has been completed satisfactorily</li>
+            <li>Payment will be released from escrow to the assignee's wallet</li>
+            <li>This action cannot be undone</li>
+          </ul>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn variant="text" @click="confirmApproveAndPay = false">
+            Cancel
+          </v-btn>
+          <v-spacer />
+          <v-btn
+            color="success"
+            variant="elevated"
+            :loading="approving"
+            @click="approveAndPayTask"
+          >
+            <v-icon start>mdi-lock-open</v-icon>
+            Approve & Release Payment
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Delete Confirmation -->
     <v-dialog v-model="confirmDelete" max-width="400">
@@ -398,8 +502,10 @@ const localValue = computed({
 const editMode = ref(false);
 const saving = ref(false);
 const deleting = ref(false);
+const approving = ref(false);
 const loadingActivity = ref(false);
 const confirmDelete = ref(false);
+const confirmApproveAndPay = ref(false);
 const activities = ref<TaskActivity[]>([]);
 const editableTask = ref<Partial<KanbanTask>>({});
 
@@ -454,6 +560,25 @@ const dueDateColor = computed(() => {
   if (isOverdue.value) return 'error';
   if (isDueSoon.value) return 'warning';
   return 'grey';
+});
+
+// Check if user can approve and pay this task
+const canApproveAndPay = computed(() => {
+  if (!props.task) return false;
+  
+  // Task must be completed (not yet approved)
+  const isCompleted = props.task.status === 'COMPLETED';
+  
+  // Task must have a payment amount
+  const hasPayment = props.task.paymentAmount && props.task.paymentAmount > 0;
+  
+  // Payment must not be already paid
+  const notPaid = props.task.paymentStatus !== 'PAID';
+  
+  // User must have permission (manager or owner)
+  const hasPermission = props.userPermissions.canEditAllTasks; // Managers/owners can edit all tasks
+  
+  return isCompleted && hasPayment && notPaid && hasPermission;
 });
 
 // Methods
@@ -550,6 +675,51 @@ const formatActivityTime = (timestamp: string) => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
+// Payment helper functions
+const getPaymentStatusColor = (status: string) => {
+  switch (status) {
+    case 'PENDING': return 'grey';
+    case 'ALLOCATED': return 'info';
+    case 'PROCESSING': return 'warning';
+    case 'PAID': return 'success';
+    case 'FAILED': return 'error';
+    case 'REFUNDED': return 'secondary';
+    default: return 'grey';
+  }
+};
+
+const getPaymentStatusLabel = (status: string) => {
+  switch (status) {
+    case 'PENDING': return 'Not Allocated';
+    case 'ALLOCATED': return 'Reserved';
+    case 'PROCESSING': return 'Processing';
+    case 'PAID': return 'Paid';
+    case 'FAILED': return 'Failed';
+    case 'REFUNDED': return 'Refunded';
+    default: return status;
+  }
+};
+
+const getPaymentStatusIcon = (status: string) => {
+  switch (status) {
+    case 'PENDING': return 'mdi-clock-outline';
+    case 'ALLOCATED': return 'mdi-lock';
+    case 'PROCESSING': return 'mdi-loading';
+    case 'PAID': return 'mdi-check-circle';
+    case 'FAILED': return 'mdi-alert-circle';
+    case 'REFUNDED': return 'mdi-undo';
+    default: return 'mdi-help-circle';
+  }
+};
+
+const getExplorerUrl = (txHash: string) => {
+  const network = localStorage.getItem('algorand_network') || 'testnet';
+  const baseUrl = network === 'mainnet' 
+    ? 'https://algoexplorer.io/tx/'
+    : 'https://testnet.algoexplorer.io/tx/';
+  return baseUrl + txHash;
+};
+
 const loadActivity = async () => {
   if (!props.task) return;
   
@@ -620,6 +790,49 @@ const deleteTask = async () => {
     // You might want to show an error message here
   } finally {
     deleting.value = false;
+  }
+};
+
+const approveAndPayTask = async () => {
+  if (!props.task) return;
+  
+  try {
+    approving.value = true;
+    
+    // Import payment service
+    const { approveAndPayTask: approvePaymentAPI } = await import('@/services/paymentService');
+    
+    // Call the approve and pay API
+    const result = await approvePaymentAPI(props.task.id);
+    
+    if (result.success) {
+      // Update task status to APPROVED and payment status
+      const updatedTask = {
+        ...props.task,
+        status: 'APPROVED' as const,
+        paymentStatus: result.jobId ? 'PROCESSING' as const : 'PAID' as const,
+        paymentTxHash: result.txHash
+      };
+      
+      emit('task-updated', updatedTask);
+      
+      // Show success message
+      console.log('✅ Task approved and payment released:', result.message);
+      
+      // Close dialogs
+      confirmApproveAndPay.value = false;
+      
+      // Optionally close the detail modal after success
+      setTimeout(() => {
+        localValue.value = false;
+      }, 2000);
+    }
+    
+  } catch (error: any) {
+    console.error('[TaskDetailModal] Failed to approve and pay:', error);
+    alert(`Failed to approve task: ${error.response?.data?.error || error.message || 'Unknown error'}`);
+  } finally {
+    approving.value = false;
   }
 };
 
@@ -830,6 +1043,52 @@ watch(() => props.modelValue, (isOpen) => {
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--erp-text);
+}
+
+/* Payment Section */
+.payment-section {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(76, 175, 80, 0.02) 100%);
+  border: 1px solid rgba(76, 175, 80, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.payment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payment-amount {
+  margin-bottom: 4px;
+}
+
+.amount-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--erp-accent-green);
+  letter-spacing: 0.5px;
+}
+
+.tx-link {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--erp-accent-blue);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.tx-link:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+.approve-pay-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
 }
 
 /* Responsive Design */

@@ -84,6 +84,29 @@
       />
     </div>
 
+    <!-- Payment Badge -->
+    <div v-if="task.paymentAmount && task.paymentAmount > 0" class="payment-badge">
+      <v-chip
+        :color="getPaymentStatusColor(task.paymentStatus || 'PENDING')"
+        size="small"
+        variant="tonal"
+        class="payment-chip"
+      >
+        <v-icon start size="14">mdi-cash</v-icon>
+        {{ task.paymentAmount.toFixed(2) }} SIZ
+      </v-chip>
+      <v-chip
+        v-if="task.paymentStatus === 'PAID'"
+        color="success"
+        size="x-small"
+        variant="flat"
+        class="ml-1"
+      >
+        <v-icon size="12">mdi-check</v-icon>
+        Paid
+      </v-chip>
+    </div>
+
     <!-- Checklist Progress -->
     <div v-if="task.checklistCount" class="checklist-section">
       <div class="checklist-progress">
@@ -285,6 +308,17 @@ const getProgressColor = (progress: number) => {
   return 'error';
 };
 
+const getPaymentStatusColor = (status: string) => {
+  switch (status) {
+    case 'PENDING': return 'grey';
+    case 'ALLOCATED': return 'info';
+    case 'PROCESSING': return 'warning';
+    case 'PAID': return 'success';
+    case 'FAILED': return 'error';
+    default: return 'grey';
+  }
+};
+
 const getAvatarColor = (email: string) => {
   const colors = ['primary', 'secondary', 'success', 'info', 'warning', 'error'];
   const index = email.charCodeAt(0) % colors.length;
@@ -463,6 +497,17 @@ const handleDragEnd = () => {
 
 .progress-section {
   margin-bottom: 0.75rem;
+}
+
+.payment-badge {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.payment-chip {
+  font-weight: 600;
+  font-size: 0.75rem;
 }
 
 .checklist-section {

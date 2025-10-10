@@ -93,6 +93,13 @@ const sidebarItem: menu[] = [
     to: ''
   },
   { divider: true },
+  { header: 'Finance' },
+  {
+    title: 'Payments',
+    icon: CreditCardIcon,
+    to: '/payments'
+  },
+  { divider: true },
   { header: 'System' },
   {
     title: 'Settings',

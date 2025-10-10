@@ -294,8 +294,10 @@ export function getPaymentStatusLabel(status: string): string {
 /**
  * Gets Algorand explorer URL for transaction
  */
-export function getExplorerUrl(txHash: string, network: 'mainnet' | 'testnet' = 'testnet'): string {
-  const baseUrl = network === 'mainnet' 
+export function getExplorerUrl(txHash: string, network?: 'mainnet' | 'testnet'): string {
+  // Import network utils to get current network if not specified
+  const currentNetwork = network || (localStorage.getItem('algorand_network') || 'testnet');
+  const baseUrl = currentNetwork === 'mainnet' 
     ? 'https://algoexplorer.io/tx/'
     : 'https://testnet.algoexplorer.io/tx/';
   return baseUrl + txHash;
@@ -304,8 +306,9 @@ export function getExplorerUrl(txHash: string, network: 'mainnet' | 'testnet' = 
 /**
  * Gets Algorand explorer URL for address
  */
-export function getAddressExplorerUrl(address: string, network: 'mainnet' | 'testnet' = 'testnet'): string {
-  const baseUrl = network === 'mainnet' 
+export function getAddressExplorerUrl(address: string, network?: 'mainnet' | 'testnet'): string {
+  const currentNetwork = network || (localStorage.getItem('algorand_network') || 'testnet');
+  const baseUrl = currentNetwork === 'mainnet' 
     ? 'https://algoexplorer.io/address/'
     : 'https://testnet.algoexplorer.io/address/';
   return baseUrl + address;
