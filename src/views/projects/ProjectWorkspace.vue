@@ -292,6 +292,23 @@
                     <v-col cols="12" md="6">
                       <v-text-field v-model="newTask.dueDate" type="date" label="Due Date" variant="outlined" :rules="[v=>!!v||'Required']" />
                     </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field 
+                        v-model.number="newTask.paymentAmount" 
+                        type="number" 
+                        label="Payment Amount (SIZ)" 
+                        variant="outlined"
+                        suffix="SIZ"
+                        :min="0"
+                        :step="0.01"
+                        hint="Amount to pay when task is completed"
+                        persistent-hint
+                      >
+                        <template v-slot:prepend-inner>
+                          <v-icon color="success" size="20">mdi-cash</v-icon>
+                        </template>
+                      </v-text-field>
+                    </v-col>
                     <v-col cols="12">
                       <v-btn :color="'var(--erp-accent-green)'" :loading="submitting" @click="submitNewTask">Create Task</v-btn>
                     </v-col>
@@ -486,7 +503,8 @@ const newTask = ref({
   priority: 'MEDIUM',
   departmentId: '',
   assignedRoleId: '' as string | undefined,
-  dueDate: ''
+  dueDate: '',
+  paymentAmount: undefined as number | undefined
 });
 
 const invite = ref({
@@ -601,7 +619,7 @@ const openAddDepartmentPanel = () => {
   activePanel.value = 'addDepartment';
 };
 const openAddTaskPanel = () => {
-  newTask.value = { title: '', description: '', priority: 'MEDIUM', departmentId: departments.value[0]?.id || '', assignedRoleId: undefined, dueDate: '' };
+  newTask.value = { title: '', description: '', priority: 'MEDIUM', departmentId: departments.value[0]?.id || '', assignedRoleId: undefined, dueDate: '', paymentAmount: undefined };
   activePanel.value = 'addTask';
 };
 const openInvitePanel = () => {
