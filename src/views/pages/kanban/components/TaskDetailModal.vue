@@ -800,12 +800,17 @@ const approveAndPayTask = async () => {
     approving.value = true;
     
     // Import payment service
-    const { approveAndPayTask: approvePaymentAPI } = await import('@/services/paymentService');
+    const { approveAndPayTask: approvePaymentAPI, SIZCOIN_CONFIG } = await import('@/services/paymentService');
     
     // Call the approve and pay API
     const result = await approvePaymentAPI(props.task.id);
     
     if (result.success) {
+      // Check if employee was opted in
+      if (result.employeeOptedIn === false) {
+        console.warn('⚠️ Employee wallet not opted into SIZCOIN. Backend will handle opt-in.');
+      }
+      
       // Update task status to APPROVED and payment status
       const updatedTask = {
         ...props.task,
@@ -816,8 +821,12 @@ const approveAndPayTask = async () => {
       
       emit('task-updated', updatedTask);
       
-      // Show success message
-      console.log('✅ Task approved and payment released:', result.message);
+      // Show success message with asset info
+      const message = result.txHash 
+        ? `✅ ${result.message}\n\n🪙 SIZCOIN (Asset ${SIZCOIN_CONFIG.ASSET_ID})\n📝 TX: ${result.txHash.substring(0, 10)}...`
+        : `✅ ${result.message}`;
+      
+      console.log(message);
       
       // Close dialogs
       confirmApproveAndPay.value = false;
@@ -830,7 +839,19 @@ const approveAndPayTask = async () => {
     
   } catch (error: any) {
     console.error('[TaskDetailModal] Failed to approve and pay:', error);
-    alert(`Failed to approve task: ${error.response?.data?.error || error.message || 'Unknown error'}`);
+    
+    // Import SIZCOIN config for error messages
+    const { SIZCOIN_CONFIG } = await import('@/services/paymentService');
+    
+    // Show detailed error with SIZCOIN context
+    const errorMsg = error.response?.data?.error || error.message || 'Unknown error';
+    const isOptInError = errorMsg.toLowerCase().includes('opt') || errorMsg.toLowerCase().includes('asset');
+    
+    const errorMessage = isOptInError
+      ? `❌ Payment Failed: Employee wallet must be opted into SIZCOIN (Asset ${SIZCOIN_CONFIG.ASSET_ID}).\n\n${errorMsg}`
+      : `❌ Failed to approve task: ${errorMsg}`;
+    
+    alert(errorMessage);
   } finally {
     approving.value = false;
   }

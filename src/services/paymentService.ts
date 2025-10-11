@@ -67,16 +67,41 @@ export interface EscrowBalance {
 
 /**
  * Creates an Algorand escrow account for a project
+ * Now includes SIZCOIN asset information
  */
-export async function createProjectEscrow(projectId: string): Promise<EscrowAccount> {
+export async function createProjectEscrow(projectId: string): Promise<EscrowAccount & {
+  assetId: number;
+  assetName: string;
+  instructions: string;
+}> {
   const response = await api.post(`/projects/${projectId}/escrow/create`);
   return response.data;
 }
 
 /**
- * Records a deposit transaction to project escrow
+ * Opts escrow account into SIZCOIN asset
+ * This must be called after creating escrow and before receiving SIZCOIN
  */
-export async function depositToEscrow(projectId: string, txHash: string, amount: number) {
+export async function optInEscrowToSIZCOIN(projectId: string): Promise<{
+  success: boolean;
+  assetId: number;
+  txHash: string;
+}> {
+  const response = await api.post(`/projects/${projectId}/escrow/opt-in`);
+  return response.data;
+}
+
+/**
+ * Records a deposit transaction to project escrow
+ * Now verifies SIZCOIN asset transactions (not ALGO)
+ */
+export async function depositToEscrow(projectId: string, txHash: string, amount: number): Promise<{
+  success: boolean;
+  verified: boolean;
+  assetId: number;
+  amount: number;
+  message: string;
+}> {
   const response = await api.post(`/projects/${projectId}/escrow/deposit`, {
     txHash,
     amount
@@ -124,12 +149,15 @@ export interface TaskPaymentStatus {
 
 /**
  * Approves a task and triggers payment release
+ * Now checks employee SIZCOIN opt-in before payment
  */
 export async function approveAndPayTask(taskId: string): Promise<{
   success: boolean;
   txHash?: string;
   jobId?: string;
   message: string;
+  employeeOptedIn?: boolean;
+  assetId?: number;
 }> {
   const response = await api.post(`/tasks/${taskId}/approve`);
   return response.data;
@@ -151,16 +179,24 @@ export interface UserWalletInfo {
   walletAddress: string;
   verified: boolean;
   verifiedAt?: string;
+  sizOptedIn?: boolean; // SIZCOIN opt-in status
+  assetId?: number; // Should be 2905622564
 }
 
 /**
  * Verifies user owns the wallet address
+ * Now also validates SIZCOIN opt-in status
  */
 export async function verifyWallet(
   walletAddress: string,
   signature: string,
   message: string
-): Promise<{ verified: boolean }> {
+): Promise<{ 
+  verified: boolean;
+  sizOptedIn?: boolean;
+  assetId?: number;
+  message?: string;
+}> {
   const response = await api.post('/users/wallet/verify', {
     walletAddress,
     signature,

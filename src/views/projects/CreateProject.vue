@@ -926,20 +926,33 @@ const createProject = async () => {
       
       success.value = 'Project created successfully!';
       
-      // If project has budget, create escrow account
+      // If project has budget, create escrow account and opt-in to SIZCOIN
       if (projectPayload.budgetAmount && projectPayload.budgetAmount > 0) {
         try {
           console.log('[CreateProject] Creating escrow account for project...');
-          const { createProjectEscrow } = await import('@/services/paymentService');
+          const { createProjectEscrow, optInEscrowToSIZCOIN, SIZCOIN_CONFIG } = await import('@/services/paymentService');
+          
+          // Step 1: Create escrow account
           const escrowAccount = await createProjectEscrow(response.id);
           console.log('[CreateProject] Escrow account created:', escrowAccount.escrowAddress);
           
-          // Show escrow address to user for funding
-          success.value = `Project created! Escrow address: ${escrowAccount.escrowAddress}`;
-        } catch (escrowError) {
-          console.error('[CreateProject] Failed to create escrow:', escrowError);
-          // Don't fail project creation if escrow fails - user can create it later
-          success.value = 'Project created successfully! (Note: Escrow setup pending)';
+          // Step 2: Opt-in escrow to SIZCOIN
+          console.log('[CreateProject] Opting escrow into SIZCOIN...');
+          const optInResult = await optInEscrowToSIZCOIN(response.id);
+          console.log('[CreateProject] SIZCOIN opt-in successful:', optInResult.txHash);
+          
+          // Show success message with instructions
+          success.value = `✅ Project created!\n\n` +
+            `🔐 Escrow Address: ${escrowAccount.escrowAddress}\n` +
+            `🪙 Asset: SIZCOIN (${SIZCOIN_CONFIG.ASSET_ID})\n` +
+            `✓ Opt-in Complete: ${optInResult.txHash}\n\n` +
+            `Please fund the escrow with ${projectPayload.budgetAmount.toFixed(2)} SIZ`;
+        } catch (escrowError: any) {
+          console.error('[CreateProject] Escrow setup failed:', escrowError);
+          
+          // Show detailed error message
+          const errorMsg = escrowError.response?.data?.error || escrowError.message || 'Unknown error';
+          success.value = `Project created! (⚠️ Escrow setup issue: ${errorMsg})`;
         }
       }
       
