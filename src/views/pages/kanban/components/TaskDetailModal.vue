@@ -821,10 +821,18 @@ const approveAndPayTask = async () => {
       
       emit('task-updated', updatedTask);
       
-      // Show success message with asset info
-      const message = result.txHash 
+      // Show success message with asset info and oversight payments
+      let message = result.txHash 
         ? `✅ ${result.message}\n\n🪙 SIZCOIN (Asset ${SIZCOIN_CONFIG.ASSET_ID})\n📝 TX: ${result.txHash.substring(0, 10)}...`
         : `✅ ${result.message}`;
+      
+      // Add oversight payment info if present
+      if (result.oversightPayments && result.oversightPayments.length > 0) {
+        message += '\n\n💼 Manager Oversight Fees:';
+        result.oversightPayments.forEach((oversight: any) => {
+          message += `\n  - ${oversight.managerName}: ${oversight.amount.toFixed(2)} SIZ (${(oversight.rate * 100).toFixed(1)}%)`;
+        });
+      }
       
       console.log(message);
       

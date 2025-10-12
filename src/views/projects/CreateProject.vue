@@ -295,6 +295,14 @@
                       persistent-hint
                     />
                     
+                    <!-- Payment Configuration -->
+                    <div v-if="role.role !== 'PROJECT_OWNER'" class="payment-config-section mb-3">
+                      <PaymentConfigForm
+                        v-model="role.paymentConfig"
+                        :role="role.role"
+                      />
+                    </div>
+                    
                     <v-btn 
                       color="error" 
                       variant="text" 
@@ -477,6 +485,7 @@ import { useUser } from '@clerk/vue';
 import { connectedWallet } from '@/stores/walletStore';
 import { projectApi } from '@/services/projectApi';
 import { RetroGrid } from '@/components/ui/retro-grid';
+import PaymentConfigForm from './components/PaymentConfigForm.vue';
 
 const router = useRouter();
 const { user } = useUser();
@@ -495,6 +504,15 @@ interface Role {
   role: string;
   userId?: string;
   departmentId: number | null;
+  paymentConfig?: {
+    paymentType: 'PER_TASK' | 'SALARY' | 'OVERSIGHT' | 'MILESTONE' | 'HYBRID' | null;
+    salaryAmount?: number;
+    salaryFrequency?: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY';
+    oversightRate?: number;
+    milestoneAmount?: number;
+    includeTaskPayments?: boolean;
+    includeOversight?: boolean;
+  };
 }
 
 // Templates/Drafts removed
@@ -765,7 +783,10 @@ const addRole = () => {
   projectData.roles.push({
     userEmail: '',
     role: 'EMPLOYEE',
-    departmentId: projectData.departments.length > 0 ? 0 : null
+    departmentId: projectData.departments.length > 0 ? 0 : null,
+    paymentConfig: {
+      paymentType: 'PER_TASK'
+    }
   });
 };
 
@@ -794,7 +815,10 @@ const ensureOwnerRole = () => {
       userEmail: creatorEmail,
       userId: user.value.id,
       role: 'PROJECT_OWNER',
-      departmentId: null // Project owner has access to ALL departments automatically
+      departmentId: null, // Project owner has access to ALL departments automatically
+      paymentConfig: {
+        paymentType: null // Owner doesn't get paid from their own project
+      }
     });
   }
 };
@@ -880,7 +904,13 @@ const createProject = async () => {
       roles: projectData.roles.map(role => ({
         userEmail: role.userEmail,
         role: role.role as 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE',
-        departmentId: role.role === 'PROJECT_OWNER' ? null : role.departmentId // PROJECT_OWNER gets access to all departments
+        departmentId: role.role === 'PROJECT_OWNER' ? null : role.departmentId, // PROJECT_OWNER gets access to all departments
+        // Include payment configuration
+        paymentType: role.paymentConfig?.paymentType,
+        salaryAmount: role.paymentConfig?.salaryAmount,
+        salaryFrequency: role.paymentConfig?.salaryFrequency,
+        oversightRate: role.paymentConfig?.oversightRate,
+        milestoneAmount: role.paymentConfig?.milestoneAmount
       })),
       tags: projectData.tags ? projectData.tags.split(',').map(tag => tag.trim()) : []
     };
@@ -957,7 +987,12 @@ const createProject = async () => {
       }
       
       setTimeout(() => {
-        router.push('/projects');
+        // If project has budget, go to funding page
+        if (projectPayload.budgetAmount && projectPayload.budgetAmount > 0) {
+          router.push(`/projects/${response.id}/fund-escrow`);
+        } else {
+          router.push('/projects');
+        }
       }, 3000); // Increased timeout to show escrow address
     } else {
       throw new Error('Failed to create project');

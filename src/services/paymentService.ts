@@ -150,6 +150,7 @@ export interface TaskPaymentStatus {
 /**
  * Approves a task and triggers payment release
  * Now checks employee SIZCOIN opt-in before payment
+ * Also processes manager oversight fees automatically
  */
 export async function approveAndPayTask(taskId: string): Promise<{
   success: boolean;
@@ -158,6 +159,19 @@ export async function approveAndPayTask(taskId: string): Promise<{
   message: string;
   employeeOptedIn?: boolean;
   assetId?: number;
+  taskId?: string;
+  employeePayment?: {
+    amount: number;
+    employeeEmail: string;
+    jobId: string;
+  };
+  oversightPayments?: Array<{
+    managerId: string;
+    managerName: string;
+    amount: number;
+    rate: number;
+    jobId: string;
+  }>;
 }> {
   const response = await api.post(`/tasks/${taskId}/approve`);
   return response.data;
@@ -168,6 +182,212 @@ export async function approveAndPayTask(taskId: string): Promise<{
  */
 export async function getTaskPaymentStatus(taskId: string): Promise<TaskPaymentStatus> {
   const response = await api.get(`/tasks/${taskId}/payment-status`);
+  return response.data;
+}
+
+// ============================================
+// PAYMENT CONFIGURATION
+// ============================================
+
+export interface PaymentConfig {
+  id: string;
+  paymentType: 'PER_TASK' | 'SALARY' | 'OVERSIGHT' | 'MILESTONE' | 'HYBRID';
+  salaryAmount?: number;
+  salaryFrequency?: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY';
+  oversightRate?: number;
+  milestoneAmount?: number;
+  nextPayment?: {
+    date: string;
+    amount: number;
+  };
+  totalEarned: number;
+}
+
+/**
+ * Creates or updates payment configuration for a user role
+ */
+export async function setUserRolePaymentConfig(
+  userRoleId: string,
+  config: {
+    paymentType: string;
+    salaryAmount?: number;
+    salaryFrequency?: string;
+    oversightRate?: number;
+    milestoneAmount?: number;
+    startDate?: string;
+    endDate?: string;
+  }
+): Promise<PaymentConfig> {
+  const response = await api.post(`/user-roles/${userRoleId}/payment-config`, config);
+  return response.data;
+}
+
+/**
+ * Gets payment configuration for a user role
+ */
+export async function getUserRolePaymentConfig(userRoleId: string): Promise<PaymentConfig | null> {
+  try {
+    const response = await api.get(`/user-roles/${userRoleId}/payment-config`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) return null;
+    throw error;
+  }
+}
+
+// ============================================
+// RECURRING PAYMENTS (SALARIES)
+// ============================================
+
+export interface RecurringPayment {
+  id: string;
+  userRole: {
+    user: {
+      firstName: string;
+      lastName: string;
+    };
+    role: string;
+  };
+  amount: number;
+  frequency: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY';
+  nextPaymentDate: string;
+  lastPaidDate?: string;
+  status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
+  totalPaid: number;
+  paymentCount: number;
+}
+
+export interface RecurringPaymentsSummary {
+  payments: RecurringPayment[];
+  totalMonthly: number;
+  upcomingPayments: Array<{
+    date: string;
+    amount: number;
+    recipient: string;
+  }>;
+}
+
+/**
+ * Creates a recurring payment (salary)
+ */
+export async function createRecurringPayment(
+  projectId: string,
+  config: {
+    userRoleId: string;
+    amount: number;
+    frequency: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY';
+    startDate: string;
+    endDate?: string;
+  }
+): Promise<{
+  id: string;
+  amount: number;
+  frequency: string;
+  nextPaymentDate: string;
+  estimatedTotal: number;
+  fundsAllocated: number;
+}> {
+  const response = await api.post(`/projects/${projectId}/recurring-payments`, config);
+  return response.data;
+}
+
+/**
+ * Gets all recurring payments for a project
+ */
+export async function getRecurringPayments(
+  projectId: string,
+  filters?: {
+    status?: string;
+    userId?: string;
+  }
+): Promise<RecurringPaymentsSummary> {
+  const params = new URLSearchParams();
+  if (filters?.status) params.append('status', filters.status);
+  if (filters?.userId) params.append('userId', filters.userId);
+  
+  const response = await api.get(`/projects/${projectId}/recurring-payments?${params}`);
+  return response.data;
+}
+
+/**
+ * Pauses a recurring payment
+ */
+export async function pauseRecurringPayment(recurringPaymentId: string): Promise<{
+  success: boolean;
+  status: string;
+}> {
+  const response = await api.patch(`/recurring-payments/${recurringPaymentId}/pause`);
+  return response.data;
+}
+
+/**
+ * Resumes a paused recurring payment
+ */
+export async function resumeRecurringPayment(recurringPaymentId: string): Promise<{
+  success: boolean;
+  status: string;
+}> {
+  const response = await api.patch(`/recurring-payments/${recurringPaymentId}/resume`);
+  return response.data;
+}
+
+/**
+ * Cancels a recurring payment and refunds allocated funds
+ */
+export async function cancelRecurringPayment(recurringPaymentId: string): Promise<{
+  success: boolean;
+  refundedAmount: number;
+}> {
+  const response = await api.delete(`/recurring-payments/${recurringPaymentId}/cancel`);
+  return response.data;
+}
+
+// ============================================
+// ENHANCED ESCROW FUNDING
+// ============================================
+
+export interface FundingNeeded {
+  currentBalance: number;
+  allocated: number;
+  available: number;
+  upcoming: {
+    next7Days: number;
+    next30Days: number;
+    next90Days: number;
+  };
+  breakdown: {
+    tasks: number;
+    salaries: number;
+  };
+  recommended: number;
+  critical: boolean;
+}
+
+/**
+ * Gets funding needed calculation for project escrow
+ */
+export async function getEscrowFundingNeeded(projectId: string): Promise<FundingNeeded> {
+  const response = await api.get(`/projects/${projectId}/escrow/funding-needed`);
+  return response.data;
+}
+
+/**
+ * Simplified escrow funding endpoint
+ */
+export async function fundEscrow(
+  projectId: string,
+  txHash: string,
+  amount: number
+): Promise<{
+  success: boolean;
+  verified: boolean;
+  currentBalance: number;
+  txHash: string;
+}> {
+  const response = await api.post(`/projects/${projectId}/escrow/fund`, {
+    txHash,
+    amount
+  });
   return response.data;
 }
 

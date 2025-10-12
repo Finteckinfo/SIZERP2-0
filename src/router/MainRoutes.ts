@@ -10,6 +10,7 @@ const MainRoutes = {
     { name: 'ProjectView', path: '/projects', component: () => import('@/views/projects/ProjectView.vue') },
     { name: 'ProjectDetails', path: '/projects/:id', component: () => import('@/views/projects/ProjectDetails.vue') },
     { name: 'ProjectWorkspace', path: '/projects/:id/workspace', component: () => import('@/views/projects/ProjectWorkspace.vue') },
+    { name: 'FundEscrow', path: '/projects/:id/fund-escrow', component: () => import('@/views/projects/FundEscrow.vue') },
     { name: 'Starter', path: '/starter', component: () => import('@/views/StarterPage.vue') },
     { name: 'Tabler Icons', path: '/icons/tabler', component: () => import('@/views/utilities/icons/TablerIcons.vue') },
     { name: 'Material Icons', path: '/icons/material', component: () => import('@/views/utilities/icons/MaterialIcons.vue') },
