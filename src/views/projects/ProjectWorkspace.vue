@@ -318,7 +318,7 @@
               </div>
 
               <!-- Dynamic Panel Content -->
-              <div v-if="activePanel === 'addDepartment'">
+              <div v-if="activePanel === 'addDepartment'" ref="addDepartmentSection">
                 <v-form ref="addDepartmentForm" v-model="addDepartmentValid">
                   <v-row>
                     <v-col cols="12" md="6">
@@ -343,7 +343,7 @@
                 </v-form>
               </div>
 
-              <div v-else-if="activePanel === 'addTask'">
+              <div v-else-if="activePanel === 'addTask'" ref="addTaskSection">
                 <v-form ref="addTaskForm" v-model="addTaskValid">
                   <v-row>
                     <v-col cols="12" md="6">
@@ -388,7 +388,7 @@
                 </v-form>
               </div>
 
-              <div v-else-if="activePanel === 'invite'">
+              <div v-else-if="activePanel === 'invite'" ref="inviteSection">
                 <v-form ref="inviteForm" v-model="inviteValid">
                   <v-row>
                     <v-col cols="12" md="6">
@@ -688,6 +688,11 @@ const addDepartmentValid = ref(false);
 const addTaskValid = ref(false);
 const inviteValid = ref(false);
 
+// Form section refs for auto-scroll
+const addDepartmentSection = ref();
+const addTaskSection = ref();
+const inviteSection = ref();
+
 const newDepartment = ref({
   name: '',
   type: 'MAJOR',
@@ -836,10 +841,14 @@ const resetPanel = () => {
 const openAddDepartmentPanel = () => {
   newDepartment.value = { name: '', type: 'MAJOR', description: '', isVisible: true, order: departments.value.length };
   activePanel.value = 'addDepartment';
+  // Auto-scroll to form on mobile
+  scrollToForm(addDepartmentSection);
 };
 const openAddTaskPanel = () => {
   newTask.value = { title: '', description: '', priority: 'MEDIUM', departmentId: departments.value[0]?.id || '', assignedRoleId: undefined, dueDate: '', paymentAmount: undefined };
   activePanel.value = 'addTask';
+  // Auto-scroll to form on mobile
+  scrollToForm(addTaskSection);
 };
 const openInvitePanel = () => {
   const defaultExpiry = new Date();
@@ -859,6 +868,8 @@ const openInvitePanel = () => {
   };
   inviteError.value = null;
   activePanel.value = 'invite';
+  // Auto-scroll to form on mobile
+  scrollToForm(inviteSection);
 };
 
 // Submit handlers
@@ -1066,7 +1077,7 @@ const getTaskStatusColor = (status: string) => {
 // Helper function to calculate monthly salary
 const calculateMonthlySalary = (amount: number, frequency: string) => {
   if (!amount || !frequency) return 0;
-  
+
   switch (frequency) {
     case 'WEEKLY':
       return Math.round(amount * 4.33); // Average weeks per month
@@ -1076,6 +1087,20 @@ const calculateMonthlySalary = (amount: number, frequency: string) => {
       return amount;
     default:
       return 0;
+  }
+};
+
+// Auto-scroll function for mobile
+const scrollToForm = (formRef: any) => {
+  // Only auto-scroll on small screens (mobile/tablet)
+  if (window.innerWidth <= 768 && formRef?.value) {
+    setTimeout(() => {
+      formRef.value.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+        inline: 'nearest'
+      });
+    }, 100); // Small delay to ensure form is rendered
   }
 };
 
