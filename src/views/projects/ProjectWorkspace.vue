@@ -9,7 +9,7 @@
       <div class="workspace-header">
         <div class="header-content">
           <!-- Desktop Layout: Horizontal -->
-          <div class="d-flex align-center justify-space-between d-none d-md-flex w-100">
+          <div class="desktop-header-layout">
             <div class="header-left">
               <v-btn 
                 icon 
@@ -72,7 +72,7 @@
           </div>
           
           <!-- Mobile Layout: Vertical Stack -->
-          <div class="d-flex flex-column d-md-none w-100">
+          <div class="mobile-header-layout">
             <!-- Top Row: Back Button + Project Info -->
             <div class="d-flex align-center mb-3">
               <v-btn 
@@ -1209,6 +1209,45 @@ onMounted(() => {
   width: 100%;
 }
 
+/* Responsive Header Layout Control */
+.desktop-header-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.mobile-header-layout {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-header-layout {
+    display: none;
+  }
+  
+  .mobile-header-layout {
+    display: block;
+  }
+  
+  /* Fix page wrapper for small screens */
+  .project-workspace {
+    padding-top: 0;
+  }
+  
+  .workspace-header {
+    padding: 8px 12px;
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+  }
+  
+  .workspace-content {
+    padding-top: 0;
+  }
+}
+
 .header-left {
   display: flex;
   align-items: center;
@@ -1291,6 +1330,13 @@ onMounted(() => {
 .workspace-content {
   padding-top: 120px; /* Adjust for fixed header */
   padding-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .workspace-content {
+    padding-top: 0;
+    padding-bottom: 16px;
+  }
 }
 
 .workspace-grid {
@@ -1625,12 +1671,20 @@ onMounted(() => {
 @media (max-width: 960px) {
   .workspace-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 0 16px;
   }
 }
 
 @media (max-width: 768px) {
-  .workspace-header {
-    padding: 12px 16px;
+  .workspace-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 0 12px;
+  }
+  
+  .workspace-content {
+    padding-top: 0;
   }
 
   .header-left {
