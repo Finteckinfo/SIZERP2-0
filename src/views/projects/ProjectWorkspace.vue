@@ -647,7 +647,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { projectApi, taskApi, departmentApi, userRoleApi, projectInviteApi, projectAccessApi, type Project, type Task, type Department, type UserRole } from '@/services/projectApi';
 import ProjectAccessGate from '@/components/ProjectAccessGate.vue';
@@ -1091,16 +1091,22 @@ const calculateMonthlySalary = (amount: number, frequency: string) => {
 };
 
 // Auto-scroll function for mobile
-const scrollToForm = (formRef: any) => {
+const scrollToForm = async (formRef: any) => {
   // Only auto-scroll on small screens (mobile/tablet)
   if (window.innerWidth <= 768 && formRef?.value) {
+    // Wait for Vue to update the DOM
+    await nextTick();
+    
+    // Additional delay for mobile simulation in dev tools
     setTimeout(() => {
-      formRef.value.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start',
-        inline: 'nearest'
-      });
-    }, 100); // Small delay to ensure form is rendered
+      if (formRef?.value) {
+        formRef.value.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        });
+      }
+    }, 300); // Increased delay for mobile simulation
   }
 };
 
