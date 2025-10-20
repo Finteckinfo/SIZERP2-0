@@ -1197,9 +1197,6 @@ onMounted(() => {
   background: var(--erp-header-bg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   padding: 16px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   position: fixed;
   top: 0;
   left: 0;
@@ -1209,9 +1206,6 @@ onMounted(() => {
 }
 
 .header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   width: 100%;
 }
 
@@ -1637,12 +1631,6 @@ onMounted(() => {
 @media (max-width: 768px) {
   .workspace-header {
     padding: 12px 16px;
-  }
-
-  .header-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
   }
 
   .header-left {

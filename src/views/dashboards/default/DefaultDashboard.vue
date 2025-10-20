@@ -1304,6 +1304,25 @@ onMounted(() => {
   background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
 }
 
+/* Responsive Layout Control */
+.desktop-layout {
+  display: flex;
+}
+
+.mobile-layout {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-layout {
+    display: none;
+  }
+  
+  .mobile-layout {
+    display: block;
+  }
+}
+
 .invite-card {
   transition: all 0.3s ease;
 }
