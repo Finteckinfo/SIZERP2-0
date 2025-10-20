@@ -90,6 +90,45 @@
                     </span>
                   </div>
                 </div>
+                
+                <!-- Funding Needed Alert -->
+                <div v-if="fundingNeeded && fundingNeeded.critical" class="mt-4">
+                  <v-alert type="warning" variant="tonal" class="mb-3">
+                    <template #title>
+                      <div class="d-flex align-center">
+                        <v-icon class="mr-2">mdi-alert-circle</v-icon>
+                        Critical Low Balance
+                      </div>
+                    </template>
+                    <div class="mt-2">
+                      <p class="mb-2">
+                        <strong>Escrow balance is critically low!</strong> 
+                        Upcoming payments may fail without additional funding.
+                      </p>
+                      
+                      <div v-if="fundingNeeded.upcoming" class="mb-3">
+                        <h4 class="text-subtitle-2 mb-2">Upcoming Payments:</h4>
+                        <div class="text-caption">
+                          <div>Next 7 days: {{ formatAmount(fundingNeeded.upcoming.next7Days) }} SIZ</div>
+                          <div>Next 30 days: {{ formatAmount(fundingNeeded.upcoming.next30Days) }} SIZ</div>
+                          <div>Next 90 days: {{ formatAmount(fundingNeeded.upcoming.next90Days) }} SIZ</div>
+                        </div>
+                      </div>
+                      
+                      <div class="d-flex align-center gap-2">
+                        <v-btn 
+                          color="warning" 
+                          variant="tonal" 
+                          size="small"
+                          @click="sendAmount = fundingNeeded.recommended"
+                        >
+                          <v-icon size="16" class="mr-1">mdi-cash-plus</v-icon>
+                          Fund {{ formatAmount(fundingNeeded.recommended) }} SIZ
+                        </v-btn>
+                      </div>
+                    </div>
+                  </v-alert>
+                </div>
 
                 <!-- Progress Bar -->
                 <v-progress-linear
@@ -436,6 +475,7 @@ import {
   getEscrowBalance,
   depositToEscrow,
   getEscrowTransactions,
+  getEscrowFundingNeeded,
   SIZCOIN_CONFIG,
   sizToMicroUnits,
   getExplorerUrl
@@ -458,6 +498,7 @@ const projectData = ref<any>(null);
 const currentBalance = ref(0);
 const projectBudget = ref(0);
 const transactions = ref<any[]>([]);
+const fundingNeeded = ref<any>(null);
 const fundingTab = ref('wallet');
 const showQR = ref(false);
 const copied = ref(false);
@@ -514,6 +555,14 @@ const loadEscrowData = async () => {
     // Load transactions
     const txData = await getEscrowTransactions(projectId.value, { type: 'DEPOSIT', limit: 5 });
     transactions.value = txData;
+
+    // Load funding needed information
+    try {
+      fundingNeeded.value = await getEscrowFundingNeeded(projectId.value);
+    } catch (fundingErr) {
+      console.warn('Failed to load funding needed data:', fundingErr);
+      // Don't fail the whole load if this fails
+    }
 
   } catch (err: any) {
     console.error('Failed to load escrow data:', err);

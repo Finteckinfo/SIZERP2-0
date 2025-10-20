@@ -899,29 +899,63 @@ onMounted(() => {
     <v-row class="mb-6">
       <v-col cols="12">
         <v-card elevation="0" class="invites-section" :style="{ background: 'var(--erp-card-bg)', border: '1px solid var(--erp-border)', color: 'var(--erp-text)' }">
-          <v-card-title class="d-flex align-center pa-4 pb-2">
-            <v-icon class="mr-3" size="24" :style="{ color: 'var(--erp-accent-indigo)' }">mdi-email-outline</v-icon>
-            <span class="text-h5 font-weight-medium">Project Invitations</span>
-            <v-chip 
-              v-if="pendingInvites.length > 0" 
-              size="small" 
-              class="ml-3"
-              :style="{ background: 'color-mix(in srgb, var(--erp-accent-green) 20%, transparent)', color: 'var(--erp-text)' }"
-            >
-              {{ pendingInvites.length }} Pending
-            </v-chip>
-            <v-spacer></v-spacer>
-            <v-btn 
-              v-if="pendingInvites.length > 0"
-              variant="tonal" 
-              size="small"
-              @click="refreshInvites"
-              :loading="invitesLoading"
-              :style="{ background: 'color-mix(in srgb, var(--erp-accent-indigo) 20%, transparent)', color: 'var(--erp-text)' }"
-            >
-              <v-icon>mdi-refresh</v-icon>
-              Refresh
-            </v-btn>
+          <v-card-title class="pa-4 pb-2">
+            <!-- Desktop Layout: Horizontal -->
+            <div class="d-flex align-center d-none d-md-flex">
+              <v-icon class="mr-3" size="24" :style="{ color: 'var(--erp-accent-indigo)' }">mdi-email-outline</v-icon>
+              <span class="text-h5 font-weight-medium">Project Invitations</span>
+              <v-chip 
+                v-if="pendingInvites.length > 0" 
+                size="small" 
+                class="ml-3"
+                :style="{ background: 'color-mix(in srgb, var(--erp-accent-green) 20%, transparent)', color: 'var(--erp-text)' }"
+              >
+                {{ pendingInvites.length }} Pending
+              </v-chip>
+              <v-spacer></v-spacer>
+              <v-btn 
+                v-if="pendingInvites.length > 0"
+                variant="tonal" 
+                size="small"
+                @click="refreshInvites"
+                :loading="invitesLoading"
+                :style="{ background: 'color-mix(in srgb, var(--erp-accent-indigo) 20%, transparent)', color: 'var(--erp-text)' }"
+              >
+                <v-icon>mdi-refresh</v-icon>
+                Refresh
+              </v-btn>
+            </div>
+            
+            <!-- Mobile Layout: Vertical Stack -->
+            <div class="d-flex flex-column d-md-none">
+              <!-- Title Row -->
+              <div class="d-flex align-center mb-3">
+                <v-icon class="mr-3" size="24" :style="{ color: 'var(--erp-accent-indigo)' }">mdi-email-outline</v-icon>
+                <span class="text-h5 font-weight-medium">Project Invitations</span>
+              </div>
+              
+              <!-- Actions Row -->
+              <div class="d-flex align-center justify-space-between">
+                <v-chip 
+                  v-if="pendingInvites.length > 0" 
+                  size="small"
+                  :style="{ background: 'color-mix(in srgb, var(--erp-accent-green) 20%, transparent)', color: 'var(--erp-text)' }"
+                >
+                  {{ pendingInvites.length }} Pending
+                </v-chip>
+                <v-btn 
+                  v-if="pendingInvites.length > 0"
+                  variant="tonal" 
+                  size="small"
+                  @click="refreshInvites"
+                  :loading="invitesLoading"
+                  :style="{ background: 'color-mix(in srgb, var(--erp-accent-indigo) 20%, transparent)', color: 'var(--erp-text)' }"
+                >
+                  <v-icon>mdi-refresh</v-icon>
+                  Refresh
+                </v-btn>
+              </div>
+            </div>
           </v-card-title>
 
           <v-card-text class="pa-4 pt-0">

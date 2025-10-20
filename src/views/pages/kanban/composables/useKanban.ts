@@ -118,45 +118,113 @@ export function useKanban() {
 
   const moveTask = async (taskId: string, position: TaskPosition) => {
     try {
-      console.log('[useKanban] Moving task:', { taskId, position });
+      console.log('[useKanban] Moving task - starting process:', { 
+        taskId, 
+        position,
+        timestamp: new Date().toISOString(),
+        currentKanbanData: kanbanData.value ? {
+          totalTasks: kanbanData.value.totalTasks,
+          columns: Object.keys(kanbanData.value.columns).map(status => ({
+            status,
+            taskCount: kanbanData.value!.columns[status as keyof typeof kanbanData.value.columns].length
+          }))
+        } : null
+      });
       
+      // Find the task before moving to log its current state
+      const currentTask = findTaskById(taskId);
+      if (currentTask) {
+        console.log('[useKanban] Current task state:', {
+          taskId: currentTask.id,
+          currentStatus: currentTask.status,
+          currentOrder: currentTask.order,
+          newStatus: position.status,
+          newOrder: position.order,
+          projectName: currentTask.project.name,
+          departmentName: currentTask.department.name
+        });
+      } else {
+        console.warn('[useKanban] Task not found in current data:', taskId);
+      }
+      
+      console.log('[useKanban] Calling kanbanApi.updateTaskPosition...');
       const result = await kanbanApi.updateTaskPosition(taskId, position);
+      console.log('[useKanban] API call successful, result:', result);
       
       // Update local state optimistically
       if (kanbanData.value) {
+        console.log('[useKanban] Updating local state optimistically...');
+        
         // Remove task from old column
+        let taskMoved = false;
         Object.keys(kanbanData.value.columns).forEach(status => {
           const column = kanbanData.value!.columns[status as keyof typeof kanbanData.value.columns];
           const taskIndex = column.findIndex(task => task.id === taskId);
           if (taskIndex !== -1) {
+            console.log('[useKanban] Found task in column:', { status, taskIndex });
             const [task] = column.splice(taskIndex, 1);
             // Add task to new column
             task.status = position.status;
             task.order = position.order;
             kanbanData.value!.columns[position.status].splice(position.order, 0, task);
+            taskMoved = true;
+            console.log('[useKanban] Task moved to new column:', { 
+              fromStatus: status, 
+              toStatus: position.status,
+              newOrder: position.order 
+            });
           }
         });
         
+        if (!taskMoved) {
+          console.warn('[useKanban] Task was not found in any column during local update');
+        }
+        
         // Update affected tasks order
+        console.log('[useKanban] Updating affected tasks order:', result.affectedTasks);
         result.affectedTasks.forEach(({ id, order }) => {
           const task = findTaskById(id);
           if (task) {
+            console.log('[useKanban] Updating task order:', { id, oldOrder: task.order, newOrder: order });
             task.order = order;
+          } else {
+            console.warn('[useKanban] Affected task not found:', id);
           }
         });
         
         // Sort columns by order
+        console.log('[useKanban] Sorting columns by order...');
         Object.keys(kanbanData.value.columns).forEach(status => {
+          const beforeSort = kanbanData.value!.columns[status as keyof typeof kanbanData.value.columns].map(t => ({ id: t.id, order: t.order }));
           kanbanData.value!.columns[status as keyof typeof kanbanData.value.columns]
             .sort((a, b) => a.order - b.order);
+          const afterSort = kanbanData.value!.columns[status as keyof typeof kanbanData.value.columns].map(t => ({ id: t.id, order: t.order }));
+          console.log('[useKanban] Column sorted:', { status, beforeSort, afterSort });
         });
+        
+        console.log('[useKanban] Local state update completed');
+      } else {
+        console.warn('[useKanban] No kanban data available for local update');
       }
+      
+      console.log('[useKanban] Task move completed successfully:', {
+        taskId,
+        result,
+        timestamp: new Date().toISOString()
+      });
       
       return result;
     } catch (err: any) {
-      console.error('[useKanban] Failed to move task:', err);
+      console.error('[useKanban] Failed to move task:', {
+        taskId,
+        position,
+        error: err instanceof Error ? err.message : err,
+        stack: err instanceof Error ? err.stack : undefined,
+        timestamp: new Date().toISOString()
+      });
       error.value = err.message || 'Failed to move task';
       // Refresh data to revert optimistic update
+      console.log('[useKanban] Refreshing data to revert optimistic update...');
       await loadKanbanData(true);
       throw err;
     }

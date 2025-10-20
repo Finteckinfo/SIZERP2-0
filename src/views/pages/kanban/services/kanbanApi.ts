@@ -129,15 +129,50 @@ export const kanbanApi = {
     updatedAt: string;
     affectedTasks: Array<{ id: string; order: number }>;
   }> => {
-    console.log('[kanbanApi] Updating task position:', { taskId, position });
+    console.log('[kanbanApi] Updating task position - starting API call:', { 
+      taskId, 
+      position,
+      timestamp: new Date().toISOString(),
+      apiBaseUrl: API_BASE_URL
+    });
     
-    const response = await api.patch(`/api/tasks/${taskId}/position`, {
+    const requestPayload = {
       status: position.status,
       order: position.order,
       departmentId: position.departmentId
-    });
+    };
     
-    return response.data;
+    console.log('[kanbanApi] Request payload:', requestPayload);
+    console.log('[kanbanApi] Making PATCH request to:', `/api/tasks/${taskId}/position`);
+    
+    try {
+      const response = await api.patch(`/api/tasks/${taskId}/position`, requestPayload);
+      
+      console.log('[kanbanApi] API response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: response.data,
+        headers: response.headers,
+        timestamp: new Date().toISOString()
+      });
+      
+      return response.data;
+    } catch (error: any) {
+      console.error('[kanbanApi] API call failed:', {
+        taskId,
+        position,
+        requestPayload,
+        error: error instanceof Error ? error.message : error,
+        response: error.response ? {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+          headers: error.response.headers
+        } : null,
+        timestamp: new Date().toISOString()
+      });
+      throw error;
+    }
   },
 
   /**

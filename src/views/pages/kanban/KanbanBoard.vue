@@ -250,10 +250,28 @@ const handleTaskClick = (task: KanbanTask) => {
 };
 
 const handleTaskMove = async (taskId: string, position: TaskPosition) => {
+  console.log('[KanbanBoard] Task move request received:', {
+    taskId,
+    position,
+    timestamp: new Date().toISOString()
+  });
+  
   try {
-    await moveTask(taskId, position);
+    console.log('[KanbanBoard] Calling moveTask function...');
+    const result = await moveTask(taskId, position);
+    console.log('[KanbanBoard] Task move successful:', {
+      taskId,
+      result,
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    console.error('Failed to move task:', error);
+    console.error('[KanbanBoard] Failed to move task:', {
+      taskId,
+      position,
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString()
+    });
   }
 };
 

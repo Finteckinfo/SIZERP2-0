@@ -357,7 +357,28 @@ const handleClick = () => {
 };
 
 const handleDragStart = (event: DragEvent) => {
-  if (!props.draggable) return;
+  if (!props.draggable) {
+    console.log('[KanbanTaskCard] Drag start blocked - task not draggable:', {
+      taskId: props.task.id,
+      taskTitle: props.task.title,
+      draggable: props.draggable
+    });
+    return;
+  }
+  
+  console.log('[KanbanTaskCard] Drag start initiated:', {
+    taskId: props.task.id,
+    taskTitle: props.task.title,
+    taskStatus: props.task.status,
+    projectName: props.task.project.name,
+    departmentName: props.task.department.name,
+    assignedUser: props.task.assignedUser?.email || 'unassigned',
+    dragEvent: {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      dataTransferTypes: event.dataTransfer?.types || []
+    }
+  });
   
   event.dataTransfer!.effectAllowed = 'move';
   event.dataTransfer!.setData('text/plain', props.task.id);
@@ -366,10 +387,16 @@ const handleDragStart = (event: DragEvent) => {
   const dragImage = event.currentTarget as HTMLElement;
   event.dataTransfer!.setDragImage(dragImage, 0, 0);
   
+  console.log('[KanbanTaskCard] Drag data set and image configured, emitting drag-start event');
   emit('drag-start', props.task.id);
 };
 
 const handleDragEnd = () => {
+  console.log('[KanbanTaskCard] Drag end:', {
+    taskId: props.task.id,
+    taskTitle: props.task.title,
+    taskStatus: props.task.status
+  });
   emit('drag-end');
 };
 </script>

@@ -237,16 +237,33 @@ const selectAllTasks = () => {
 
 // Drag and Drop handlers
 const handleTaskDragStart = (taskId: string) => {
+  console.log('[KanbanColumn] Task drag started:', {
+    taskId,
+    columnStatus: props.column.status,
+    columnTitle: props.column.title,
+    currentTasksCount: props.tasks.length
+  });
   draggedTaskId.value = taskId;
 };
 
 const handleTaskDragEnd = () => {
+  console.log('[KanbanColumn] Task drag ended:', {
+    taskId: draggedTaskId.value,
+    columnStatus: props.column.status,
+    wasDragOver: isDragOver.value
+  });
   draggedTaskId.value = null;
   isDragOver.value = false;
 };
 
 const handleDragOver = (event: DragEvent) => {
   event.preventDefault();
+  console.log('[KanbanColumn] Drag over column:', {
+    columnStatus: props.column.status,
+    columnTitle: props.column.title,
+    draggedTaskId: draggedTaskId.value,
+    currentTasksCount: props.tasks.length
+  });
   isDragOver.value = true;
 };
 
@@ -255,6 +272,11 @@ const handleDragLeave = (event: DragEvent) => {
   const currentTarget = event.currentTarget as HTMLElement;
   const relatedTarget = event.relatedTarget as Node;
   if (currentTarget && !currentTarget.contains(relatedTarget)) {
+    console.log('[KanbanColumn] Drag left column:', {
+      columnStatus: props.column.status,
+      columnTitle: props.column.title,
+      draggedTaskId: draggedTaskId.value
+    });
     isDragOver.value = false;
   }
 };
@@ -263,7 +285,22 @@ const handleDrop = (event: DragEvent) => {
   event.preventDefault();
   isDragOver.value = false;
   
-  if (!draggedTaskId.value) return;
+  console.log('[KanbanColumn] Drop event triggered:', {
+    columnStatus: props.column.status,
+    columnTitle: props.column.title,
+    draggedTaskId: draggedTaskId.value,
+    currentTasksCount: props.tasks.length,
+    dropEvent: {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      dataTransfer: event.dataTransfer?.types || []
+    }
+  });
+  
+  if (!draggedTaskId.value) {
+    console.warn('[KanbanColumn] Drop event but no dragged task ID - ignoring');
+    return;
+  }
   
   // Calculate new position (append to end of column)
   const newPosition: TaskPosition = {
@@ -272,6 +309,13 @@ const handleDrop = (event: DragEvent) => {
     order: props.tasks.length,
     departmentId: undefined // Will be handled by the API
   };
+  
+  console.log('[KanbanColumn] Emitting task-move event:', {
+    taskId: draggedTaskId.value,
+    newPosition,
+    fromColumn: 'unknown', // We don't track source column here
+    toColumn: props.column.status
+  });
   
   emit('task-move', draggedTaskId.value, newPosition);
   draggedTaskId.value = null;

@@ -8,63 +8,132 @@
       <!-- Modern Header -->
       <div class="workspace-header">
         <div class="header-content">
-          <div class="header-left">
-            <v-btn 
-              icon 
-              variant="text" 
-              @click="$router.push('/projects')" 
-              class="back-btn"
-            >
-              <v-icon size="24">mdi-arrow-left</v-icon>
-            </v-btn>
-            <div class="project-info">
-              <h1 class="project-title">{{ project?.name || 'Loading...' }}</h1>
-              <div class="project-meta">
-                <v-chip 
-                  v-if="project"
-                  :color="getStatusColor(getProjectStatus(project))" 
-                  size="small" 
-                  variant="tonal"
-                >
-                  {{ getStatusLabel(getProjectStatus(project)) }}
-                </v-chip>
-                <span class="project-type">{{ project?.type || 'Project' }}</span>
+          <!-- Desktop Layout: Horizontal -->
+          <div class="d-flex align-center justify-space-between d-none d-md-flex w-100">
+            <div class="header-left">
+              <v-btn 
+                icon 
+                variant="text" 
+                @click="$router.push('/projects')" 
+                class="back-btn"
+              >
+                <v-icon size="24">mdi-arrow-left</v-icon>
+              </v-btn>
+              <div class="project-info">
+                <h1 class="project-title">{{ project?.name || 'Loading...' }}</h1>
+                <div class="project-meta">
+                  <v-chip 
+                    v-if="project"
+                    :color="getStatusColor(getProjectStatus(project))" 
+                    size="small" 
+                    variant="tonal"
+                  >
+                    {{ getStatusLabel(getProjectStatus(project)) }}
+                  </v-chip>
+                  <span class="project-type">{{ project?.type || 'Project' }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="header-right">
+              <div class="team-preview">
+                <div class="avatar-stack">
+                  <v-avatar 
+                    v-for="(member, index) in teamMembers.slice(0, 3)" 
+                    :key="index"
+                    size="32" 
+                    :color="getAvatarColor(member.user?.firstName || member.user?.email || '')"
+                    class="member-avatar"
+                  >
+                    <v-icon color="white" size="16">mdi-account</v-icon>
+                  </v-avatar>
+                  <div v-if="teamMembers.length > 3" class="more-members">
+                    +{{ teamMembers.length - 3 }}
+                  </div>
+                </div>
+                <v-btn variant="outlined" size="small" class="invite-btn" @click="openInvitePanel">
+                  <v-icon size="16" class="mr-2">mdi-account-plus</v-icon>
+                  Invite
+                </v-btn>
+              </div>
+              
+              <div class="header-actions">
+                <v-btn icon variant="text" size="small">
+                  <v-icon>mdi-magnify</v-icon>
+                </v-btn>
+                <v-btn icon variant="text" size="small">
+                  <v-icon>mdi-bell-outline</v-icon>
+                </v-btn>
+                <v-btn icon variant="text" size="small">
+                  <v-icon>mdi-dots-vertical</v-icon>
+                </v-btn>
               </div>
             </div>
           </div>
           
-          <div class="header-right">
-            <div class="team-preview">
-              <div class="avatar-stack">
-                <v-avatar 
-                  v-for="(member, index) in teamMembers.slice(0, 3)" 
-                  :key="index"
-                  size="32" 
-                  :color="getAvatarColor(member.user?.firstName || member.user?.email || '')"
-                  class="member-avatar"
-                >
-                  <v-icon color="white" size="16">mdi-account</v-icon>
-                </v-avatar>
-                <div v-if="teamMembers.length > 3" class="more-members">
-                  +{{ teamMembers.length - 3 }}
+          <!-- Mobile Layout: Vertical Stack -->
+          <div class="d-flex flex-column d-md-none w-100">
+            <!-- Top Row: Back Button + Project Info -->
+            <div class="d-flex align-center mb-3">
+              <v-btn 
+                icon 
+                variant="text" 
+                @click="$router.push('/projects')" 
+                class="back-btn mr-3"
+              >
+                <v-icon size="24">mdi-arrow-left</v-icon>
+              </v-btn>
+              <div class="project-info flex-grow-1">
+                <h1 class="project-title">{{ project?.name || 'Loading...' }}</h1>
+                <div class="project-meta">
+                  <v-chip 
+                    v-if="project"
+                    :color="getStatusColor(getProjectStatus(project))" 
+                    size="small" 
+                    variant="tonal"
+                    class="mr-2"
+                  >
+                    {{ getStatusLabel(getProjectStatus(project)) }}
+                  </v-chip>
+                  <span class="project-type">{{ project?.type || 'Project' }}</span>
                 </div>
               </div>
-              <v-btn variant="outlined" size="small" class="invite-btn" @click="openInvitePanel">
-                <v-icon size="16" class="mr-2">mdi-account-plus</v-icon>
-                Invite
-              </v-btn>
             </div>
             
-            <div class="header-actions">
-              <v-btn icon variant="text" size="small">
-                <v-icon>mdi-magnify</v-icon>
-              </v-btn>
-              <v-btn icon variant="text" size="small">
-                <v-icon>mdi-bell-outline</v-icon>
-              </v-btn>
-              <v-btn icon variant="text" size="small">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
+            <!-- Bottom Row: Team Preview + Actions -->
+            <div class="d-flex align-center justify-space-between">
+              <div class="team-preview">
+                <div class="avatar-stack">
+                  <v-avatar 
+                    v-for="(member, index) in teamMembers.slice(0, 3)" 
+                    :key="index"
+                    size="32" 
+                    :color="getAvatarColor(member.user?.firstName || member.user?.email || '')"
+                    class="member-avatar"
+                  >
+                    <v-icon color="white" size="16">mdi-account</v-icon>
+                  </v-avatar>
+                  <div v-if="teamMembers.length > 3" class="more-members">
+                    +{{ teamMembers.length - 3 }}
+                  </div>
+                </div>
+                <v-btn variant="outlined" size="small" class="invite-btn ml-2" @click="openInvitePanel">
+                  <v-icon size="16" class="mr-2">mdi-account-plus</v-icon>
+                  Invite
+                </v-btn>
+              </div>
+              
+              <div class="header-actions">
+                <v-btn icon variant="text" size="small">
+                  <v-icon>mdi-magnify</v-icon>
+                </v-btn>
+                <v-btn icon variant="text" size="small">
+                  <v-icon>mdi-bell-outline</v-icon>
+                </v-btn>
+                <v-btn icon variant="text" size="small">
+                  <v-icon>mdi-dots-vertical</v-icon>
+                </v-btn>
+              </div>
             </div>
           </div>
         </div>
@@ -73,6 +142,9 @@
       <!-- Main Content -->
       <div class="workspace-content">
         <v-container fluid class="pa-0">
+          <!-- Payment Notification Banner -->
+          <PaymentNotificationBanner :project-id="projectId" />
+          
           <!-- Loading State -->
           <div v-if="loading" class="loading-state">
             <v-progress-circular indeterminate :color="'var(--erp-accent-green)'" size="64"></v-progress-circular>
@@ -328,6 +400,132 @@
                     <v-col cols="12" md="6">
                       <v-text-field v-model="invite.expiresAtDisplay" type="datetime-local" label="Expires At" variant="outlined" :rules="[v=>!!v||'Required']" />
                     </v-col>
+                    
+                    <!-- Payment Configuration Section -->
+                    <v-col cols="12">
+                      <v-divider class="my-4"></v-divider>
+                      <h3 class="text-h6 mb-3" :style="{ color: 'var(--erp-text)' }">
+                        <v-icon class="mr-2">mdi-cash</v-icon>
+                        Payment Configuration
+                      </h3>
+                    </v-col>
+                    
+                    <v-col cols="12" md="6">
+                      <v-select 
+                        v-model="invite.paymentType" 
+                        :items="paymentTypeOptions" 
+                        item-title="label"
+                        item-value="value"
+                        label="Payment Type" 
+                        variant="outlined"
+                        :rules="[v=>!!v||'Required']"
+                      >
+                        <template #item="{ props, item }">
+                          <v-list-item v-bind="props">
+                            <template #title>
+                              <div class="d-flex align-center">
+                                <span>{{ item.raw.label }}</span>
+                                <v-chip size="x-small" variant="tonal" class="ml-2" color="primary">
+                                  {{ item.raw.value }}
+                                </v-chip>
+                              </div>
+                            </template>
+                            <template #subtitle>
+                              <span class="text-caption">{{ item.raw.description }}</span>
+                            </template>
+                          </v-list-item>
+                        </template>
+                      </v-select>
+                    </v-col>
+                    
+                    <!-- Salary Configuration -->
+                    <template v-if="invite.paymentType === 'SALARY'">
+                      <v-col cols="12" md="6">
+                        <v-text-field 
+                          v-model.number="invite.salaryAmount" 
+                          label="Salary Amount (SIZ)" 
+                          type="number"
+                          variant="outlined" 
+                          :rules="[v=>!!v||'Required', v=>v>0||'Must be positive']"
+                          suffix="SIZ"
+                        />
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-select 
+                          v-model="invite.salaryFrequency" 
+                          :items="salaryFrequencyOptions" 
+                          item-title="label"
+                          item-value="value"
+                          label="Payment Frequency" 
+                          variant="outlined" 
+                          :rules="[v=>!!v||'Required']"
+                        />
+                      </v-col>
+                    </template>
+                    
+                    <!-- Oversight Configuration -->
+                    <template v-if="invite.paymentType === 'OVERSIGHT'">
+                      <v-col cols="12" md="6">
+                        <v-text-field 
+                          v-model.number="invite.oversightRate" 
+                          label="Oversight Rate (%)" 
+                          type="number"
+                          variant="outlined" 
+                          :rules="[v=>!!v||'Required', v=>v>0&&v<=100||'Must be 1-100%']"
+                          suffix="%"
+                          hint="Percentage of task payments (e.g., 5 for 5%)"
+                          persistent-hint
+                        />
+                      </v-col>
+                    </template>
+                    
+                    <!-- Milestone Configuration -->
+                    <template v-if="invite.paymentType === 'MILESTONE'">
+                      <v-col cols="12" md="6">
+                        <v-text-field 
+                          v-model.number="invite.milestoneAmount" 
+                          label="Milestone Amount (SIZ)" 
+                          type="number"
+                          variant="outlined" 
+                          :rules="[v=>!!v||'Required', v=>v>0||'Must be positive']"
+                          suffix="SIZ"
+                        />
+                      </v-col>
+                    </template>
+                    
+                    <!-- Payment Summary -->
+                    <v-col cols="12" v-if="invite.paymentType && invite.paymentType !== 'PER_TASK'">
+                      <v-alert type="info" variant="tonal" class="mb-3">
+                        <template #title>
+                          <div class="d-flex align-center">
+                            <v-icon class="mr-2">mdi-information</v-icon>
+                            Payment Summary
+                          </div>
+                        </template>
+                        <div v-if="invite.paymentType === 'SALARY' && invite.salaryAmount">
+                          <strong>{{ invite.salaryAmount }} SIZ {{ invite.salaryFrequency?.toLowerCase() }}</strong>
+                          <br>
+                          <span class="text-caption">
+                            Estimated monthly: {{ calculateMonthlySalary(invite.salaryAmount, invite.salaryFrequency) }} SIZ
+                          </span>
+                        </div>
+                        <div v-else-if="invite.paymentType === 'OVERSIGHT' && invite.oversightRate">
+                          <strong>{{ invite.oversightRate }}% of task payments</strong>
+                          <br>
+                          <span class="text-caption">Automatically calculated when tasks are approved</span>
+                        </div>
+                        <div v-else-if="invite.paymentType === 'MILESTONE' && invite.milestoneAmount">
+                          <strong>{{ invite.milestoneAmount }} SIZ per milestone</strong>
+                          <br>
+                          <span class="text-caption">Paid when project milestones are reached</span>
+                        </div>
+                        <div class="mt-2">
+                          <v-icon size="16" class="mr-1">mdi-alert-circle</v-icon>
+                          <strong>Project owner will need to fund escrow for this team member</strong>
+                        </div>
+                      </v-alert>
+                    </v-col>
+                    
                     <v-col cols="12">
                       <v-alert v-if="inviteError" type="error" variant="tonal" class="mb-3">{{ inviteError }}</v-alert>
                       <v-btn :color="'var(--erp-accent-green)'" :loading="submitting" @click="submitInvite">Send Invite</v-btn>
@@ -453,6 +651,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { projectApi, taskApi, departmentApi, userRoleApi, projectInviteApi, projectAccessApi, type Project, type Task, type Department, type UserRole } from '@/services/projectApi';
 import ProjectAccessGate from '@/components/ProjectAccessGate.vue';
+import PaymentNotificationBanner from '@/components/PaymentNotificationBanner.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -510,7 +709,13 @@ const newTask = ref({
 const invite = ref({
   email: '',
   role: 'EMPLOYEE',
-  expiresAtDisplay: '' // datetime-local input value
+  expiresAtDisplay: '', // datetime-local input value
+  // Payment configuration
+  paymentType: 'PER_TASK' as 'PER_TASK' | 'SALARY' | 'OVERSIGHT' | 'MILESTONE' | 'HYBRID',
+  salaryAmount: undefined as number | undefined,
+  salaryFrequency: 'WEEKLY' as 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY',
+  oversightRate: undefined as number | undefined,
+  milestoneAmount: undefined as number | undefined
 });
 const inviteError = ref<string | null>(null);
 
@@ -522,6 +727,20 @@ const inviteRoleOptions = computed(() => {
   if (myRole.value === 'PROJECT_MANAGER') return ['EMPLOYEE'];
   return [];
 });
+
+const paymentTypeOptions = [
+  { value: 'PER_TASK', label: 'Per Task', description: 'Paid for each completed task' },
+  { value: 'SALARY', label: 'Salary', description: 'Regular recurring payments' },
+  { value: 'OVERSIGHT', label: 'Oversight', description: 'Percentage of team task payments' },
+  { value: 'MILESTONE', label: 'Milestone', description: 'Paid when project milestones are reached' },
+  { value: 'HYBRID', label: 'Hybrid', description: 'Combination of multiple payment types' }
+];
+
+const salaryFrequencyOptions = [
+  { value: 'WEEKLY', label: 'Weekly' },
+  { value: 'BIWEEKLY', label: 'Bi-weekly' },
+  { value: 'MONTHLY', label: 'Monthly' }
+];
 const emailRules = [
   (v: string) => !!v || 'Required',
   (v: string) => /.+@.+\..+/.test(v) || 'Invalid email'
@@ -628,7 +847,16 @@ const openInvitePanel = () => {
   // Convert to datetime-local format (YYYY-MM-DDTHH:mm)
   const pad = (n: number) => String(n).padStart(2, '0');
   const dtl = `${defaultExpiry.getFullYear()}-${pad(defaultExpiry.getMonth()+1)}-${pad(defaultExpiry.getDate())}T${pad(defaultExpiry.getHours())}:${pad(defaultExpiry.getMinutes())}`;
-  invite.value = { email: '', role: 'EMPLOYEE', expiresAtDisplay: dtl };
+  invite.value = { 
+    email: '', 
+    role: 'EMPLOYEE', 
+    expiresAtDisplay: dtl,
+    paymentType: 'PER_TASK',
+    salaryAmount: undefined,
+    salaryFrequency: 'WEEKLY',
+    oversightRate: undefined,
+    milestoneAmount: undefined
+  };
   inviteError.value = null;
   activePanel.value = 'invite';
 };
@@ -677,14 +905,50 @@ const submitInvite = async () => {
     inviteError.value = null;
     // Ensure ISO string for expiresAt
     const expiresAtIso = new Date(invite.value.expiresAtDisplay).toISOString();
-    await projectInviteApi.createInvite({
+    
+    // Prepare invite data with payment configuration
+    const inviteData: any = {
       projectId,
       email: invite.value.email.trim(),
       role: invite.value.role as any,
       expiresAt: expiresAtIso
-    });
+    };
+
+    // Add payment configuration if provided
+    if (invite.value.paymentType && invite.value.paymentType !== 'PER_TASK') {
+      inviteData.paymentType = invite.value.paymentType;
+      
+      if (invite.value.paymentType === 'SALARY' && invite.value.salaryAmount) {
+        inviteData.salaryAmount = invite.value.salaryAmount;
+        inviteData.salaryFrequency = invite.value.salaryFrequency;
+      }
+      
+      if (invite.value.paymentType === 'OVERSIGHT' && invite.value.oversightRate) {
+        inviteData.oversightRate = invite.value.oversightRate;
+      }
+      
+      if (invite.value.paymentType === 'MILESTONE' && invite.value.milestoneAmount) {
+        inviteData.milestoneAmount = invite.value.milestoneAmount;
+      }
+    }
+
+    await projectInviteApi.createInvite(inviteData);
     await loadProjectData();
     resetPanel();
+    
+    // Show success message with payment info
+    if (inviteData.paymentType && inviteData.paymentType !== 'PER_TASK') {
+      let paymentInfo = '';
+      if (inviteData.paymentType === 'SALARY') {
+        paymentInfo = `\n💰 Salary: ${inviteData.salaryAmount} SIZ ${inviteData.salaryFrequency.toLowerCase()}`;
+      } else if (inviteData.paymentType === 'OVERSIGHT') {
+        paymentInfo = `\n👥 Oversight: ${(inviteData.oversightRate * 100).toFixed(1)}% of task payments`;
+      } else if (inviteData.paymentType === 'MILESTONE') {
+        paymentInfo = `\n🎯 Milestone: ${inviteData.milestoneAmount} SIZ per milestone`;
+      }
+      
+      console.log(`✅ Invite sent successfully!${paymentInfo}\n\n⚠️ Project owner needs to fund escrow for this team member.`);
+    }
   } catch (e: any) {
     console.error('Failed to send invite', e);
     const status = e?.response?.status;
@@ -797,6 +1061,22 @@ const getTaskStatusColor = (status: string) => {
     'APPROVED': 'success'
   };
   return colors[status] || 'grey';
+};
+
+// Helper function to calculate monthly salary
+const calculateMonthlySalary = (amount: number, frequency: string) => {
+  if (!amount || !frequency) return 0;
+  
+  switch (frequency) {
+    case 'WEEKLY':
+      return Math.round(amount * 4.33); // Average weeks per month
+    case 'BIWEEKLY':
+      return Math.round(amount * 2.17); // Average bi-weekly periods per month
+    case 'MONTHLY':
+      return amount;
+    default:
+      return 0;
+  }
 };
 
 const getTaskStatusLabel = (status: string) => {
