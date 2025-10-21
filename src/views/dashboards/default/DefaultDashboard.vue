@@ -901,7 +901,7 @@ onMounted(() => {
         <v-card elevation="0" class="invites-section" :style="{ background: 'var(--erp-card-bg)', border: '1px solid var(--erp-border)', color: 'var(--erp-text)' }">
           <v-card-title class="pa-4 pb-2">
             <!-- Desktop Layout: Horizontal -->
-            <div class="d-flex align-center d-none d-md-flex">
+            <div class="desktop-layout d-none d-md-flex align-center">
               <v-icon class="mr-3" size="24" :style="{ color: 'var(--erp-accent-indigo)' }">mdi-email-outline</v-icon>
               <span class="text-h5 font-weight-medium">Project Invitations</span>
               <v-chip 
@@ -927,7 +927,7 @@ onMounted(() => {
             </div>
             
             <!-- Mobile Layout: Vertical Stack -->
-            <div class="d-flex flex-column d-md-none">
+            <div class="mobile-layout d-md-none">
               <!-- Title Row -->
               <div class="d-flex align-center mb-3">
                 <v-icon class="mr-3" size="24" :style="{ color: 'var(--erp-accent-indigo)' }">mdi-email-outline</v-icon>
@@ -1315,11 +1315,26 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .desktop-layout {
-    display: none;
+    display: none !important;
   }
   
   .mobile-layout {
-    display: block;
+    display: flex !important;
+    flex-direction: column;
+  }
+  
+  /* Ensure proper stacking on mobile */
+  .mobile-layout .d-flex {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .mobile-layout .d-flex.justify-space-between {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
   }
 }
 
