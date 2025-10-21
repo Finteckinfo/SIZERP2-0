@@ -25,10 +25,22 @@ api.interceptors.request.use(async (config) => {
       const path = config.url.startsWith('/api') ? config.url : `/api${config.url.startsWith('/') ? '' : '/'}${config.url}`;
       config.url = path;
     }
+    
     // Check if Clerk is ready before making any API calls
     if (!window.Clerk?.session || !window.Clerk?.user) {
-      console.log('🚫 Clerk not ready, blocking API request:', config.url);
-      throw new Error('Clerk not ready - please wait for authentication');
+      console.log('🚫 Clerk not ready, waiting before API request:', config.url);
+      
+      // Wait for Clerk to be ready with timeout
+      let attempts = 0;
+      while ((!window.Clerk?.session || !window.Clerk?.user) && attempts < 50) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+      }
+      
+      // If still not ready after waiting, throw error
+      if (!window.Clerk?.session || !window.Clerk?.user) {
+        throw new Error('Clerk not ready - please wait for authentication');
+      }
     }
 
     const headers = await authService.getAuthHeaders();

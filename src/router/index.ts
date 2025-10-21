@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import MainRoutes from './MainRoutes';
 import PublicRoutes from './PublicRoutes';
 import { Clerk } from '@clerk/clerk-js';
+import { clerkReadinessService } from '@/services/clerkReadinessService';
 
 // Initialize Clerk with satellite domain configuration if needed
 const clerkOptions: any = {};
@@ -20,30 +21,39 @@ export const router = createRouter({
   routes: [
     { path: '/:pathMatch(.*)*', component: () => import('@/views/pages/maintenance/error/Error404Page.vue') },
     { path: '/sso-callback', component: () => import('@/views/authentication/SSOCallback.vue') },
+    { path: '/auth-loading', component: () => import('@/views/pages/maintenance/AuthLoadingPage.vue') },
     MainRoutes,
     PublicRoutes
   ]
 });
 
 router.beforeEach(async (to, from, next) => {
-  await clerk.load();
-  const userId = clerk.user?.id || null;
+  // Skip loading page to avoid infinite loop
+  if (to.path === '/auth-loading') {
+    next();
+    return;
+  }
 
+  // Load Clerk first
+  await clerk.load();
+  
   const publicPages = ['/login', '/register', '/login1', '/error', '/sso-callback'];
   const isPublicPage = publicPages.includes(to.path);
   const authRequired = !isPublicPage && to.matched.some((record) => record.meta.requiresAuth);
 
-  // If this is a satellite domain and user needs authentication
-  if (authRequired && !userId) {
-    if (import.meta.env.VITE_CLERK_IS_SATELLITE === 'true' && import.meta.env.VITE_CLERK_SIGN_IN_URL) {
-      // Redirect to primary domain for authentication
-      window.location.href = import.meta.env.VITE_CLERK_SIGN_IN_URL;
+  // If authentication is required, show loading screen first
+  if (authRequired) {
+    // Check if Clerk is already ready
+    if (window.Clerk?.session && window.Clerk?.user?.id) {
+      // Clerk is ready, proceed
+      next();
       return;
-    } else {
-      // Fallback to local login (shouldn't happen in satellite mode)
-      next('/login');
     }
-  } else if (userId && (to.path === '/login' || to.path === '/login1')) {
+    
+    // Clerk not ready, show loading screen
+    next('/auth-loading');
+    return;
+  } else if (clerk.user?.id && (to.path === '/login' || to.path === '/login1')) {
     // User is already authenticated, redirect to dashboard
     next('/');
   } else {
