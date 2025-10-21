@@ -386,6 +386,9 @@
       </transition>
     </div>
   </div>
+
+  <!-- Connect Wallet Modal -->
+  <ConnectWallet />
 </template>
 
 <script setup lang="ts">
@@ -398,6 +401,7 @@ import { connectedWallet, isWalletConnected, isWalletModalOpen } from '@/stores/
 import { removeManualWallet } from '@/lib/walletManager';
 import { getAddressExplorerUrl, getExplorerUrl } from '@/services/paymentService';
 import algosdk from 'algosdk';
+import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue';
 
 const router = useRouter();
 const activeTab = ref('account');
