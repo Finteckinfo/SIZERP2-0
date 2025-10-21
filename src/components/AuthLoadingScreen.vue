@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-loading-container">
+  <div class="auth-loading-container" :class="{ 'dark-mode': isDark }">
     <div class="loading-content">
       <!-- Animated Logo/Icon -->
       <div class="logo-container">
@@ -69,6 +69,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useTheme } from 'vuetify';
 
 interface Props {
   loadingTitle?: string;
@@ -93,6 +94,9 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   retry: [];
 }>();
+
+const theme = useTheme();
+const isDark = computed(() => theme.current.value.dark);
 
 const handleRetry = () => {
   emit('retry');
@@ -125,12 +129,22 @@ onUnmounted(() => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Light Mode - Green Theme */
+.auth-loading-container:not(.dark-mode) {
+  background: linear-gradient(135deg, #96C461 0%, #7BA347 50%, #5A8A2E 100%);
+}
+
+/* Dark Mode - Blue Theme */
+.auth-loading-container.dark-mode {
+  background: linear-gradient(135deg, #000E50 0%, #001A6B 50%, #002680 100%);
 }
 
 .loading-content {
@@ -151,7 +165,6 @@ onUnmounted(() => {
 .logo-circle {
   width: 80px;
   height: 80px;
-  background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -160,6 +173,19 @@ onUnmounted(() => {
   backdrop-filter: blur(10px);
   border: 2px solid rgba(255, 255, 255, 0.2);
   animation: logoFloat 3s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+/* Light Mode Logo Circle */
+.auth-loading-container:not(.dark-mode) .logo-circle {
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(150, 196, 97, 0.3);
+}
+
+/* Dark Mode Logo Circle */
+.auth-loading-container.dark-mode .logo-circle {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 14, 80, 0.4);
 }
 
 .logo-icon {
@@ -173,9 +199,19 @@ onUnmounted(() => {
   transform: translate(-50%, -50%);
   width: 80px;
   height: 80px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   animation: pulse 2s ease-out infinite;
+  transition: all 0.3s ease;
+}
+
+/* Light Mode Pulse Rings */
+.auth-loading-container:not(.dark-mode) .pulse-ring {
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Dark Mode Pulse Rings */
+.auth-loading-container.dark-mode .pulse-ring {
+  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .pulse-ring.delay-1 {
@@ -194,7 +230,7 @@ onUnmounted(() => {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  background: linear-gradient(45deg, #fff, #e0e0e0);
+  background: linear-gradient(45deg, #fff, #f0f0f0);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -202,7 +238,7 @@ onUnmounted(() => {
 
 .loading-subtitle {
   font-size: 0.9rem;
-  opacity: 0.8;
+  opacity: 0.9;
   line-height: 1.4;
 }
 
@@ -216,7 +252,7 @@ onUnmounted(() => {
 
 .progress-text {
   font-size: 0.8rem;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .retry-container {
@@ -225,8 +261,28 @@ onUnmounted(() => {
 
 .retry-btn {
   backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+/* Light Mode Retry Button */
+.auth-loading-container:not(.dark-mode) .retry-btn {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.auth-loading-container:not(.dark-mode) .retry-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Dark Mode Retry Button */
+.auth-loading-container.dark-mode .retry-btn {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.auth-loading-container.dark-mode .retry-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .tips-container {
@@ -235,8 +291,18 @@ onUnmounted(() => {
 
 .tips-card {
   backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+/* Light Mode Tips Card */
+.auth-loading-container:not(.dark-mode) .tips-card {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Dark Mode Tips Card */
+.auth-loading-container.dark-mode .tips-card {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .background-animation {
@@ -256,9 +322,19 @@ onUnmounted(() => {
 
 .shape {
   position: absolute;
-  background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   animation: float 6s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+/* Light Mode Shapes */
+.auth-loading-container:not(.dark-mode) .shape {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Dark Mode Shapes */
+.auth-loading-container.dark-mode .shape {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .shape-1 {
@@ -356,5 +432,10 @@ onUnmounted(() => {
   .logo-icon {
     font-size: 32px !important;
   }
+}
+
+/* Smooth theme transitions */
+.auth-loading-container * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 </style>
