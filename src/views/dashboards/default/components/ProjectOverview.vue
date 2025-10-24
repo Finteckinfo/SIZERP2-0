@@ -143,7 +143,7 @@ const activeRate = computed(() => {
           :model-value="completionRate"
           height="8"
           rounded
-          :style="{ '--v-theme-primary': 'var(--erp-accent-green)' }"
+          :style="isDark ? { '--v-theme-primary': '#6ec207' } : {}"
           class="mb-3"
         ></v-progress-linear>
         
@@ -155,7 +155,7 @@ const activeRate = computed(() => {
           :model-value="activeRate"
           height="8"
           rounded
-          :style="{ '--v-theme-primary': 'var(--erp-accent-indigo)' }"
+          :style="isDark ? { '--v-theme-primary': '#615fff' } : {}"
         ></v-progress-linear>
       </div>
     </v-card-text>

@@ -15,7 +15,7 @@ const customizer = useCustomizerStore();
     location="right"
     v-model="customizer.Customizer_drawer"
     width="360"
-    :style="{ background: 'var(--erp-sidebar-bg)', color: 'var(--erp-text)' }"
+    :style="{ background: 'var(--erp-sidebar-bg)', color: 'var(--erp-text)', zIndex: 9999 }"
   >
     <div class="pa-6" :style="{ borderBottom: '1px solid var(--erp-border)' }">
       <div class="d-flex justify-space-between align-center">
@@ -72,5 +72,8 @@ const customizer = useCustomizerStore();
 </template>
 
 <style scoped>
-/* Keep it minimal and aligned with palette */
+/* Ensure customizer panel has the highest z-index */
+.v-navigation-drawer {
+  z-index: 9999 !important;
+}
 </style>
