@@ -19,8 +19,13 @@ const { isDark } = useTheme();
 <template>
   <v-list-subheader 
     color="darkText" 
-    class="smallCap"
+    class="smallCap sidebar-header"
     :class="{ 'dark-theme': isDark }"
+    :style="{ 
+      backgroundColor: 'transparent !important',
+      color: 'var(--erp-text)',
+      opacity: 0.8
+    }"
   >
     {{ props.item?.header }}
   </v-list-subheader>

@@ -63,6 +63,25 @@
   background-color: var(--erp-surface) !important;
 }
 
+/* Dark mode specific hover effects for sidebar */
+.dark-theme .erp-hover:hover {
+  background-color: var(--erp-surface) !important;
+}
+.dark-theme .erp-hover:hover .v-list-item__prepend {
+  background-color: var(--erp-surface) !important;
+}
+.dark-theme .erp-hover:hover .v-list-item__prepend .iconClass {
+  background-color: var(--erp-surface) !important;
+}
+
+/* Dark mode sidebar header styling */
+.dark-theme .sidebar-header {
+  background-color: transparent !important;
+}
+.dark-theme .smallCap {
+  background-color: transparent !important;
+}
+
 /* Sidebar item active/hover styling */
 .erp-item {
   border-radius: 10px !important;
