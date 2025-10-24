@@ -50,6 +50,7 @@ const customizer = useCustomizerStore();
               variant="flat"
               :color="'var(--erp-accent-indigo)'"
               @click.stop="customizer.SET_CUSTOMIZER_DRAWER(!customizer.Customizer_drawer)"
+              style="z-index: 9998;"
             >
               <SettingsIcon class="icon" />
             </v-btn>

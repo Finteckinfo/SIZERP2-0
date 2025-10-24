@@ -1,5 +1,5 @@
 <template>
-  <v-card elevation="0" class="stats-skeleton">
+  <v-card elevation="0" class="stats-skeleton" :class="{ 'dark-theme': isDark }">
     <v-card-text class="pa-6">
       <div class="d-flex align-center justify-space-between mb-6">
         <div class="skeleton-text" style="width: 200px; height: 32px; border-radius: 4px;"></div>
@@ -43,7 +43,9 @@
 </template>
 
 <script setup lang="ts">
-// No props or logic needed for skeleton
+import { useTheme } from '@/composables/useTheme';
+
+const { isDark } = useTheme();
 </script>
 
 <style scoped>
@@ -63,6 +65,15 @@
 .skeleton-progress,
 .skeleton-avatar {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.dark-theme .skeleton-text,
+.dark-theme .skeleton-chip,
+.dark-theme .skeleton-progress,
+.dark-theme .skeleton-avatar {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }

@@ -55,6 +55,14 @@ const { isDark } = useTheme();
   animation: shimmer 1.5s infinite;
 }
 
+.dark-theme .skeleton-text,
+.dark-theme .skeleton-chip,
+.dark-theme .skeleton-progress {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
 @keyframes shimmer {
   0% {
     background-position: -200% 0;

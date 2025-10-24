@@ -143,7 +143,7 @@ const activeRate = computed(() => {
           :model-value="completionRate"
           height="8"
           rounded
-          :style="isDark ? { '--v-theme-primary': '#6ec207' } : {}"
+          :class="{ 'task-completion-progress': isDark }"
           class="mb-3"
         ></v-progress-linear>
         
@@ -155,9 +155,29 @@ const activeRate = computed(() => {
           :model-value="activeRate"
           height="8"
           rounded
-          :style="isDark ? { '--v-theme-primary': '#615fff' } : {}"
+          :class="{ 'project-activity-progress': isDark }"
         ></v-progress-linear>
       </div>
     </v-card-text>
   </v-card>
 </template>
+
+<style scoped>
+/* Dark mode progress bar styling */
+.task-completion-progress :deep(.v-progress-linear__determinate) {
+  background-color: #6ec207 !important;
+}
+
+.project-activity-progress :deep(.v-progress-linear__determinate) {
+  background-color: #615fff !important;
+}
+
+/* Ensure the progress bars have proper styling in dark mode */
+.dark-theme .task-completion-progress :deep(.v-progress-linear__determinate) {
+  background-color: #6ec207 !important;
+}
+
+.dark-theme .project-activity-progress :deep(.v-progress-linear__determinate) {
+  background-color: #615fff !important;
+}
+</style>
