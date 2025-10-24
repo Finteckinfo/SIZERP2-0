@@ -64,6 +64,9 @@
 }
 
 /* Dark mode specific hover effects for sidebar */
+.dark-theme .erp-hover {
+  background-color: transparent !important;
+}
 .dark-theme .erp-hover:hover {
   background-color: var(--erp-surface) !important;
 }
@@ -80,6 +83,13 @@
 }
 .dark-theme .smallCap {
   background-color: transparent !important;
+}
+
+/* Preserve active state styling in dark mode */
+.dark-theme .erp-item--active {
+  background-color: var(--erp-accent-green) !important;
+  color: #ffffff !important;
+  outline: 2px solid color-mix(in srgb, var(--erp-accent-indigo) 22%, transparent) !important;
 }
 
 /* Sidebar item active/hover styling */
