@@ -300,6 +300,18 @@ const scrollToFeatures = () => {
   text-transform: none !important;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
   transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.cta-button :deep(.v-btn__content) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  width: 100% !important;
 }
 
 .cta-button:hover {
@@ -410,6 +422,18 @@ const scrollToFeatures = () => {
   text-transform: none !important;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3) !important;
   transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.cta-button-large :deep(.v-btn__content) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  width: 100% !important;
 }
 
 .cta-button-large:hover {
