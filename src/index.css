@@ -73,9 +73,6 @@
 .dark-theme .erp-hover:hover .v-list-item__prepend {
   background-color: var(--erp-surface) !important;
 }
-.dark-theme .erp-hover:hover .v-list-item__prepend .iconClass {
-  background-color: var(--erp-surface) !important;
-}
 
 /* Icon background styling - transparent by default */
 .icon-wrapper {
