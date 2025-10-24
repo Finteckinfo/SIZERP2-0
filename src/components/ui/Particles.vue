@@ -71,12 +71,8 @@ const resizeTimeout = ref<NodeJS.Timeout | null>(null)
 const getThemeColor = () => {
   if (props.color !== '#ffffff') return props.color
   
-  // Use brand colors based on theme
-  if (theme.isDark.value) {
-    return '#000E50' // Dark mode brand color
-  } else {
-    return '#96C461' // Light mode brand color
-  }
+  // Always use bright white for particles
+  return '#ffffff'
 }
 
 const handleMouseMove = (event: MouseEvent) => {
@@ -302,5 +298,18 @@ watch(() => mousePosition.value, onMouseMove)
 watch(() => props.refresh, initCanvas)
 watch(() => getThemeColor(), () => {
   initCanvas()
+})
+
+// Listen for theme change events
+onMounted(() => {
+  const handleThemeChange = () => {
+    initCanvas()
+  }
+  
+  window.addEventListener('theme-changed', handleThemeChange)
+  
+  onUnmounted(() => {
+    window.removeEventListener('theme-changed', handleThemeChange)
+  })
 })
 </script>

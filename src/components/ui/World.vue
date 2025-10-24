@@ -144,11 +144,12 @@ const initGlobe = () => {
 
   globe = createGlobe(canvasRef.value, globeConfig)
   
+  // Make globe visible immediately
   setTimeout(() => {
     if (canvasRef.value) {
-      canvasRef.value.style.opacity = '1'
+      canvasRef.value.style.opacity = '0.6' // Increased opacity for better visibility
     }
-  }, 0)
+  }, 100) // Reduced timeout
 }
 
 const onResize = () => {
@@ -178,5 +179,21 @@ watch(() => theme.isDark.value, () => {
     globe.destroy()
   }
   initGlobe()
+})
+
+// Listen for theme change events
+onMounted(() => {
+  const handleThemeChange = () => {
+    if (globe) {
+      globe.destroy()
+    }
+    initGlobe()
+  }
+  
+  window.addEventListener('theme-changed', handleThemeChange)
+  
+  onUnmounted(() => {
+    window.removeEventListener('theme-changed', handleThemeChange)
+  })
 })
 </script>

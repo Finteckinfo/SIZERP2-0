@@ -1,4 +1,4 @@
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 
 // Theme storage key
 const THEME_STORAGE_KEY = 'siz-erp-theme';
@@ -35,51 +35,58 @@ const storeTheme = (isDarkMode: boolean): void => {
 export const useTheme = () => {
   const isDark = ref<boolean>(false);
 
+  // Apply theme to DOM
+  const applyTheme = (darkMode: boolean) => {
+    if (darkMode) {
+      document.body.classList.add('dark-theme');
+      document.documentElement.classList.add('dark-theme');
+    } else {
+      document.body.classList.remove('dark-theme');
+      document.documentElement.classList.remove('dark-theme');
+    }
+    
+    // Force a reflow to ensure CSS changes are applied immediately
+    document.body.offsetHeight;
+    
+    // Trigger a custom event for components to listen to
+    window.dispatchEvent(new CustomEvent('theme-changed', { 
+      detail: { isDark: darkMode } 
+    }));
+  };
+
   // Toggle theme
-  const toggle = () => {
+  const toggle = async () => {
     isDark.value = !isDark.value;
     storeTheme(isDark.value);
     
     // Apply theme immediately to DOM
-    if (isDark.value) {
-      document.body.classList.add('dark-theme');
-      document.documentElement.classList.add('dark-theme');
-    } else {
-      document.body.classList.remove('dark-theme');
-      document.documentElement.classList.remove('dark-theme');
-    }
+    applyTheme(isDark.value);
     
-    // Force a reflow to ensure CSS changes are applied immediately
-    document.body.offsetHeight;
+    // Force Vue to update
+    await nextTick();
   };
 
   // Set specific theme
-  const setTheme = (darkMode: boolean) => {
+  const setTheme = async (darkMode: boolean) => {
     isDark.value = darkMode;
     storeTheme(isDark.value);
     
     // Apply theme immediately to DOM
-    if (isDark.value) {
-      document.body.classList.add('dark-theme');
-      document.documentElement.classList.add('dark-theme');
-    } else {
-      document.body.classList.remove('dark-theme');
-      document.documentElement.classList.remove('dark-theme');
-    }
+    applyTheme(isDark.value);
     
-    // Force a reflow to ensure CSS changes are applied immediately
-    document.body.offsetHeight;
+    // Force Vue to update
+    await nextTick();
   };
 
   // Reset to system preference
-  const resetToSystem = () => {
+  const resetToSystem = async () => {
     const systemPrefersDark = getSystemPreference();
-    setTheme(systemPrefersDark);
+    await setTheme(systemPrefersDark);
     localStorage.removeItem(THEME_STORAGE_KEY);
   };
 
   // Initialize theme
-  onMounted(() => {
+  onMounted(async () => {
     const storedTheme = getStoredTheme();
     const systemPrefersDark = getSystemPreference();
     
@@ -96,13 +103,10 @@ export const useTheme = () => {
     isDark.value = initialTheme;
     
     // Apply theme immediately to DOM
-    if (isDark.value) {
-      document.body.classList.add('dark-theme');
-      document.documentElement.classList.add('dark-theme');
-    } else {
-      document.body.classList.remove('dark-theme');
-      document.documentElement.classList.remove('dark-theme');
-    }
+    applyTheme(isDark.value);
+    
+    // Force Vue to update
+    await nextTick();
   });
 
   return {
