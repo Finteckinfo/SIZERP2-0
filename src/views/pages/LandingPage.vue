@@ -531,7 +531,9 @@ const scrollToFeatures = () => {
   
   .theme-toggle-container {
     top: 15px;
-    right: 15px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
   }
 }
 
@@ -601,7 +603,9 @@ const scrollToFeatures = () => {
   
   .theme-toggle-container {
     top: 10px;
-    right: 10px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
   }
 }
 </style>
