@@ -157,7 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import ThemeToggle from '@/components/shared/ThemeToggle.vue'
@@ -167,6 +167,11 @@ import World from '@/components/ui/World.vue'
 const router = useRouter()
 const { isDark } = useTheme()
 const featuresSection = ref<HTMLElement | null>(null)
+
+// Watch for theme changes
+watch(isDark, (newValue, oldValue) => {
+  // Theme change detected
+})
 
 // Computed background style that reacts to theme changes
 const backgroundStyle = computed(() => {

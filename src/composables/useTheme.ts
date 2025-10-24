@@ -32,7 +32,10 @@ const storeTheme = (isDarkMode: boolean): void => {
   }
 };
 
-export const useTheme = () => {
+// Global theme state - singleton pattern
+let globalThemeState: ReturnType<typeof createThemeState> | null = null;
+
+function createThemeState() {
   const isDark = ref<boolean>(false);
 
   // Toggle theme
@@ -111,4 +114,11 @@ export const useTheme = () => {
     setTheme,
     resetToSystem
   };
+}
+
+export const useTheme = () => {
+  if (!globalThemeState) {
+    globalThemeState = createThemeState();
+  }
+  return globalThemeState;
 };
