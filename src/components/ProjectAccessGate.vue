@@ -13,7 +13,7 @@
       <p class="text-body-2 text-grey-darken-1 mb-4">
         You don't have permission to access this project.
       </p>
-      <v-btn color="primary" @click="$router.push('/dashboard')">
+      <v-btn color="primary" @click="$router.push('/app')">
         Go to Dashboard
       </v-btn>
     </div>
@@ -278,7 +278,7 @@ const declineProject = async () => {
     await projectInviteApi.respondToInvite(projectInvite.value.id, 'DECLINED');
     
     // Redirect to dashboard
-    router.push('/dashboard');
+    router.push('/app');
   } catch (error) {
     console.error('Failed to decline project:', error);
     // You could show an error toast here
