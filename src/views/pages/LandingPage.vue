@@ -443,29 +443,84 @@ const scrollToFeatures = () => {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .hero-section {
+    padding: 1rem;
+    text-align: center;
+  }
+  
+  .hero-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+  
   .hero-title {
     font-size: 2.5rem;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
   }
   
   .hero-subtitle {
     font-size: 1.2rem;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
   }
   
   .section-title {
     font-size: 2rem;
+    text-align: center;
   }
   
   .cta-title {
     font-size: 2rem;
+    text-align: center;
+  }
+  
+  .cta-subtitle {
+    text-align: center;
   }
   
   .features-grid {
     grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  
+  .feature-card {
+    text-align: center;
+    max-width: 100%;
+    width: 100%;
   }
   
   .hero-buttons {
     flex-direction: column;
     align-items: center;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  
+  .cta-button {
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+  
+  .cta-button-large {
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
   }
   
   .world-background {
@@ -473,24 +528,80 @@ const scrollToFeatures = () => {
     right: -300px;
     opacity: 0.2;
   }
+  
+  .theme-toggle-container {
+    top: 15px;
+    right: 15px;
+  }
 }
 
 @media (max-width: 480px) {
+  .hero-section {
+    padding: 0.5rem;
+  }
+  
+  .hero-container {
+    padding: 0 1rem;
+  }
+  
   .hero-title {
     font-size: 2rem;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
   }
   
   .hero-subtitle {
     font-size: 1rem;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .section-title {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+  
+  .cta-title {
+    font-size: 1.8rem;
+    text-align: center;
   }
   
   .feature-card {
     padding: 1.5rem;
+    text-align: center;
+    margin: 0 auto;
+  }
+  
+  .hero-buttons {
+    max-width: 250px;
+    margin: 0 auto;
+  }
+  
+  .cta-button {
+    max-width: 250px;
+    margin: 0 auto;
   }
   
   .cta-button-large {
     padding: 1.2rem 2rem !important;
     font-size: 1.1rem !important;
+    max-width: 250px;
+    margin: 0 auto;
+  }
+  
+  .features-section {
+    padding: 3rem 1rem;
+  }
+  
+  .cta-section {
+    padding: 3rem 1rem;
+  }
+  
+  .theme-toggle-container {
+    top: 10px;
+    right: 10px;
   }
 }
 </style>
