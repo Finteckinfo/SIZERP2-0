@@ -55,7 +55,7 @@ router.beforeEach(async (to, from, next) => {
     return;
   } else if (clerk.user?.id && (to.path === '/login' || to.path === '/login1')) {
     // User is already authenticated, redirect to dashboard
-    next('/');
+    next('/dashboard');
   } else {
     next();
   }

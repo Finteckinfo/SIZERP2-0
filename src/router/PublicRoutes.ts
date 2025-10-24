@@ -7,7 +7,7 @@ const PublicRoutes = {
   children: [
     {
       name: 'Landing',
-      path: '/landing',
+      path: '/',
       component: () => import('@/views/pages/LandingPage.vue')
     },
     {

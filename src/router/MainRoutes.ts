@@ -1,10 +1,9 @@
 const MainRoutes = {
-  path: '/',
+  path: '/dashboard',
   meta: { requiresAuth: true },
   redirect: '/dashboard/default',
   component: () => import('@/layouts/full/FullLayout.vue'),
   children: [
-    { name: 'LandingPage', path: '/', component: () => import('@/views/dashboards/default/DefaultDashboard.vue') },
     { name: 'Default', path: '/dashboard/default', component: () => import('@/views/dashboards/default/DefaultDashboard.vue') },
     { name: 'CreateProject', path: '/projects/create', component: () => import('@/views/projects/CreateProjectProtected.vue') },
     { name: 'ProjectView', path: '/projects', component: () => import('@/views/projects/ProjectView.vue') },

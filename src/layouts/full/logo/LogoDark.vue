@@ -3,7 +3,7 @@
     class="logo"
     :class="{ 'dark-theme': isDark }"
   >
-    <RouterLink to="/">
+    <RouterLink to="/dashboard">
       <img :src="logoUrl" alt="Logo" width="92" height="76" />
     </RouterLink>
   </div>

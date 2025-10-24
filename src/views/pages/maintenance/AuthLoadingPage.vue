@@ -27,7 +27,7 @@ const handleRetry = async () => {
     const success = await clerkReadinessService.retry();
     if (success) {
       // Redirect to dashboard on success
-      router.push('/');
+      router.push('/dashboard');
     }
   } catch (error) {
     console.error('Retry failed:', error);
@@ -44,7 +44,7 @@ const checkAuthentication = async () => {
       // Clerk is ready, check if user is authenticated
       if (window.Clerk?.user?.id) {
         // User is authenticated, redirect to dashboard
-        router.push('/');
+        router.push('/dashboard');
       } else {
         // User not authenticated - redirect to main site for satellite domains
         if (import.meta.env.VITE_CLERK_IS_SATELLITE === 'true' && import.meta.env.VITE_CLERK_SIGN_IN_URL) {

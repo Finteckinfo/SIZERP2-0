@@ -1,6 +1,6 @@
 <template>
   <router-link
-    to="/"
+    to="/dashboard"
     class="flex items-center no-underline hover:no-underline focus:no-underline active:no-underline logo-link"
     aria-label="Logo">
     <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

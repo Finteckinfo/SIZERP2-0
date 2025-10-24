@@ -424,7 +424,7 @@ const transactionsLoading = ref(false);
 const dateFormats = ['YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY'];
 const timeFormats = ['24h', '12h'];
 const startPages = [
-  { title: 'Default Dashboard', value: '/dashboards/default' },
+  { title: 'Default Dashboard', value: '/dashboard/default' },
   { title: 'Projects', value: '/projects' },
   { title: 'Analytics', value: '/analytics' }
 ];
@@ -435,7 +435,7 @@ const prefs = ref({
   timeFormat: '24h',
   notifyEmail: true,
   notifyInApp: true,
-  startPage: '/dashboards/default'
+  startPage: '/dashboard/default'
 });
 
 const saveKey = 'app-user-preferences-v1';
