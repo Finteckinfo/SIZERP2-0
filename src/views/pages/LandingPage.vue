@@ -1,5 +1,5 @@
 <template>
-  <div :class="{ 'dark-theme': isDark }" class="landing-page">
+  <div :class="{ 'dark-theme': isDark }" class="landing-page" :style="backgroundStyle">
     <!-- Theme Toggle - Top Right Corner -->
     <div class="theme-toggle-container">
       <ThemeToggle :show-label="true" size="small" />
@@ -157,7 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import ThemeToggle from '@/components/shared/ThemeToggle.vue'
@@ -167,6 +167,19 @@ import World from '@/components/ui/World.vue'
 const router = useRouter()
 const { isDark } = useTheme()
 const featuresSection = ref<HTMLElement | null>(null)
+
+// Computed background style that reacts to theme changes
+const backgroundStyle = computed(() => {
+  if (isDark.value) {
+    return {
+      background: 'linear-gradient(135deg, #02124C 0%, #001A6B 50%, #002680 100%)'
+    }
+  } else {
+    return {
+      background: 'linear-gradient(135deg, #39B84C 0%, #2d8a3a 50%, #1e5d2a 100%)'
+    }
+  }
+})
 
 const goToLogin = () => {
   router.push('/login')
@@ -187,12 +200,7 @@ const scrollToFeatures = () => {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  background: linear-gradient(135deg, var(--theme-primary-color) 0%, color-mix(in srgb, var(--theme-primary-color) 80%, black) 50%, color-mix(in srgb, var(--theme-primary-color) 60%, black) 100%);
   color: white;
-}
-
-.dark-theme.landing-page {
-  background: linear-gradient(135deg, var(--theme-secondary-color) 0%, color-mix(in srgb, var(--theme-secondary-color) 80%, white) 50%, color-mix(in srgb, var(--theme-secondary-color) 60%, white) 100%);
 }
 
 .theme-toggle-container {
