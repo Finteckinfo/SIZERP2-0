@@ -187,12 +187,12 @@ const scrollToFeatures = () => {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  background: linear-gradient(135deg, #96C461 0%, #7BA347 50%, #5A8A2E 100%);
+  background: linear-gradient(135deg, var(--theme-primary-color) 0%, color-mix(in srgb, var(--theme-primary-color) 80%, black) 50%, color-mix(in srgb, var(--theme-primary-color) 60%, black) 100%);
   color: white;
 }
 
 .dark-theme.landing-page {
-  background: linear-gradient(135deg, #000E50 0%, #001A6B 50%, #002680 100%);
+  background: linear-gradient(135deg, var(--theme-secondary-color) 0%, color-mix(in srgb, var(--theme-secondary-color) 80%, white) 50%, color-mix(in srgb, var(--theme-secondary-color) 60%, white) 100%);
 }
 
 .theme-toggle-container {
@@ -256,7 +256,7 @@ const scrollToFeatures = () => {
 }
 
 .dark-theme .brand-text {
-  background: linear-gradient(45deg, #96C461, #7BA347);
+  background: linear-gradient(45deg, var(--theme-primary-color), color-mix(in srgb, var(--theme-primary-color) 80%, black));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

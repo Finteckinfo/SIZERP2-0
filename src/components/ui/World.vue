@@ -72,16 +72,16 @@ const MOVEMENT_DAMPING = 1400
 const getThemeColors = () => {
   if (theme.isDark.value) {
     return {
-      baseColor: [0, 14, 80] as [number, number, number], // #000E50
-      markerColor: [150, 196, 97] as [number, number, number], // #96C461
-      glowColor: [0, 14, 80] as [number, number, number], // #000E50
+      baseColor: [2, 18, 76] as [number, number, number], // #02124C (theme-secondary-color)
+      markerColor: [57, 184, 76] as [number, number, number], // #39B84C (theme-primary-color)
+      glowColor: [2, 18, 76] as [number, number, number], // #02124C (theme-secondary-color)
       dark: 1
     }
   } else {
     return {
-      baseColor: [150, 196, 97] as [number, number, number], // #96C461
-      markerColor: [0, 14, 80] as [number, number, number], // #000E50
-      glowColor: [150, 196, 97] as [number, number, number], // #96C461
+      baseColor: [57, 184, 76] as [number, number, number], // #39B84C (theme-primary-color)
+      markerColor: [2, 18, 76] as [number, number, number], // #02124C (theme-secondary-color)
+      glowColor: [57, 184, 76] as [number, number, number], // #39B84C (theme-primary-color)
       dark: 0
     }
   }
