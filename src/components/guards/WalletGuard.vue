@@ -62,7 +62,7 @@
               <v-btn
                 color="secondary"
                 variant="text"
-                @click="$router.push('/app')"
+                @click="$router.push('/dashboard/default')"
               >
                 Back to Dashboard
               </v-btn>

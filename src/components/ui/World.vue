@@ -147,7 +147,7 @@ const initGlobe = () => {
   // Make globe visible immediately
   setTimeout(() => {
     if (canvasRef.value) {
-      canvasRef.value.style.opacity = '0.6' // Increased opacity for better visibility
+      canvasRef.value.style.opacity = '0.9' // Increased opacity for better visibility
     }
   }, 100) // Reduced timeout
 }
@@ -179,21 +179,5 @@ watch(() => theme.isDark.value, () => {
     globe.destroy()
   }
   initGlobe()
-})
-
-// Listen for theme change events
-onMounted(() => {
-  const handleThemeChange = () => {
-    if (globe) {
-      globe.destroy()
-    }
-    initGlobe()
-  }
-  
-  window.addEventListener('theme-changed', handleThemeChange)
-  
-  onUnmounted(() => {
-    window.removeEventListener('theme-changed', handleThemeChange)
-  })
 })
 </script>

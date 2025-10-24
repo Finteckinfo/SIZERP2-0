@@ -213,10 +213,10 @@ const scrollToFeatures = () => {
 
 .world-background {
   position: fixed;
-  bottom: -150px;
-  right: -150px;
+  bottom: -100px;
+  right: -100px;
   z-index: 2;
-  opacity: 0.4;
+  opacity: 0.8;
 }
 
 .landing-content {

@@ -38,7 +38,7 @@ router.beforeEach(async (to, from, next) => {
   await clerk.load();
   
   const publicPages = ['/login', '/register', '/login1', '/error', '/sso-callback'];
-  const isPublicPage = publicPages.includes(to.path) || to.path === '/';
+  const isPublicPage = publicPages.includes(to.path);
   const authRequired = !isPublicPage && to.matched.some((record) => record.meta.requiresAuth);
 
   // If authentication is required, show loading screen first
@@ -54,8 +54,8 @@ router.beforeEach(async (to, from, next) => {
     next('/auth-loading');
     return;
   } else if (clerk.user?.id && (to.path === '/login' || to.path === '/login1')) {
-    // User is already authenticated, redirect to app dashboard
-    next('/app');
+    // User is already authenticated, redirect to dashboard
+    next('/');
   } else {
     next();
   }

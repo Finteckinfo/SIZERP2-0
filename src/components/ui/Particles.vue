@@ -299,17 +299,4 @@ watch(() => props.refresh, initCanvas)
 watch(() => getThemeColor(), () => {
   initCanvas()
 })
-
-// Listen for theme change events
-onMounted(() => {
-  const handleThemeChange = () => {
-    initCanvas()
-  }
-  
-  window.addEventListener('theme-changed', handleThemeChange)
-  
-  onUnmounted(() => {
-    window.removeEventListener('theme-changed', handleThemeChange)
-  })
-})
 </script>
