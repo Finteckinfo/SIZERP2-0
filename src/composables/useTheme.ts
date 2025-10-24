@@ -1,4 +1,5 @@
 import { ref, onMounted, nextTick } from 'vue';
+import { useTheme as useVuetifyTheme } from 'vuetify';
 
 // Theme storage key
 const THEME_STORAGE_KEY = 'siz-erp-theme';
@@ -34,15 +35,25 @@ const storeTheme = (isDarkMode: boolean): void => {
 
 export const useTheme = () => {
   const isDark = ref<boolean>(false);
+  const vuetifyTheme = useVuetifyTheme();
 
-  // Apply theme to DOM
+  // Apply theme to DOM and Vuetify
   const applyTheme = (darkMode: boolean) => {
+    // Apply custom theme classes
     if (darkMode) {
       document.body.classList.add('dark-theme');
       document.documentElement.classList.add('dark-theme');
     } else {
       document.body.classList.remove('dark-theme');
       document.documentElement.classList.remove('dark-theme');
+    }
+    
+    // Apply Vuetify theme
+    try {
+      vuetifyTheme.global.name.value = darkMode ? 'dark' : 'light';
+      document.documentElement.dataset.theme = darkMode ? 'dark' : 'light';
+    } catch (error) {
+      console.warn('Failed to apply Vuetify theme:', error);
     }
     
     // Force a reflow to ensure CSS changes are applied immediately

@@ -393,7 +393,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue';
-import { useTheme } from 'vuetify';
 import { useRouter } from 'vue-router';
 import { UserProfile } from '@clerk/vue';
 import { RetroGrid } from '@/components/ui/retro-grid';
@@ -402,6 +401,7 @@ import { removeManualWallet } from '@/lib/walletManager';
 import { getAddressExplorerUrl, getExplorerUrl } from '@/services/paymentService';
 import algosdk from 'algosdk';
 import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue';
+import { useTheme } from '@/composables/useTheme';
 
 const router = useRouter();
 const activeTab = ref('account');
@@ -476,21 +476,17 @@ const savePrefs = () => {
 
 // Theme application
 const theme = useTheme();
-const setVuetifyTheme = (mode: 'light' | 'dark') => {
-  try {
-    theme.global.name.value = mode; // expects themes named 'light' and 'dark'
-    document.documentElement.dataset.theme = mode;
-  } catch {
-    document.documentElement.dataset.theme = mode;
-  }
-};
 
 const applyTheme = () => {
-  if (prefs.value.theme === 'light') return setVuetifyTheme('light');
-  if (prefs.value.theme === 'dark') return setVuetifyTheme('dark');
-  // system
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  return setVuetifyTheme(prefersDark ? 'dark' : 'light');
+  if (prefs.value.theme === 'light') {
+    theme.setTheme(false); // false = light mode
+  } else if (prefs.value.theme === 'dark') {
+    theme.setTheme(true); // true = dark mode
+  } else {
+    // system
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    theme.setTheme(prefersDark);
+  }
 };
 
 watch(() => prefs.value.theme, () => {
