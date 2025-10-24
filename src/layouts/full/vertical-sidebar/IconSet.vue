@@ -15,12 +15,12 @@ const { isDark } = useTheme();
 </script>
 
 <template>
-  <div :class="{ 'dark-theme': isDark }">
+  <div :class="{ 'dark-theme': isDark }" class="icon-wrapper">
     <template v-if="props.level && props.level > 0">
       <component :is="props.item" size="18" fill="currentColor" stroke-width="1.5" class="iconClass"></component>
     </template>
     <template v-else>
-      <component :is="props.item" size="20" stroke-width="1.5" class="iconClass"></component>
+      <component :is="props.item" size="20" fill="currentColor" stroke-width="1.5" class="iconClass"></component>
     </template>
   </div>
 </template>
