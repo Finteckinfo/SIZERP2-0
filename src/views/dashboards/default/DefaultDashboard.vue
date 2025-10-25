@@ -1257,6 +1257,24 @@ onMounted(() => {
   padding: 24px;
 }
 
+/* Remove padding on small screens to give more space */
+@media (max-width: 768px) {
+  .erp-dashboard {
+    padding: 8px; /* Minimal padding for small screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .erp-dashboard {
+    padding: 4px; /* Even less padding for very small screens */
+  }
+  
+  .welcome-header {
+    padding: 20px; /* Reduce welcome header padding on very small screens */
+    margin-bottom: 20px;
+  }
+}
+
 .welcome-header {
   position: relative;
   background: transparent;
@@ -1430,13 +1448,18 @@ onMounted(() => {
 /* Responsive Design */
 @media (max-width: 768px) {
   .invites-section {
-    margin: 0 -8px; /* Extend to screen edges */
+    margin: 0 -4px; /* Extend to screen edges with minimal margin */
     border-radius: 0;
   }
   
   .invite-item {
-    margin: 0 -4px; /* Extend invitation cards slightly */
+    margin: 0 -2px; /* Extend invitation cards slightly */
     border-radius: 8px;
+    margin-bottom: 16px; /* Increase spacing between cards */
+  }
+  
+  .invite-card {
+    margin-bottom: 20px; /* More space between invitation cards */
   }
   
   .invite-actions {
@@ -1468,6 +1491,20 @@ onMounted(() => {
   .project-stats-preview {
     flex-wrap: wrap;
     gap: 8px;
+  }
+  
+  /* Additional spacing improvements for invitation section */
+  .invites-section .v-card-title {
+    padding: 16px !important; /* Reduce title padding */
+  }
+  
+  .invites-section .v-card-text {
+    padding: 16px !important; /* Reduce content padding */
+  }
+  
+  /* Increase spacing between invitation elements */
+  .invite-item .v-card-text {
+    padding: 20px !important; /* More internal padding for better spacing */
   }
 
   /* Stack project actions vertically on mobile */
