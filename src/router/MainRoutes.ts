@@ -22,7 +22,8 @@ const MainRoutes = {
     { name: 'Payments', path: '/payments', component: () => import('@/views/pages/payments/index.vue') },
     { name: 'Settings', path: '/settings', component: () => import('@/views/pages/settings/index.vue') },
     { name: 'Messages', path: '/messages', component: () => import('@/views/pages/communications/messages/index.vue') },
-    { name: 'TeamChat', path: '/team-chat', component: () => import('@/views/pages/communications/teamChat/index.vue') }
+    { name: 'TeamChat', path: '/team-chat', component: () => import('@/views/pages/communications/teamChat/index.vue') },
+    { name: 'Invitations', path: '/invitations', component: () => import('@/views/pages/invitations/index.vue') }
   ]
 };
 

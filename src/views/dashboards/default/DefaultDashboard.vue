@@ -641,6 +641,10 @@ const refreshInvites = () => {
   loadPendingInvites();
 };
 
+const goToAllInvitations = () => {
+  router.push('/invitations');
+};
+
 const acceptInvite = async (inviteId: string) => {
   const invite = pendingInvites.value.find(i => i.id === inviteId);
   if (!invite) return;
@@ -989,7 +993,7 @@ onMounted(() => {
             <!-- Invites List -->
             <div v-else class="invites-list">
               <div 
-                v-for="invite in pendingInvites" 
+                v-for="invite in pendingInvites.slice(0, 3)" 
                 :key="invite.id"
                 class="invite-card mb-4"
               >
@@ -1125,6 +1129,19 @@ onMounted(() => {
                     </div>
                   </v-card-text>
                 </v-card>
+              </div>
+              
+              <!-- View All Button -->
+              <div v-if="pendingInvites.length > 3" class="text-center mt-4">
+                <v-btn 
+                  variant="outlined" 
+                  size="large"
+                  @click="goToAllInvitations"
+                  :style="{ color: 'var(--erp-text)', borderColor: 'var(--erp-border)' }"
+                >
+                  <v-icon size="20" class="mr-2">mdi-email-multiple</v-icon>
+                  View All {{ pendingInvites.length }} Invitations
+                </v-btn>
               </div>
             </div>
           </v-card-text>
@@ -1375,27 +1392,8 @@ onMounted(() => {
 }
 
 .invites-list {
-  max-height: 500px;
-  overflow-y: auto;
-  padding-right: 8px;
-}
-
-.invites-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.invites-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.invites-list::-webkit-scrollbar-thumb {
-  background: rgb(var(--v-theme-primary));
-  border-radius: 3px;
-}
-
-.invites-list::-webkit-scrollbar-thumb:hover {
-  background: rgb(var(--v-theme-primary-darken-1));
+  /* Remove max-height and overflow to prevent scrollbars */
+  padding-right: 0;
 }
 
 /* Invite Message Styling */
@@ -1431,6 +1429,16 @@ onMounted(() => {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .invites-section {
+    margin: 0 -8px; /* Extend to screen edges */
+    border-radius: 0;
+  }
+  
+  .invite-item {
+    margin: 0 -4px; /* Extend invitation cards slightly */
+    border-radius: 8px;
+  }
+  
   .invite-actions {
     min-width: 100px;
   }
@@ -1446,6 +1454,20 @@ onMounted(() => {
     flex-direction: row !important;
     width: 100%;
     justify-content: space-between;
+  }
+  
+  .invite-info {
+    width: 100%;
+  }
+  
+  .invite-details {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .project-stats-preview {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   /* Stack project actions vertically on mobile */
