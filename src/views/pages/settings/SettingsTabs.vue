@@ -361,7 +361,7 @@
                     </div>
                     <div class="balance-detail">
                       <span class="detail-label">Asset ID:</span>
-                      <span class="detail-value font-mono">{{ sizBalance.assetId }}</span>
+                      <span class="detail-value" style="font-family: 'Courier New', monospace;">{{ sizBalance.assetId }}</span>
                     </div>
                   </div>
 
@@ -1107,8 +1107,10 @@ const clerkAppearance = {
 .section-header {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
+  text-align: center;
 }
 
 .section-header h3 {
@@ -1116,6 +1118,7 @@ const clerkAppearance = {
   font-weight: 600;
   margin: 0;
   color: var(--erp-text);
+  text-align: center;
 }
 
 /* Theme Options */
@@ -1244,7 +1247,7 @@ const clerkAppearance = {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
   width: 100%;
-  justify-items: center;
+  justify-items: stretch;
 }
 
 .wallet-section {
@@ -1252,23 +1255,29 @@ const clerkAppearance = {
   border: 1px solid var(--erp-border);
   border-radius: 16px;
   padding: 24px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .wallet-section.full-width {
   grid-column: 1 / -1;
+  width: 100%;
 }
 
 .wallet-details {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
 }
 
 .detail-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
 }
 
 .detail-label {
@@ -1276,14 +1285,20 @@ const clerkAppearance = {
   font-weight: 500;
   color: var(--erp-text);
   opacity: 0.7;
+  flex: 0 0 auto;
+  min-width: 100px;
 }
 
 .detail-value {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
   font-size: 0.875rem;
   color: var(--erp-text);
+  flex: 1 1 auto;
+  text-align: right;
+  word-break: break-word;
 }
 
 .wallet-address {
@@ -1318,13 +1333,23 @@ const clerkAppearance = {
   background: var(--erp-surface);
   border-radius: 8px;
   border: 1px solid var(--erp-border);
+  width: 100%;
+}
+
+.balance-info .balance-detail {
+  width: 100%;
 }
 
 .balance-detail {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   font-size: 0.875rem;
+  width: 100%;
+  gap: 8px;
+  min-height: 50px;
+  text-align: center;
 }
 
 .balance-detail .detail-label {
@@ -1333,12 +1358,18 @@ const clerkAppearance = {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: 0.75rem;
+  text-align: center;
+  width: 100%;
 }
 
 .balance-detail .detail-value {
   font-weight: 700;
   color: rgba(0, 0, 0, 0.87);
   font-size: 0.875rem;
+  text-align: center;
+  width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Dark mode adjustments */
@@ -1577,7 +1608,65 @@ const clerkAppearance = {
   
   .wallet-grid {
     grid-template-columns: 1fr;
-    justify-items: center;
+    justify-items: stretch;
+    width: 100%;
+    gap: 16px;
+  }
+  
+  .wallet-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px;
+  }
+  
+  .wallet-section.full-width {
+    grid-column: 1;
+    width: 100% !important;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .section-header h3 {
+    text-align: center;
+    width: 100%;
+  }
+  
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .detail-label {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .detail-value {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+  }
+  
+  .wallet-address-full {
+    font-size: 0.65rem;
+    word-break: break-all;
+  }
+  
+  .wallet-actions {
+    width: 100%;
+  }
+  
+  .balance-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .balance-actions .v-btn {
     width: 100%;
   }
   
@@ -1669,13 +1758,139 @@ const clerkAppearance = {
   }
   
   .wallet-grid {
-    gap: 16px;
+    gap: 12px;
     width: 100%;
+    grid-template-columns: 1fr;
   }
   
   .wallet-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 12px;
+    border-radius: 12px;
+  }
+  
+  .wallet-section.full-width {
+    grid-column: 1;
+    width: 100% !important;
+  }
+  
+  .section-header {
+    margin-bottom: 1rem;
+    flex-direction: column;
+  }
+  
+  .section-header h3 {
+    font-size: 1rem;
+  }
+  
+  .detail-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .detail-label {
+    font-size: 0.75rem;
+    min-width: auto;
+  }
+  
+  .detail-value {
+    font-size: 0.75rem;
+    text-align: left;
     width: 100%;
+  }
+  
+  .wallet-address {
+    font-size: 0.65rem;
     max-width: 100%;
+  }
+  
+  .wallet-address-full {
+    font-size: 0.6rem;
+    padding: 4px 6px;
+  }
+  
+  .balance-content {
+    padding: 16px;
+  }
+  
+  .balance-amount {
+    font-size: 2rem;
+  }
+  
+  .balance-currency {
+    font-size: 1.25rem;
+  }
+  
+  .siz-logo {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .balance-info {
+    padding: 10px;
+    width: 100%;
+  }
+  
+  .balance-detail {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    min-height: 45px;
+    text-align: center;
+  }
+  
+  .balance-detail .detail-label {
+    font-size: 0.7rem;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .balance-detail .detail-value {
+    font-size: 0.75rem;
+    text-align: center;
+    width: 100%;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .balance-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .balance-actions .v-btn {
+    width: 100%;
+  }
+  
+  .transactions-list {
+    gap: 8px;
+  }
+  
+  .transaction-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px;
+  }
+  
+  .tx-icon {
+    align-self: center;
+  }
+  
+  .tx-details {
+    width: 100%;
+  }
+  
+  .tx-amount {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .tx-action {
+    align-self: flex-end;
   }
   
   /* Clerk full-bleed on very small screens */
