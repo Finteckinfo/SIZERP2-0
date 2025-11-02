@@ -4,7 +4,7 @@
     :class="{ 'dark-theme': isDark }"
   >
     <RouterLink to="/dashboard">
-      <img :src="logoUrl" alt="Logo" width="92" height="76" />
+      <img src="/images/sizlogo.png" alt="SIZ Logo" width="92" height="76" class="logo-img" />
     </RouterLink>
   </div>
 </template>
@@ -12,6 +12,11 @@
 import { RouterLink } from 'vue-router';
 import { useTheme } from '@/composables/useTheme';
 
-const logoUrl = new URL('../../../assets/images/logos/logo.png', import.meta.url).href;
 const { isDark } = useTheme();
 </script>
+
+<style scoped>
+.logo-img {
+  object-fit: contain;
+}
+</style>

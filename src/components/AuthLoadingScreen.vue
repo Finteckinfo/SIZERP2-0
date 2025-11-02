@@ -4,7 +4,7 @@
       <!-- Animated Logo/Icon -->
       <div class="logo-container">
         <div class="logo-circle">
-          <v-icon size="48" color="primary" class="logo-icon">mdi-shield-check</v-icon>
+          <img src="/images/sizlogo.png" alt="SIZ Logo" class="logo-icon" />
         </div>
         <div class="pulse-ring"></div>
         <div class="pulse-ring delay-1"></div>
@@ -189,6 +189,9 @@ onUnmounted(() => {
 }
 
 .logo-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
   animation: iconPulse 2s ease-in-out infinite;
 }
 
@@ -430,7 +433,8 @@ onUnmounted(() => {
   }
   
   .logo-icon {
-    font-size: 32px !important;
+    width: 32px !important;
+    height: 32px !important;
   }
 }
 
