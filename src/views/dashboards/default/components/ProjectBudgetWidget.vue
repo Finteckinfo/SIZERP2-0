@@ -6,8 +6,8 @@
           <v-icon color="primary" size="32">mdi-wallet</v-icon>
         </div>
         <div class="header-content">
-          <h3 class="widget-title">Project Budgets</h3>
-          <p class="widget-subtitle">Overview of all project funds</p>
+          <h3 class="widget-title text-center">Project Budgets</h3>
+          <p class="widget-subtitle text-center">Overview of all project funds</p>
         </div>
       </div>
 
@@ -190,8 +190,10 @@ onMounted(() => {
 .widget-header {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 16px;
   margin-bottom: 24px;
+  text-align: center;
 }
 
 .header-icon {

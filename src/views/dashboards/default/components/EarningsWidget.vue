@@ -6,8 +6,27 @@
           <v-icon color="success" size="32">mdi-cash-multiple</v-icon>
         </div>
         <div class="header-content">
-          <h3 class="widget-title">My Earnings</h3>
-          <p class="widget-subtitle">Track your completed task payments</p>
+          <h3 class="widget-title text-center">My Earnings</h3>
+          <!-- Wallet Connected Badge -->
+          <div v-if="isWalletConnected" class="wallet-badge-container">
+            <v-chip
+              size="small"
+              color="success"
+              variant="flat"
+              prepend-icon="mdi-wallet"
+              class="wallet-status-badge"
+            >
+              Wallet Connected
+            </v-chip>
+          </div>
+          <p class="widget-subtitle text-center">
+            <span v-if="isWalletConnected && walletAddress">
+              Wallet: {{ shortenAddress(walletAddress) }}
+            </span>
+            <span v-else>
+              Track your completed task payments
+            </span>
+          </p>
         </div>
       </div>
 
@@ -19,14 +38,63 @@
       <!-- Earnings Summary -->
       <div v-else class="earnings-summary">
         <div class="earnings-grid">
+          <!-- Wallet Balance -->
+          <div class="earning-card wallet-balance" v-if="isWalletConnected">
+            <div class="earning-icon">
+              <v-icon color="primary">mdi-wallet</v-icon>
+              <v-icon 
+                size="14" 
+                color="success" 
+                class="connected-indicator"
+                title="Wallet Connected"
+              >
+                mdi-check-circle
+              </v-icon>
+            </div>
+            <div class="earning-content">
+              <span class="earning-label text-center">
+                Wallet Balance
+                <v-chip size="x-small" color="success" variant="text" class="ml-1">
+                  Connected
+                </v-chip>
+              </span>
+              <div v-if="walletBalanceLoading" class="loading-balance">
+                <v-progress-circular indeterminate size="16" width="2"></v-progress-circular>
+              </div>
+              <div v-else-if="walletBalance && walletBalance.found" class="wallet-balance-display">
+                <img 
+                  src="/images/sizlogo.png" 
+                  alt="SIZ Logo" 
+                  class="siz-logo-small"
+                />
+                <span class="earning-value">
+                  {{ formatAmount(parseFloat(walletBalance.formattedAmount)) }} SIZ
+                </span>
+              </div>
+              <span v-else-if="walletBalanceError" class="earning-value error-text">
+                Error
+              </span>
+              <div v-else class="wallet-balance-display">
+                <img 
+                  src="/images/sizlogo.png" 
+                  alt="SIZ Logo" 
+                  class="siz-logo-small"
+                />
+                <span class="earning-value">
+                  0.00 SIZ
+                </span>
+              </div>
+            </div>
+          </div>
+
           <!-- Total Earned -->
           <div class="earning-card total-earned">
             <div class="earning-icon">
               <v-icon color="success">mdi-check-circle</v-icon>
             </div>
             <div class="earning-content">
-              <span class="earning-label">Total Earned</span>
-              <span class="earning-value">{{ formatAmount(totalEarned) }} SIZ</span>
+              <span class="earning-label text-center">Total Earned</span>
+              <span class="earning-value text-center">{{ formatAmount(totalEarned) }} SIZ</span>
             </div>
           </div>
 
@@ -36,8 +104,8 @@
               <v-icon color="warning">mdi-clock-outline</v-icon>
             </div>
             <div class="earning-content">
-              <span class="earning-label">Pending</span>
-              <span class="earning-value">{{ formatAmount(pendingEarned) }} SIZ</span>
+              <span class="earning-label text-center">Pending</span>
+              <span class="earning-value text-center">{{ formatAmount(pendingEarned) }} SIZ</span>
             </div>
           </div>
 
@@ -47,8 +115,8 @@
               <v-icon color="info">mdi-sync</v-icon>
             </div>
             <div class="earning-content">
-              <span class="earning-label">Processing</span>
-              <span class="earning-value">{{ formatAmount(processingEarned) }} SIZ</span>
+              <span class="earning-label text-center">Processing</span>
+              <span class="earning-value text-center">{{ formatAmount(processingEarned) }} SIZ</span>
             </div>
           </div>
         </div>
@@ -112,9 +180,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useUser } from '@clerk/vue';
+import { NetworkId } from '@txnlab/use-wallet-vue';
 import { getUserEarnings, type BlockchainTransaction } from '@/services/paymentService';
+import { getSizTokenBalance, type SizTokenBalance } from '@/services/sizTokenService';
+import { connectedWallet, isWalletConnected } from '@/stores/walletStore';
 
 // Composables
 const { user } = useUser();
@@ -125,6 +196,53 @@ const totalEarned = ref(0);
 const pendingEarned = ref(0);
 const processingEarned = ref(0);
 const recentTransactions = ref<BlockchainTransaction[]>([]);
+
+// Wallet balance state
+const walletBalance = ref<SizTokenBalance | null>(null);
+const walletBalanceLoading = ref(false);
+const walletBalanceError = ref<string | null>(null);
+
+// Get wallet address and network
+const walletAddress = computed(() => connectedWallet.value || '');
+const networkId = computed<NetworkId>(() => {
+  const network = localStorage.getItem('algorand_network') || 'testnet';
+  switch (network.toLowerCase()) {
+    case 'mainnet':
+      return NetworkId.MAINNET;
+    case 'testnet':
+      return NetworkId.TESTNET;
+    case 'betanet':
+      return NetworkId.BETANET;
+    case 'fnet':
+      return NetworkId.FNET;
+    case 'localnet':
+    case 'local':
+      return NetworkId.LOCALNET;
+    default:
+      return NetworkId.TESTNET;
+  }
+});
+
+// Load wallet balance
+const loadWalletBalance = async () => {
+  if (!isWalletConnected.value || !walletAddress.value) {
+    walletBalance.value = null;
+    return;
+  }
+
+  try {
+    walletBalanceLoading.value = true;
+    walletBalanceError.value = null;
+    const balance = await getSizTokenBalance(walletAddress.value, networkId.value);
+    walletBalance.value = balance;
+  } catch (error: any) {
+    console.error('Failed to load wallet balance:', error);
+    walletBalanceError.value = error.message || 'Failed to load wallet balance';
+    walletBalance.value = null;
+  } finally {
+    walletBalanceLoading.value = false;
+  }
+};
 
 // Load earnings data
 const loadEarnings = async () => {
@@ -173,9 +291,45 @@ const viewAllTransactions = () => {
   console.log('View all transactions');
 };
 
+// Helper to shorten wallet address for display
+const shortenAddress = (address: string) => {
+  if (!address || address.length < 10) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
+
+// Watch for wallet connection changes
+watch([isWalletConnected, walletAddress, networkId], () => {
+  loadWalletBalance();
+}, { immediate: true });
+
+// Watch for network changes in localStorage
+watch(() => localStorage.getItem('algorand_network'), () => {
+  if (isWalletConnected.value) {
+    loadWalletBalance();
+  }
+});
+
+// Listen for network-changed event
+const networkChangeListener = () => {
+  if (isWalletConnected.value) {
+    loadWalletBalance();
+  }
+};
+
 // Lifecycle
 onMounted(() => {
   loadEarnings();
+  if (isWalletConnected.value) {
+    loadWalletBalance();
+  }
+  
+  // Listen for network changes
+  window.addEventListener('network-changed', networkChangeListener);
+});
+
+// Cleanup listener on unmount
+onUnmounted(() => {
+  window.removeEventListener('network-changed', networkChangeListener);
 });
 </script>
 
@@ -190,8 +344,10 @@ onMounted(() => {
 .widget-header {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 16px;
   margin-bottom: 24px;
+  text-align: center;
 }
 
 .header-icon {
@@ -220,6 +376,22 @@ onMounted(() => {
   color: var(--erp-text);
   opacity: 0.7;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.wallet-badge-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.wallet-status-badge {
+  font-size: 0.75rem !important;
+  height: 24px !important;
 }
 
 .earnings-grid {
@@ -231,13 +403,16 @@ onMounted(() => {
 
 .earning-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   padding: 16px;
   background: var(--erp-page-bg);
   border: 1px solid var(--erp-border);
   border-radius: 12px;
   transition: all 0.3s ease;
+  text-align: center;
 }
 
 .earning-card:hover {
@@ -253,12 +428,29 @@ onMounted(() => {
   height: 40px;
   background: var(--erp-surface);
   border-radius: 8px;
+  position: relative;
+}
+
+.wallet-balance .earning-icon {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%);
+}
+
+.connected-indicator {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: var(--erp-surface);
+  border-radius: 50%;
+  padding: 2px;
 }
 
 .earning-content {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 4px;
+  width: 100%;
 }
 
 .earning-label {
@@ -285,6 +477,35 @@ onMounted(() => {
 
 .processing-earned .earning-value {
   color: var(--erp-accent-blue);
+}
+
+.wallet-balance .earning-value {
+  color: var(--erp-accent-indigo);
+}
+
+.loading-balance {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.error-text {
+  color: var(--erp-error) !important;
+  font-size: 0.875rem;
+}
+
+.wallet-balance-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.siz-logo-small {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .recent-transactions {
