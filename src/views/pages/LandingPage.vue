@@ -1,8 +1,8 @@
 <template>
   <div :class="{ 'dark-theme': isDark }" class="landing-page" :style="backgroundStyle">
-    <!-- Theme Toggle - Top Right Corner -->
+    <!-- Theme Toggle - Floating Button -->
     <div class="theme-toggle-container">
-      <ThemeToggle :show-label="true" size="small" />
+      <ThemeToggle :show-label="false" size="small" />
     </div>
 
     <!-- Particles Background -->
@@ -25,6 +25,9 @@
       <section class="hero-section">
         <div class="hero-container">
           <div class="hero-text">
+            <div class="hero-logo">
+              <img src="/images/sizlogo.png" alt="SIZ Logo" class="hero-logo-image" />
+            </div>
             <h1 class="hero-title">
               Welcome to 
               <span class="brand-text">SizLand ERP</span>
@@ -215,6 +218,23 @@ const scrollToFeatures = () => {
   z-index: 1000;
 }
 
+/* Mobile: Float at bottom center */
+@media (max-width: 768px) {
+  .theme-toggle-container {
+    top: auto;
+    bottom: 20px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 480px) {
+  .theme-toggle-container {
+    bottom: 15px;
+  }
+}
+
 .particles-background {
   position: fixed;
   top: 0;
@@ -250,6 +270,30 @@ const scrollToFeatures = () => {
   max-width: 1200px;
   width: 100%;
   text-align: center;
+}
+
+.hero-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.hero-logo-image {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  animation: logoFloat 3s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+  0%, 100% { 
+    transform: translateY(0px); 
+  }
+  50% { 
+    transform: translateY(-10px); 
+  }
 }
 
 .hero-title {
@@ -464,6 +508,11 @@ const scrollToFeatures = () => {
     width: 100%;
   }
   
+  .hero-logo-image {
+    width: 100px;
+    height: 100px;
+  }
+  
   .hero-title {
     font-size: 2.5rem;
     text-align: center;
@@ -529,12 +578,7 @@ const scrollToFeatures = () => {
     opacity: 0.2;
   }
   
-  .theme-toggle-container {
-    top: 15px;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-  }
+  /* Theme toggle already styled in main styles for mobile */
 }
 
 @media (max-width: 480px) {
@@ -544,6 +588,11 @@ const scrollToFeatures = () => {
   
   .hero-container {
     padding: 0 1rem;
+  }
+  
+  .hero-logo-image {
+    width: 80px;
+    height: 80px;
   }
   
   .hero-title {
