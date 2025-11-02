@@ -223,9 +223,14 @@
 
               <div v-if="isWalletConnected" class="wallet-connected">
                 <v-alert type="success" variant="tonal" class="mb-4">
-                  <div class="d-flex align-items-center">
-                    <v-icon class="mr-2">mdi-check-circle</v-icon>
-                    <span>Wallet Connected</span>
+                  <div class="d-flex align-items-center justify-space-between">
+                    <div class="d-flex align-items-center">
+                      <v-icon class="mr-2">mdi-check-circle</v-icon>
+                      <span>Wallet Connected</span>
+                    </div>
+                    <v-chip size="small" color="success" variant="flat" prepend-icon="mdi-wallet">
+                      Active
+                    </v-chip>
                   </div>
                 </v-alert>
 
@@ -233,7 +238,7 @@
                   <div class="detail-row">
                     <span class="detail-label">Address:</span>
                     <div class="detail-value">
-                      <code class="wallet-address">{{ connectedWallet }}</code>
+                      <code class="wallet-address">{{ shortenAddress(connectedWallet) }}</code>
                       <v-btn
                         icon
                         size="small"
@@ -247,19 +252,38 @@
                       </v-btn>
                     </div>
                   </div>
+                  
+                  <div class="detail-row">
+                    <span class="detail-label">Full Address:</span>
+                    <div class="detail-value">
+                      <code class="wallet-address-full">{{ connectedWallet }}</code>
+                    </div>
+                  </div>
 
                   <div class="detail-row">
                     <span class="detail-label">Network:</span>
                     <span class="detail-value">
                       <v-chip :color="currentNetwork === 'mainnet' ? 'success' : 'warning'" size="small">
+                        <v-icon start size="16">
+                          {{ currentNetwork === 'mainnet' ? 'mdi-network' : 'mdi-test-tube' }}
+                        </v-icon>
                         {{ currentNetwork === 'mainnet' ? 'MainNet' : 'TestNet' }}
+                      </v-chip>
+                    </span>
+                  </div>
+                  
+                  <div v-if="activeAccount" class="detail-row">
+                    <span class="detail-label">Account Name:</span>
+                    <span class="detail-value">
+                      <v-chip size="small" variant="text">
+                        {{ activeAccount.name || 'Connected Wallet' }}
                       </v-chip>
                     </span>
                   </div>
                 </div>
 
                 <div class="wallet-actions mt-4">
-                  <v-btn color="error" variant="outlined" @click="handleDisconnect">
+                  <v-btn color="error" variant="elevated" @click="handleDisconnect" block>
                     <v-icon start>mdi-logout</v-icon>
                     Disconnect Wallet
                   </v-btn>
@@ -307,10 +331,38 @@
                   </v-btn>
                 </div>
 
-                <div v-else class="balance-content">
+                <div v-else-if="sizBalance" class="balance-content">
+                  <!-- SIZ Logo -->
+                  <div class="siz-logo-container mb-3">
+                    <img 
+                      src="/images/sizlogo.png" 
+                      alt="SIZ Logo" 
+                      class="siz-logo"
+                    />
+                  </div>
+                  
                   <div class="balance-main">
-                    <span class="balance-amount">{{ formatAmount(sizBalance) }}</span>
+                    <span class="balance-amount">
+                      {{ sizBalance.found ? formatAmount(parseFloat(sizBalance.formattedAmount)) : '0.00' }}
+                    </span>
                     <span class="balance-currency">SIZ</span>
+                  </div>
+                  
+                  <div v-if="!sizBalance.found" class="text-center mt-2">
+                    <v-alert type="info" variant="tonal" size="small" class="text-left">
+                      No SIZ tokens found in this wallet. You may need to opt-in to the SIZ token.
+                    </v-alert>
+                  </div>
+                  
+                  <div v-if="sizBalance.found" class="balance-info mt-3">
+                    <div class="balance-detail">
+                      <span class="detail-label">Token Name:</span>
+                      <span class="detail-value">{{ sizBalance.name }}</span>
+                    </div>
+                    <div class="balance-detail">
+                      <span class="detail-label">Asset ID:</span>
+                      <span class="detail-value font-mono">{{ sizBalance.assetId }}</span>
+                    </div>
                   </div>
 
                   <div class="balance-actions mt-4">
@@ -321,6 +373,17 @@
                     <v-btn size="small" variant="outlined" color="primary" :href="getExplorerAddressUrl(connectedWallet)" target="_blank">
                       <v-icon start>mdi-open-in-new</v-icon>
                       View on Explorer
+                    </v-btn>
+                  </div>
+                </div>
+                
+                <div v-else class="balance-content">
+                  <div class="text-center py-4">
+                    <v-icon size="48" color="grey-lighten-2">mdi-wallet</v-icon>
+                    <p class="text-body-2 mt-3">Unable to load balance</p>
+                    <v-btn size="small" variant="outlined" class="mt-3" @click="loadBalance" :loading="balanceLoading">
+                      <v-icon start>mdi-refresh</v-icon>
+                      Retry
                     </v-btn>
                   </div>
                 </div>
@@ -392,24 +455,54 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { useTheme } from 'vuetify';
 import { useRouter } from 'vue-router';
 import { UserProfile } from '@clerk/vue';
 import { RetroGrid } from '@/components/ui/retro-grid';
 import { connectedWallet, isWalletConnected, isWalletModalOpen } from '@/stores/walletStore';
-import { removeManualWallet } from '@/lib/walletManager';
+import { removeManualWallet, activeAccount, clearWalletConnection } from '@/lib/walletManager';
 import { getAddressExplorerUrl, getExplorerUrl } from '@/services/paymentService';
-import algosdk from 'algosdk';
+import { getSizTokenBalance, type SizTokenBalance } from '@/services/sizTokenService';
+import { NetworkId } from '@txnlab/use-wallet-vue';
+import { useWallet } from '@txnlab/use-wallet-vue';
 import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue';
 
 const router = useRouter();
 const activeTab = ref('account');
 
+// Wallet hook
+const { activeWallet, disconnect, activeAccount: useWalletAccount } = useWallet();
+
+// Make activeAccount available globally for walletStore fallback
+if (typeof window !== 'undefined') {
+  (window as any).__useWalletActiveAccount = useWalletAccount;
+  watch(useWalletAccount, (newVal) => {
+    (window as any).__useWalletActiveAccount = newVal;
+  });
+}
+
+// Sync useWallet activeAccount with walletManager on mount and changes
+watch(useWalletAccount, (newAccount) => {
+  if (newAccount?.address) {
+    // Sync to walletManager
+    activeAccount.value = { address: newAccount.address };
+    console.log('[Settings/Wallet] Synced useWallet account to walletManager:', newAccount.address);
+  } else if (!useWalletAccount) {
+    // Only clear if useWallet is explicitly disconnected
+    // Don't clear if walletManager has a stored connection
+    const stored = localStorage.getItem('wallet_connection');
+    if (!stored) {
+      activeAccount.value = null;
+      console.log('[Settings/Wallet] Cleared walletManager account (no stored connection)');
+    }
+  }
+}, { immediate: true });
+
 // Wallet tab state
 const copied = ref(false);
 const currentNetwork = ref('testnet');
-const sizBalance = ref(0);
+const sizBalance = ref<SizTokenBalance | null>(null);
 const balanceLoading = ref(false);
 const balanceError = ref('');
 const transactions = ref<Array<{
@@ -466,6 +559,13 @@ onMounted(() => {
       loadTransactions();
     }
   }
+  
+  // Listen for network changes
+  window.addEventListener('network-changed', networkChangeListener);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('network-changed', networkChangeListener);
 });
 
 const savePrefs = () => {
@@ -503,11 +603,32 @@ const handleConnect = () => {
   isWalletModalOpen.value = true;
 };
 
-const handleDisconnect = () => {
+const handleDisconnect = async () => {
   if (confirm('Are you sure you want to disconnect your wallet?')) {
-    removeManualWallet();
-    sizBalance.value = 0;
-    transactions.value = [];
+    try {
+      // Disconnect from use-wallet hook if active
+      if (activeWallet.value && disconnect) {
+        await disconnect();
+        console.log('[Settings/Wallet] Disconnected via useWallet hook');
+      }
+      
+      // Also remove manual wallet
+      removeManualWallet();
+      clearWalletConnection();
+      
+      // Reset state
+      sizBalance.value = null;
+      transactions.value = [];
+      
+      console.log('[Settings/Wallet] Wallet disconnected successfully');
+    } catch (error) {
+      console.error('[Settings/Wallet] Error disconnecting wallet:', error);
+      // Still try to clear manual wallet
+      removeManualWallet();
+      clearWalletConnection();
+      sizBalance.value = null;
+      transactions.value = [];
+    }
   }
 };
 
@@ -521,6 +642,12 @@ const copyAddress = async () => {
   } catch (error) {
     console.error('Failed to copy:', error);
   }
+};
+
+// Helper to shorten wallet address for display
+const shortenAddress = (address: string) => {
+  if (!address || address.length < 10) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
 const formatAmount = (amount: number) => {
@@ -551,7 +678,27 @@ const navigateToPayments = () => {
   router.push('/payments');
 };
 
-// Load SIZ balance from Algorand
+// Get network ID from current network
+const getNetworkId = (): NetworkId => {
+  const network = currentNetwork.value || localStorage.getItem('algorand_network') || 'testnet';
+  switch (network.toLowerCase()) {
+    case 'mainnet':
+      return NetworkId.MAINNET;
+    case 'testnet':
+      return NetworkId.TESTNET;
+    case 'betanet':
+      return NetworkId.BETANET;
+    case 'fnet':
+      return NetworkId.FNET;
+    case 'localnet':
+    case 'local':
+      return NetworkId.LOCALNET;
+    default:
+      return NetworkId.TESTNET;
+  }
+};
+
+// Load SIZ balance from Algorand using sizTokenService
 const loadBalance = async () => {
   if (!connectedWallet.value) return;
   
@@ -561,35 +708,27 @@ const loadBalance = async () => {
     
     // Get current network
     currentNetwork.value = localStorage.getItem('algorand_network') || 'testnet';
+    const networkId = getNetworkId();
     
-    // Connect to Algorand node
-    const baseServer = currentNetwork.value === 'mainnet' 
-      ? 'https://mainnet-api.algonode.cloud'
-      : 'https://testnet-api.algonode.cloud';
+    // Use sizTokenService to get balance
+    const balance = await getSizTokenBalance(connectedWallet.value, networkId);
     
-    const algodClient = new algosdk.Algodv2('', baseServer, '');
-    
-    // Get account info
-    const accountInfo = await algodClient.accountInformation(connectedWallet.value).do();
-    
-    // Find SIZ token balance
-    // TODO: Replace with actual SIZCOIN asset ID
-    const SIZ_ASSET_ID = 0; // Replace with real SIZCOIN asset ID
-    
-    if (SIZ_ASSET_ID === 0) {
-      // Using ALGO for now (microAlgos to Algos)
-      sizBalance.value = Number(accountInfo.amount) / 1000000;
+    if (balance) {
+      sizBalance.value = balance;
+      console.log('[Settings/Wallet] SIZ Token balance loaded:', {
+        found: balance.found,
+        amount: balance.formattedAmount,
+        assetId: balance.assetId
+      });
     } else {
-      // Find SIZ asset in account's assets
-      const sizAsset = accountInfo.assets?.find((asset: any) => asset['asset-id'] === SIZ_ASSET_ID);
-      sizBalance.value = sizAsset ? Number(sizAsset.amount) / 1000000 : 0; // Assuming 6 decimals
+      balanceError.value = 'Failed to fetch balance';
+      sizBalance.value = null;
     }
-    
-    console.log('[Settings/Wallet] Balance loaded:', sizBalance.value);
     
   } catch (error: any) {
     console.error('[Settings/Wallet] Failed to load balance:', error);
     balanceError.value = error.message || 'Failed to load balance';
+    sizBalance.value = null;
   } finally {
     balanceLoading.value = false;
   }
@@ -660,6 +799,9 @@ watch(isWalletConnected, (connected) => {
   if (connected && activeTab.value === 'wallet') {
     loadBalance();
     loadTransactions();
+  } else if (!connected) {
+    sizBalance.value = null;
+    transactions.value = [];
   }
 });
 
@@ -670,6 +812,22 @@ watch(activeTab, (newTab) => {
     loadTransactions();
   }
 });
+
+// Watch for network changes
+watch(() => localStorage.getItem('algorand_network'), () => {
+  currentNetwork.value = localStorage.getItem('algorand_network') || 'testnet';
+  if (isWalletConnected.value && activeTab.value === 'wallet') {
+    loadBalance();
+    loadTransactions();
+  }
+});
+
+// Listen for network-changed event
+const networkChangeListener = () => {
+  if (isWalletConnected.value && activeTab.value === 'wallet') {
+    loadBalance();
+  }
+};
 
 // Clerk appearance - responsive styling with mobile popup behavior
 const clerkAppearance = {
@@ -1102,9 +1260,96 @@ const clerkAppearance = {
   background: var(--erp-surface);
   border: 1px solid var(--erp-border);
   border-radius: 6px;
-  max-width: 200px;
+  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.wallet-address-full {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  background: var(--erp-surface);
+  border: 1px solid var(--erp-border);
+  border-radius: 6px;
+  word-break: break-all;
+  max-width: 100%;
+  display: block;
+}
+
+.balance-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--erp-surface);
+  border-radius: 8px;
+  border: 1px solid var(--erp-border);
+}
+
+.balance-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.balance-detail .detail-label {
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.87);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.75rem;
+}
+
+.balance-detail .detail-value {
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 0.875rem;
+}
+
+/* Dark mode adjustments */
+.v-theme--dark .balance-detail .detail-label {
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.v-theme--dark .balance-detail .detail-value {
+  color: rgba(255, 255, 255, 0.87);
+}
+
+/* Light mode specific enhancements */
+.v-theme--light .balance-detail .detail-label {
+  color: var(--erp-accent-green, #4caf50);
+  font-weight: 700;
+}
+
+.v-theme--light .balance-detail .detail-value {
+  color: #212121;
+  font-weight: 700;
+}
+
+/* Fallback for theme detection */
+@media (prefers-color-scheme: light) {
+  .balance-detail .detail-label {
+    color: var(--erp-accent-green, #4caf50);
+  }
+  
+  .balance-detail .detail-value {
+    color: #212121;
+  }
+}
+
+.siz-logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.siz-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .wallet-actions {
