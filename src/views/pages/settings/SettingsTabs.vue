@@ -276,7 +276,7 @@
                     <span class="detail-label">Account Name:</span>
                     <span class="detail-value">
                       <v-chip size="small" variant="text">
-                        {{ activeAccount.name || 'Connected Wallet' }}
+                        {{ getAccountName() }}
                       </v-chip>
                     </span>
                   </div>
@@ -466,13 +466,15 @@ import { getAddressExplorerUrl, getExplorerUrl } from '@/services/paymentService
 import { getSizTokenBalance, type SizTokenBalance } from '@/services/sizTokenService';
 import { NetworkId } from '@txnlab/use-wallet-vue';
 import { useWallet } from '@txnlab/use-wallet-vue';
+import algosdk from 'algosdk';
 import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue';
 
 const router = useRouter();
 const activeTab = ref('account');
 
 // Wallet hook
-const { activeWallet, disconnect, activeAccount: useWalletAccount } = useWallet();
+const walletHook = useWallet();
+const { activeWallet, activeAccount: useWalletAccount } = walletHook;
 
 // Make activeAccount available globally for walletStore fallback
 if (typeof window !== 'undefined') {
@@ -607,9 +609,13 @@ const handleDisconnect = async () => {
   if (confirm('Are you sure you want to disconnect your wallet?')) {
     try {
       // Disconnect from use-wallet hook if active
-      if (activeWallet.value && disconnect) {
-        await disconnect();
-        console.log('[Settings/Wallet] Disconnected via useWallet hook');
+      if (activeWallet?.value) {
+        // Try to disconnect via the active wallet
+        const walletObj = activeWallet.value as any;
+        if (walletObj?.disconnect && typeof walletObj.disconnect === 'function') {
+          await walletObj.disconnect();
+          console.log('[Settings/Wallet] Disconnected via active wallet');
+        }
       }
       
       // Also remove manual wallet
@@ -630,6 +636,17 @@ const handleDisconnect = async () => {
       transactions.value = [];
     }
   }
+};
+
+// Get account name from various sources
+const getAccountName = () => {
+  if (useWalletAccount?.value?.name) {
+    return useWalletAccount.value.name;
+  }
+  if (activeWallet?.value?.metadata?.name) {
+    return activeWallet.value.metadata.name;
+  }
+  return 'Connected Wallet';
 };
 
 const copyAddress = async () => {
