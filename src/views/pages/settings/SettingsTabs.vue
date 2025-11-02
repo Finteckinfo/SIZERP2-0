@@ -964,12 +964,16 @@ const clerkAppearance = {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
+  display: flex;
+  justify-content: center;
 }
 
 .tab-nav {
   display: flex;
   gap: 0;
   position: relative;
+  justify-content: center;
+  width: 100%;
 }
 
 .tab-button {
@@ -1040,16 +1044,23 @@ const clerkAppearance = {
   padding: 2rem;
   background: var(--erp-page-bg);
   transition: background-color 0.3s ease;
+  display: flex;
+  justify-content: center;
 }
 
 .content-panel {
   max-width: 1000px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .panel-header {
   text-align: center;
   margin-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .panel-header h2 {
@@ -1057,12 +1068,14 @@ const clerkAppearance = {
   font-weight: 700;
   margin: 0 0 0.5rem 0;
   color: var(--erp-text);
+  text-align: center;
 }
 
 .panel-header p {
   font-size: 1.125rem;
   color: var(--erp-text);
   margin: 0;
+  text-align: center;
 }
 
 /* Clerk Wrapper */
@@ -1080,6 +1093,7 @@ const clerkAppearance = {
   gap: 2rem;
   max-width: 800px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .preference-section {
@@ -1229,6 +1243,8 @@ const clerkAppearance = {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
+  width: 100%;
+  justify-items: center;
 }
 
 .wallet-section {
@@ -1508,16 +1524,24 @@ const clerkAppearance = {
   }
   
   .nav-container {
-    padding: 0;
+    padding: 0 1rem;
+    justify-content: center;
+  }
+  
+  .tab-nav {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
   
   .tab-button {
     padding: 0.75rem 1rem;
-    min-width: 120px;
+    min-width: auto;
+    flex: 0 0 auto;
     font-size: 0.9rem;
     background: var(--erp-surface) !important;
     border-radius: 8px;
-    margin-right: 0.5rem;
+    margin-right: 0;
   }
   
   .settings-content {
@@ -1529,16 +1553,32 @@ const clerkAppearance = {
     max-width: 100%;
   }
   
-  .panel-header { margin-bottom: 1rem; }
+  .panel-header { 
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
+  .preferences-grid {
+    width: 100%;
+    max-width: 100%;
+  }
   
   .preference-section {
     padding: 1rem;
     margin-bottom: 1rem;
     border-radius: 8px;
+    width: 100%;
   }
   
   .theme-options {
     grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  
+  .wallet-grid {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    width: 100%;
   }
   
   .setting-item {
@@ -1589,28 +1629,53 @@ const clerkAppearance = {
   }
   
   .nav-container {
-    padding: 0;
+    padding: 0 0.5rem;
+    justify-content: center;
+  }
+  
+  .tab-nav {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
   }
   
   .tab-button {
     padding: 0.5rem 0.75rem;
-    min-width: 90px;
+    min-width: auto;
+    flex: 0 0 auto;
     font-size: 0.8rem;
     gap: 0.25rem;
-    margin-right: 0.25rem;
+    margin-right: 0;
   }
   
   .tab-button .v-icon {
     font-size: 16px;
   }
   
+  .preferences-grid {
+    gap: 1rem;
+    width: 100%;
+  }
+  
   .preference-section {
     padding: 0.75rem;
     margin-bottom: 0.75rem;
+    width: 100%;
   }
   
   .theme-option {
     padding: 0.75rem;
+    width: 100%;
+  }
+  
+  .wallet-grid {
+    gap: 16px;
+    width: 100%;
+  }
+  
+  .wallet-section {
+    width: 100%;
+    max-width: 100%;
   }
   
   /* Clerk full-bleed on very small screens */
