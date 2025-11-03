@@ -82,10 +82,13 @@ export async function fetchAccountInfo(
 
     // Debug logging
     if (sizAsset) {
+      const divisor = Math.pow(10, decimals);
       console.log('✅ [SIZ Token] Found SIZ token in wallet:', {
         assetId: sizAssetId,
         amount: Number(sizAsset.amount),
-        formattedAmount: (Number(sizAsset.amount) / 100).toFixed(2),
+        decimals,
+        divisor,
+        formattedAmount: (Number(sizAsset.amount) / divisor).toFixed(Math.max(2, decimals)),
         networkId
       });
     } else {
@@ -135,13 +138,18 @@ export async function getSizTokenBalance(
     };
   }
 
+  // Use the actual decimals from the asset to format the amount correctly
+  const decimals = sizAsset.decimals || 0;
+  const divisor = Math.pow(10, decimals);
+  const formattedAmount = (sizAsset.amount / divisor).toFixed(Math.max(2, decimals));
+
   return {
     assetId: sizAsset.assetId,
     amount: sizAsset.amount,
-    formattedAmount: (sizAsset.amount / 100).toFixed(2),
+    formattedAmount,
     name: sizAsset.name || 'SIZ Token',
     unitName: sizAsset.unitName || 'SIZ',
-    decimals: sizAsset.decimals || 0,
+    decimals,
     found: true,
   };
 }
