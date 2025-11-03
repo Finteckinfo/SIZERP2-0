@@ -224,3 +224,4 @@ Aplikesheni ya siz.land inasoma SIZ tokens kwa:
 
 Muundo huu unatumia teknolojia za kisasa za Algorand na inaweza kuwa na mtu mwingine kwa urahisi kwa kutumia muundo huo huo katika SIZERP2-0.
 
+

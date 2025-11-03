@@ -516,3 +516,4 @@ Kwa kufuata muundo huu, utaweza kuunda komponenti inayosoma na kuonyesha mizani 
 
 **Muhimu:** Hakikisha unatumia muundo wa SIZERP2-0 (Vue 3, Vuetify, Composition API) na siyo muundo wa Next.js/React kutoka siz.land application.
 
+

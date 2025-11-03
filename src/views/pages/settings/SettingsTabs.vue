@@ -484,10 +484,10 @@ if (typeof window !== 'undefined') {
   });
 }
 
-// Sync useWallet activeAccount with walletManager on mount and changes
+// Sync useWallet activeAccount with walletManager - bidirectional sync
 watch(useWalletAccount, (newAccount) => {
   if (newAccount?.address) {
-    // Sync to walletManager
+    // Sync to walletManager for consistency
     activeAccount.value = { address: newAccount.address };
     console.log('[Settings/Wallet] Synced useWallet account to walletManager:', newAccount.address);
   } else if (!useWalletAccount) {
@@ -500,6 +500,31 @@ watch(useWalletAccount, (newAccount) => {
     }
   }
 }, { immediate: true });
+
+// Also watch walletManager changes in case wallet is connected from another component
+watch(activeAccount, (newAccount) => {
+  if (newAccount?.address && (!useWalletAccount.value || useWalletAccount.value.address !== newAccount.address)) {
+    console.log('[Settings/Wallet] WalletManager account changed, refreshing balance:', newAccount.address);
+    // Refresh balance when wallet manager account changes
+    if (activeTab.value === 'wallet') {
+      loadBalance();
+      loadTransactions();
+    }
+  }
+}, { immediate: true });
+
+// Listen for wallet connection/disconnection events
+const walletEventListener = (event: Event) => {
+  const customEvent = event as CustomEvent;
+  console.log('[Settings/Wallet] Wallet event received:', customEvent.type);
+  if (customEvent.type === 'wallet-connected' || customEvent.type === 'wallet-disconnected') {
+    // Refresh balance and transactions when wallet connection changes
+    if (activeTab.value === 'wallet' && isWalletConnected.value) {
+      loadBalance();
+      loadTransactions();
+    }
+  }
+};
 
 // Wallet tab state
 const copied = ref(false);
@@ -564,10 +589,16 @@ onMounted(() => {
   
   // Listen for network changes
   window.addEventListener('network-changed', networkChangeListener);
+  
+  // Listen for wallet connection/disconnection events
+  window.addEventListener('wallet-connected', walletEventListener);
+  window.addEventListener('wallet-disconnected', walletEventListener);
 });
 
 onUnmounted(() => {
   window.removeEventListener('network-changed', networkChangeListener);
+  window.removeEventListener('wallet-connected', walletEventListener);
+  window.removeEventListener('wallet-disconnected', walletEventListener);
 });
 
 const savePrefs = () => {

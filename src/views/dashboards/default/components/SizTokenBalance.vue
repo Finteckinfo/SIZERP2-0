@@ -255,6 +255,23 @@ watch(isWalletConnected, (connected) => {
   }
 }, { immediate: true });
 
+// Listen for wallet connection/disconnection events from other components
+const walletEventListener = (event: Event) => {
+  const customEvent = event as CustomEvent;
+  console.log('[SizTokenBalance] Wallet event received:', customEvent.type);
+  if (customEvent.type === 'wallet-connected') {
+    // Refresh balance when wallet is connected from another component
+    if (isWalletConnected.value) {
+      currentNetwork.value = localStorage.getItem('algorand_network') || 'testnet';
+      refreshBalance();
+    }
+  } else if (customEvent.type === 'wallet-disconnected') {
+    // Clear balance when wallet is disconnected
+    tokenBalance.value = null;
+    error.value = null;
+  }
+};
+
 // Watch for network changes in localStorage
 watch(() => localStorage.getItem('algorand_network'), () => {
   handleNetworkChange();
@@ -272,6 +289,10 @@ onMounted(() => {
   // Listen for network changes
   window.addEventListener('network-changed', networkChangeListener);
   
+  // Listen for wallet connection/disconnection events
+  window.addEventListener('wallet-connected', walletEventListener);
+  window.addEventListener('wallet-disconnected', walletEventListener);
+  
   if (isWalletConnected.value) {
     refreshBalance();
   }
@@ -280,6 +301,8 @@ onMounted(() => {
 // Cleanup listener on unmount
 onUnmounted(() => {
   window.removeEventListener('network-changed', networkChangeListener);
+  window.removeEventListener('wallet-connected', walletEventListener);
+  window.removeEventListener('wallet-disconnected', walletEventListener);
 });
 </script>
 

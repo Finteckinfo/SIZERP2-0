@@ -42,17 +42,23 @@ const copied = ref(false);
 // Manual wallet input
 const manualWallet = ref<{ address: string }>({ address: '' });
 
-// Sync useWallet activeAccount with walletManager
+// Sync useWallet activeAccount with walletManager - This ensures state is shared across all components
 watch(activeAccount, (newAccount) => {
   console.log('[ConnectWallet] Active account changed:', newAccount);
   if (newAccount?.address) {
-    // Sync to walletManager
+    // Sync to walletManager for persistence and cross-component access
     walletManagerAccount.value = { address: newAccount.address };
     console.log('[ConnectWallet] Synced activeAccount to walletManager:', newAccount.address);
+    // Dispatch custom event for components that might be listening
+    window.dispatchEvent(new CustomEvent('wallet-connected', { 
+      detail: { address: newAccount.address } 
+    }));
   } else {
     // Clear walletManager if disconnected
     walletManagerAccount.value = null;
     console.log('[ConnectWallet] Cleared walletManager activeAccount');
+    // Dispatch disconnect event
+    window.dispatchEvent(new CustomEvent('wallet-disconnected'));
   }
 }, { immediate: true });
 
@@ -201,6 +207,11 @@ async function handleGenerateWallet() {
       if (wallet.address) {
         console.log('🔍 [Create Wallet] Generated wallet connected, posting address to external DB:', wallet.address);
         await postWalletToExternalDB(wallet.address);
+        
+        // Dispatch event for other components
+        window.dispatchEvent(new CustomEvent('wallet-connected', { 
+          detail: { address: wallet.address } 
+        }));
       }
     } catch (connectError) {
       console.error('🔍 [Create Wallet] Failed to connect generated wallet:', connectError);
@@ -251,8 +262,16 @@ async function connectManualWallet() {
   // Sync to backend first
   await postWalletToExternalDB(manualWallet.value.address);
   
+  // Add manual wallet - this will update walletManager.activeAccount
   addManualWallet(manualWallet.value.address);
   console.log('[ConnectWallet] Manual wallet connected:', manualWallet.value.address);
+  
+  // Manually sync to useWallet activeAccount by dispatching event
+  // The watcher will pick this up, but we also dispatch event for immediate notification
+  window.dispatchEvent(new CustomEvent('wallet-connected', { 
+    detail: { address: manualWallet.value.address } 
+  }));
+  
   isWalletModalOpen.value = false;
   toastMsg.value = 'Wallet connected successfully!';
   showToast.value = true;
@@ -273,6 +292,7 @@ async function handleDisconnect() {
   } else {
     removeManualWallet();
   }
+  // The watcher will dispatch 'wallet-disconnected' event automatically
   showDisconnectConfirm.value = false;
   isWalletModalOpen.value = false;
   toastMsg.value = 'Wallet disconnected';
