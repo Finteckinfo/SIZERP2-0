@@ -133,3 +133,4 @@ export function clearWallet(): void {
   localStorage.removeItem('generated-wallet');
 }
 
+
