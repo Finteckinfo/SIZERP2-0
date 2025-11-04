@@ -542,8 +542,8 @@ import { connectedWallet, isWalletConnected as walletConnectedComputed, openWall
 import { projectApi } from '@/services/projectApi';
 import { RetroGrid } from '@/components/ui/retro-grid';
 import PaymentConfigForm from './components/PaymentConfigForm.vue';
-import algosdk from 'algosdk';
-import { SIZCOIN_CONFIG, microUnitsToSiz } from '@/services/paymentService';
+import { NetworkId } from '@txnlab/use-wallet-vue';
+import { getSizTokenBalance } from '@/services/sizTokenService';
 
 const router = useRouter();
 const { user } = useUser();
@@ -664,26 +664,34 @@ const canCreateProject = computed(() => {
 
 // Wallet + SIZ balance gating
 const sizBalance = ref(0);
+const sizBalanceFormatted = ref(0);
 const balanceLoading = ref(false);
 const balanceError = ref('');
 const walletConnected = computed(() => walletConnectedComputed.value);
 
 const loadWalletSIZBalance = async () => {
   sizBalance.value = 0;
+  sizBalanceFormatted.value = 0;
   balanceError.value = '';
   if (!connectedWallet.value) return;
   try {
     balanceLoading.value = true;
-    const currentNetwork = localStorage.getItem('algorand_network') || 'testnet';
-    const baseServer = currentNetwork === 'mainnet' 
-      ? 'https://mainnet-api.algonode.cloud'
-      : 'https://testnet-api.algonode.cloud';
-    const algodClient = new algosdk.Algodv2('', baseServer, '');
-    const accountInfo = await algodClient.accountInformation(connectedWallet.value).do();
-    const assets = accountInfo.assets || [];
-    const sizAsset = assets.find((asset: any) => asset['asset-id'] === SIZCOIN_CONFIG.ASSET_ID);
-    const micro = sizAsset ? Number(sizAsset.amount) : 0;
-    sizBalance.value = microUnitsToSiz(micro);
+    const network = (localStorage.getItem('algorand_network') || 'testnet').toLowerCase();
+    const networkId =
+      network === 'mainnet' ? NetworkId.MAINNET :
+      network === 'betanet' ? NetworkId.BETANET :
+      network === 'fnet' ? NetworkId.FNET :
+      network === 'localnet' || network === 'local' ? NetworkId.LOCALNET :
+      NetworkId.TESTNET;
+    const balance = await getSizTokenBalance(connectedWallet.value, networkId);
+    if (balance) {
+      // amount is base units; formattedAmount is human-readable string
+      sizBalance.value = Number(balance.amount) / Math.pow(10, balance.decimals || 0);
+      sizBalanceFormatted.value = parseFloat(balance.formattedAmount);
+    } else {
+      sizBalance.value = 0;
+      sizBalanceFormatted.value = 0;
+    }
   } catch (e: any) {
     balanceError.value = e?.message || 'Failed to load wallet balance';
   } finally {
@@ -696,7 +704,8 @@ watch(() => connectedWallet.value, async (addr) => {
   else sizBalance.value = 0;
 }, { immediate: true });
 
-const meetsSizRequirement = computed(() => sizBalance.value >= 20);
+// Gate strictly on the displayed formattedAmount per product requirement
+const meetsSizRequirement = computed(() => sizBalanceFormatted.value >= 20);
 const canSubmit = computed(() => !!canCreateProject.value && walletConnected.value && meetsSizRequirement.value);
 
 // Draft state removed
