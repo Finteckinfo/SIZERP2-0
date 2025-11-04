@@ -460,16 +460,72 @@
                 Save & Continue
               </v-btn>
               
-              <v-btn 
-                v-if="currentStep === 'settings'"
-                :color="'var(--erp-accent-green)'" 
-                @click="createProject"
-                :disabled="!canCreateProject || saving"
-                :loading="saving"
-                size="large"
-              >
-                Create Project
-              </v-btn>
+              <div v-if="currentStep === 'settings'" class="d-flex flex-column align-end" style="gap: 8px;">
+                <v-alert
+                  v-if="!walletConnected || sizBalance < 20"
+                  type="warning"
+                  variant="tonal"
+                  density="compact"
+                  class="mb-2"
+                >
+                  <template v-slot:prepend>
+                    <v-icon>mdi-alert</v-icon>
+                  </template>
+                  <div class="d-flex flex-column" style="gap: 8px;">
+                    <div v-if="!walletConnected">
+                      Connect a wallet to create a project.
+                    </div>
+                    <div v-else>
+                      Minimum 20.00 SIZ required to create a project.
+                      <span class="ml-1">Current: {{ sizBalance.toFixed(2) }} SIZ</span>
+                    </div>
+                    <div v-if="balanceError" class="text-error text-caption">{{ balanceError }}</div>
+                    <div class="d-flex align-center" style="gap: 8px;">
+                      <v-btn
+                        v-if="!walletConnected"
+                        color="primary"
+                        variant="elevated"
+                        size="small"
+                        @click="openWalletModal()"
+                      >
+                        <v-icon start>mdi-wallet</v-icon>
+                        Connect Wallet
+                      </v-btn>
+                      <template v-else>
+                        <v-btn
+                          color="primary"
+                          variant="elevated"
+                          size="small"
+                          :href="'https://www.siz.land/wallet'"
+                          target="_blank"
+                        >
+                          <v-icon start>mdi-open-in-new</v-icon>
+                          Get SIZ on DEX
+                        </v-btn>
+                        <v-btn
+                          variant="outlined"
+                          size="small"
+                          :loading="balanceLoading"
+                          @click="loadWalletSIZBalance()"
+                        >
+                          <v-icon start>mdi-refresh</v-icon>
+                          Refresh Balance
+                        </v-btn>
+                      </template>
+                    </div>
+                  </div>
+                </v-alert>
+
+                <v-btn 
+                  :color="'var(--erp-accent-green)'" 
+                  @click="createProject"
+                  :disabled="!canSubmit || saving"
+                  :loading="saving"
+                  size="large"
+                >
+                  Create Project
+                </v-btn>
+              </div>
             </div>
           </div>
         </div>
@@ -482,10 +538,12 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUser } from '@clerk/vue';
-import { connectedWallet } from '@/stores/walletStore';
+import { connectedWallet, isWalletConnected as walletConnectedComputed, openWalletModal } from '@/stores/walletStore';
 import { projectApi } from '@/services/projectApi';
 import { RetroGrid } from '@/components/ui/retro-grid';
 import PaymentConfigForm from './components/PaymentConfigForm.vue';
+import algosdk from 'algosdk';
+import { SIZCOIN_CONFIG, microUnitsToSiz } from '@/services/paymentService';
 
 const router = useRouter();
 const { user } = useUser();
@@ -603,6 +661,43 @@ const canCreateProject = computed(() => {
          projectData.tags &&
          projectData.notes;
 });
+
+// Wallet + SIZ balance gating
+const sizBalance = ref(0);
+const balanceLoading = ref(false);
+const balanceError = ref('');
+const walletConnected = computed(() => walletConnectedComputed.value);
+
+const loadWalletSIZBalance = async () => {
+  sizBalance.value = 0;
+  balanceError.value = '';
+  if (!connectedWallet.value) return;
+  try {
+    balanceLoading.value = true;
+    const currentNetwork = localStorage.getItem('algorand_network') || 'testnet';
+    const baseServer = currentNetwork === 'mainnet' 
+      ? 'https://mainnet-api.algonode.cloud'
+      : 'https://testnet-api.algonode.cloud';
+    const algodClient = new algosdk.Algodv2('', baseServer, '');
+    const accountInfo = await algodClient.accountInformation(connectedWallet.value).do();
+    const assets = accountInfo.assets || [];
+    const sizAsset = assets.find((asset: any) => asset['asset-id'] === SIZCOIN_CONFIG.ASSET_ID);
+    const micro = sizAsset ? Number(sizAsset.amount) : 0;
+    sizBalance.value = microUnitsToSiz(micro);
+  } catch (e: any) {
+    balanceError.value = e?.message || 'Failed to load wallet balance';
+  } finally {
+    balanceLoading.value = false;
+  }
+};
+
+watch(() => connectedWallet.value, async (addr) => {
+  if (addr) await loadWalletSIZBalance();
+  else sizBalance.value = 0;
+}, { immediate: true });
+
+const meetsSizRequirement = computed(() => sizBalance.value >= 20);
+const canSubmit = computed(() => !!canCreateProject.value && walletConnected.value && meetsSizRequirement.value);
 
 // Draft state removed
 
@@ -868,6 +963,12 @@ const createProject = async () => {
 
   if (!connectedWallet.value) {
     error.value = 'Wallet address is required. Please connect your wallet.';
+    setTimeout(() => error.value = '', 5000);
+    return;
+  }
+  
+  if (!meetsSizRequirement.value) {
+    error.value = 'You need at least 20.00 SIZ in your connected wallet to create a project.';
     setTimeout(() => error.value = '', 5000);
     return;
   }
