@@ -6,6 +6,7 @@ import ProjectCard from './components/ProjectCard.vue';
 import RecentActivity from './components/RecentActivity.vue';
 import EarningsWidget from './components/EarningsWidget.vue';
 import ProjectBudgetWidget from './components/ProjectBudgetWidget.vue';
+import SizTokenBalance from './components/SizTokenBalance.vue';
 import { ref, onMounted, computed, watch } from 'vue';
 import { useUser } from '@clerk/vue';
 import { useRouter } from 'vue-router';
@@ -16,6 +17,7 @@ import ProjectCardSkeleton from './components/ProjectCardSkeleton.vue';
 import ActivitySkeleton from './components/ActivitySkeleton.vue';
 import OnboardingModal from '@/components/OnboardingModal.vue';
 import { RetroGrid } from '@/components/ui/retro-grid';
+import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue';
 
 // Import centralized API services
 import { projectApi, taskApi, userRoleApi, projectInviteApi, type Project, type Task, type UserRole } from '@/services/projectApi';
@@ -788,16 +790,21 @@ onMounted(() => {
       </v-col>
     </v-row>
 
-    <!-- Earnings & Budget Widgets -->
+    <!-- Earnings, Budget & SIZ Token Balance Widgets -->
     <v-row class="mb-6">
       <!-- Earnings Widget (for employees) -->
-      <v-col cols="12" md="6">
+      <v-col cols="12" md="4">
         <EarningsWidget />
       </v-col>
       
       <!-- Budget Widget (for project owners/managers) -->
-      <v-col cols="12" md="6">
+      <v-col cols="12" md="4">
         <ProjectBudgetWidget :project-ids="projects.map(p => p.id)" />
+      </v-col>
+
+      <!-- SIZ Token Balance Widget -->
+      <v-col cols="12" md="4">
+        <SizTokenBalance />
       </v-col>
     </v-row>
 
@@ -1249,6 +1256,9 @@ onMounted(() => {
     v-model="showOnboardingModal"
     @invite-responded="handleInviteResponse"
   />
+  
+  <!-- Connect Wallet Modal - Required for SizTokenBalance component -->
+  <ConnectWallet />
   </div>
 </template>
 

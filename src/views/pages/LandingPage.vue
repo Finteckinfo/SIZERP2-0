@@ -1,8 +1,8 @@
 <template>
   <div :class="{ 'dark-theme': isDark }" class="landing-page" :style="backgroundStyle">
-    <!-- Theme Toggle - Top Right Corner -->
+    <!-- Theme Toggle - Floating Button -->
     <div class="theme-toggle-container">
-      <ThemeToggle :show-label="true" size="small" />
+      <ThemeToggle :show-label="false" size="small" />
     </div>
 
     <!-- Particles Background -->
@@ -25,6 +25,9 @@
       <section class="hero-section">
         <div class="hero-container">
           <div class="hero-text">
+            <div class="hero-logo">
+              <img src="/images/sizlogo.png" alt="SIZ Logo" class="hero-logo-image" />
+            </div>
             <h1 class="hero-title">
               Welcome to 
               <span class="brand-text">SizLand ERP</span>
@@ -152,6 +155,56 @@
           </v-btn>
         </div>
       </section>
+
+      <!-- Footer Section -->
+      <footer class="landing-footer">
+        <div class="footer-container">
+          <div class="footer-content">
+            <!-- Logo and Brand -->
+            <div class="footer-brand">
+              <img src="/images/sizlogo.png" alt="SIZ Logo" class="footer-logo" />
+              <h3 class="footer-brand-name">SizLand ERP</h3>
+              <p class="footer-tagline">Professional Web3 Project Management</p>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="footer-links">
+              <h4 class="footer-links-title">Quick Links</h4>
+              <ul class="footer-links-list">
+                <li><a href="#features" @click="scrollToFeatures">Features</a></li>
+                <li><a href="/login">Login</a></li>
+                <li><a href="/register">Register</a></li>
+                <li><a href="#!" @click.prevent>Documentation</a></li>
+              </ul>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="footer-contact">
+              <h4 class="footer-links-title">Contact</h4>
+              <ul class="footer-links-list">
+                <li><a href="#!" @click.prevent>Support</a></li>
+                <li><a href="#!" @click.prevent>About Us</a></li>
+                <li><a href="#!" @click.prevent>Privacy Policy</a></li>
+                <li><a href="#!" @click.prevent>Terms of Service</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Made By Section -->
+          <div class="footer-bottom">
+            <div class="footer-divider"></div>
+            <div class="footer-made-by">
+              <p class="made-by-text">
+                Made with <span class="heart">♥</span> by 
+                <span class="built-by">BuiltBySisi</span>
+              </p>
+              <p class="footer-copyright">
+                © {{ new Date().getFullYear() }} SizLand ERP. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   </div>
 </template>
@@ -215,6 +268,23 @@ const scrollToFeatures = () => {
   z-index: 1000;
 }
 
+/* Mobile: Float at bottom center */
+@media (max-width: 768px) {
+  .theme-toggle-container {
+    top: auto;
+    bottom: 20px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 480px) {
+  .theme-toggle-container {
+    bottom: 15px;
+  }
+}
+
 .particles-background {
   position: fixed;
   top: 0;
@@ -250,6 +320,30 @@ const scrollToFeatures = () => {
   max-width: 1200px;
   width: 100%;
   text-align: center;
+}
+
+.hero-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.hero-logo-image {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  animation: logoFloat 3s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+  0%, 100% { 
+    transform: translateY(0px); 
+  }
+  50% { 
+    transform: translateY(-10px); 
+  }
 }
 
 .hero-title {
@@ -426,6 +520,7 @@ const scrollToFeatures = () => {
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
+  margin: 0 auto !important;
 }
 
 .cta-button-large :deep(.v-btn__content) {
@@ -462,6 +557,11 @@ const scrollToFeatures = () => {
     align-items: center;
     text-align: center;
     width: 100%;
+  }
+  
+  .hero-logo-image {
+    width: 100px;
+    height: 100px;
   }
   
   .hero-title {
@@ -529,12 +629,7 @@ const scrollToFeatures = () => {
     opacity: 0.2;
   }
   
-  .theme-toggle-container {
-    top: 15px;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-  }
+  /* Theme toggle already styled in main styles for mobile */
 }
 
 @media (max-width: 480px) {
@@ -544,6 +639,11 @@ const scrollToFeatures = () => {
   
   .hero-container {
     padding: 0 1rem;
+  }
+  
+  .hero-logo-image {
+    width: 80px;
+    height: 80px;
   }
   
   .hero-title {
@@ -606,6 +706,219 @@ const scrollToFeatures = () => {
     left: 50%;
     right: auto;
     transform: translateX(-50%);
+  }
+}
+
+/* Footer Styles */
+.landing-footer {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4rem 2rem 2rem;
+  margin-top: 4rem;
+  position: relative;
+  z-index: 10;
+}
+
+.dark-theme .landing-footer {
+  background: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 3rem;
+  margin-bottom: 3rem;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.footer-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.footer-brand-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(45deg, #ffffff, #f0f0f0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark-theme .footer-brand-name {
+  background: linear-gradient(45deg, #66BB6A, #4CAF50);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.footer-tagline {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin: 0;
+}
+
+.footer-links-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.footer-links-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links-list li {
+  margin-bottom: 0.75rem;
+}
+
+.footer-links-list a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: inline-block;
+  font-size: 0.95rem;
+}
+
+.footer-links-list a:hover {
+  color: #66BB6A;
+  transform: translateX(5px);
+}
+
+.footer-bottom {
+  text-align: center;
+}
+
+.footer-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  margin-bottom: 2rem;
+}
+
+.footer-made-by {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.made-by-text {
+  font-size: 1.1rem;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.heart {
+  color: #ff6b9d;
+  animation: heartbeat 1.5s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  10%, 30% {
+    transform: scale(1.2);
+  }
+  20% {
+    transform: scale(1.1);
+  }
+}
+
+.built-by {
+  font-weight: 700;
+  background: linear-gradient(45deg, #66BB6A, #4CAF50);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 1.2rem;
+  display: inline-block;
+  margin-left: 0.25rem;
+}
+
+.footer-copyright {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin: 0;
+}
+
+/* Footer Responsive */
+@media (max-width: 768px) {
+  .landing-footer {
+    padding: 3rem 1.5rem 1.5rem;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    text-align: center;
+  }
+
+  .footer-brand {
+    align-items: center;
+  }
+
+  .footer-logo {
+    width: 60px;
+    height: 60px;
+  }
+
+  .footer-links-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .footer-links-list li {
+    margin-bottom: 0;
+  }
+
+  .made-by-text {
+    font-size: 1rem;
+  }
+
+  .built-by {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-footer {
+    padding: 2rem 1rem 1rem;
+  }
+
+  .footer-logo {
+    width: 50px;
+    height: 50px;
+  }
+
+  .made-by-text {
+    font-size: 0.9rem;
+  }
+
+  .built-by {
+    font-size: 1rem;
   }
 }
 </style>

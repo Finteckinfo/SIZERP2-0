@@ -25,9 +25,9 @@ console.log('🔍 Theme state:', isDark.value);
 
 <template>
   <div :class="{ 'dark-theme': isDark }" class="login-page">
-    <!-- Theme Toggle - Top Right Corner -->
+    <!-- Theme Toggle - Floating Button -->
     <div class="theme-toggle-container">
-      <ThemeToggle :show-label="true" size="small" />
+      <ThemeToggle :show-label="false" size="small" />
     </div>
     
     <div class="login-container">
@@ -99,6 +99,23 @@ console.log('🔍 Theme state:', isDark.value);
   top: 28px;
   right: 56px;
   z-index: 1000;
+}
+
+/* Mobile: Float at bottom center */
+@media (max-width: 768px) {
+  .theme-toggle-container {
+    top: auto;
+    bottom: 20px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 480px) {
+  .theme-toggle-container {
+    bottom: 15px;
+  }
 }
 
 .login-container {

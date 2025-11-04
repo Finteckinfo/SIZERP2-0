@@ -33,7 +33,7 @@ if (typeof (window as any).global === 'undefined') {
 
 // ---- Wallet Manager ----
 import { WalletManagerPlugin } from '@txnlab/use-wallet-vue';
-import { networks } from './lib/walletManager';
+import { networks, wallets } from './lib/walletManager';
 import type { NetworkConfig } from '@txnlab/use-wallet';
 
 const app = createApp(App);
@@ -103,7 +103,9 @@ app.use(vuetify);
 
 // ---- WalletManagerPlugin for network management ONLY ----
 console.log('[main.ts] Registering WalletManagerPlugin with networks:', Object.keys(networks));
+console.log('[main.ts] Registering WalletManagerPlugin with wallets:', wallets.length);
 app.use(WalletManagerPlugin, {
+  wallets: wallets,
   networks: networks as Record<string, NetworkConfig>,
   defaultNetwork: 'mainnet',
 });

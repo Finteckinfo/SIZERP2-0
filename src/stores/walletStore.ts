@@ -2,10 +2,34 @@
 import { ref, computed, watch } from 'vue';
 import { activeAccount } from '@/lib/walletManager';
 
-// Tracks the connected wallet address (synced with walletManager)
+// Helper to get active account from useWallet hook if available
+function getUseWalletAccount() {
+  try {
+    // Check if useWallet is available (in components that use it)
+    if (typeof window !== 'undefined' && (window as any).__useWalletActiveAccount) {
+      return (window as any).__useWalletActiveAccount;
+    }
+  } catch (e) {
+    // Silently fail if useWallet is not available
+  }
+  return null;
+}
+
+// Tracks the connected wallet address (synced with walletManager, with fallback to useWallet)
 export const connectedWallet = computed(() => {
-  const address = activeAccount.value?.address || '';
-  console.log('[walletStore] connectedWallet computed:', { address, activeAccount: activeAccount.value });
+  // First check walletManager
+  const walletManagerAddress = activeAccount.value?.address || '';
+  
+  // Fallback to useWallet if walletManager doesn't have it
+  const useWalletAccount = getUseWalletAccount();
+  const useWalletAddress = useWalletAccount?.address || '';
+  
+  const address = walletManagerAddress || useWalletAddress;
+  console.log('[walletStore] connectedWallet computed:', { 
+    address, 
+    walletManager: activeAccount.value,
+    useWallet: useWalletAccount
+  });
   return address;
 });
 
@@ -15,7 +39,10 @@ export const isWalletModalOpen = ref(false);
 // Computed property for wallet connection status
 export const isWalletConnected = computed(() => {
   const connected = connectedWallet.value !== '';
-  console.log('[walletStore] isWalletConnected computed:', { connected, address: connectedWallet.value });
+  console.log('[walletStore] isWalletConnected computed:', { 
+    connected, 
+    address: connectedWallet.value 
+  });
   return connected;
 });
 

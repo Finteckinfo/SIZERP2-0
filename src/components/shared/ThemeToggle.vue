@@ -62,7 +62,7 @@
       </div>
     </div>
     
-    <span class="ml-2 theme-label">{{ isDark ? 'Light Mode' : 'Dark Mode' }}</span>
+    <span v-if="showLabel" class="ml-2 theme-label">{{ isDark ? 'Light Mode' : 'Dark Mode' }}</span>
   </button>
 </template>
 
@@ -103,6 +103,9 @@ const handleToggle = () => {
   padding: 0.5rem;
   font-weight: 500;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .theme-toggle-btn:hover {
