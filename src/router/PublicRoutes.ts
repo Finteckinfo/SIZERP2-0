@@ -17,7 +17,7 @@ const PublicRoutes = {
         // Redirect to primary domain for authentication
         if (import.meta.env.VITE_CLERK_IS_SATELLITE === 'true' && import.meta.env.VITE_CLERK_SIGN_IN_URL) {
           window.location.href = import.meta.env.VITE_CLERK_SIGN_IN_URL;
-          return false;
+          return false; 
         }
         return true;
       },
