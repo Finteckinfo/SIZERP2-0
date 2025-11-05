@@ -344,7 +344,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import { api, projectApi } from '@/services/projectApi';
+import { api, projectApi, userRoleApi } from '@/services/projectApi';
 import { RetroGrid } from '@/components/ui/retro-grid';
 import { 
   initializeWebSocket, 
@@ -508,6 +508,25 @@ const fetchMessages = async (roomId: string) => {
     console.error('Error fetching messages:', err);
   } finally {
     loadingMessages.value = false;
+  }
+};
+
+const fetchProjectMembers = async (projectId: string) => {
+  try {
+    const response = await userRoleApi.getAccessibleProjectTeam(projectId);
+    const team = Array.isArray(response) ? response : (response.team || response.userRoles || response.data || []);
+    
+    projectMembers.value = team.map((userRole: any) => ({
+      id: userRole.userId || userRole.user?.id || userRole.id,
+      name: userRole.user?.firstName && userRole.user?.lastName 
+        ? `${userRole.user.firstName} ${userRole.user.lastName}`
+        : userRole.user?.email || userRole.name || 'Unknown User',
+      role: userRole.role || 'Member',
+      online: onlineMembers.value.includes(userRole.userId || userRole.user?.id || userRole.id)
+    }));
+  } catch (err) {
+    console.error('Error fetching project members:', err);
+    // Keep existing members if fetch fails
   }
 };
 
@@ -710,8 +729,9 @@ const selectProject = async (project: Project) => {
   // Join the new room via WebSocket
   wsJoinRoom(room.id);
   
-  // Fetch messages and online members
+  // Fetch project members, messages, and online members
   await Promise.all([
+    fetchProjectMembers(project.id),
     fetchMessages(room.id),
     fetchOnlineMembers(room.id),
     resetUnreadCount(room.id)
@@ -856,40 +876,8 @@ onMounted(async () => {
     fetchChatRooms()
   ]);
   
-  // Initialize with dummy team members for now
-  // In real implementation, this would come from project API
-  projectMembers.value = [
-    {
-      id: 'user-1',
-      name: 'John Smith',
-      role: 'Project Manager',
-      online: true
-    },
-    {
-      id: 'user-2',
-      name: 'Sarah Johnson',
-      role: 'Frontend Developer',
-      online: true
-    },
-    {
-      id: 'user-3',
-      name: 'Mike Davis',
-      role: 'Backend Developer',
-      online: false
-    },
-    {
-      id: 'user-4',
-      name: 'Emily Wilson',
-      role: 'UI/UX Designer',
-      online: true
-    },
-    {
-      id: 'user-5',
-      name: 'Alex Brown',
-      role: 'QA Tester',
-      online: false
-    }
-  ];
+  // Project members will be loaded when a project is selected
+  projectMembers.value = [];
 
   updateResponsiveState();
   window.addEventListener('resize', updateResponsiveState);
