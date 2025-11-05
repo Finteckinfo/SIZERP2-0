@@ -1,51 +1,38 @@
 <template>
   <div class="team-chat-page">
-    <!-- Header Section -->
-    <div class="team-chat-header">
-      <RetroGrid />
-      <div class="header-content">
-        <div class="header-icon">
-          <v-icon size="48" color="white">mdi-chat</v-icon>
-        </div>
-        <h1 class="header-title">Team Chat</h1>
-        <p class="header-subtitle">Collaborate and coordinate with your project team members</p>
-      </div>
-    </div>
-
-    <!-- Main Chat Interface -->
+    <!-- Main Chat Interface - Self-contained layout -->
     <div class="chat-interface">
-      <!-- Mobile Toolbar -->
-      <div class="mobile-chat-actions" v-if="isMobile">
-        <v-btn icon variant="text" @click="toggleProjectsSidebar">
-          <v-icon>mdi-view-list</v-icon>
+      <!-- Mobile Toolbar - Only show in chat view on mobile -->
+      <div class="mobile-chat-actions" v-if="isMobile && currentView === 'chat'">
+        <v-btn icon variant="text" @click="currentView = 'projects'">
+          <v-icon>mdi-arrow-left</v-icon>
         </v-btn>
         <div class="spacer"></div>
-        <v-btn icon variant="text" @click="toggleMembersSidebar">
+        <v-btn icon variant="text" @click="currentView = 'members'">
           <v-icon>mdi-account-group</v-icon>
         </v-btn>
       </div>
 
-      <!-- Projects Sidebar -->
-      <v-navigation-drawer
-        v-model="showProjectsSidebar"
-        location="left"
-        :width="sidebarWidth"
-        :permanent="!isMobile"
-        :temporary="isMobile"
-        :scrim="isMobile"
-        class="projects-sidebar"
+      <!-- Projects Sidebar - Left Column -->
+      <div 
+        class="projects-column"
+        :class="{ 
+          'visible': isWide || isMedium || (isMobile && currentView === 'projects'),
+          'hidden': isMobile && currentView !== 'projects'
+        }"
       >
         <div class="sidebar-header">
           <div class="header-content">
             <h3>Projects</h3>
             <v-btn
+              v-if="isMobile"
               icon
               variant="text"
               size="small"
-              @click="toggleProjectsSidebar"
+              @click="currentView = 'chat'"
               class="toggle-btn"
             >
-              <v-icon>{{ showProjectsSidebar ? 'mdi-chevron-left' : 'mdi-chevron-right' }}</v-icon>
+              <v-icon>mdi-close</v-icon>
             </v-btn>
           </div>
         </div>
@@ -69,7 +56,7 @@
             :key="project.id"
             class="project-item"
             :class="{ active: selectedRoom?.projectId === project.id }"
-            @click="selectProject(project)"
+            @click="selectProject(project); if (isMobile) currentView = 'chat'"
           >
             <div class="project-avatar">
               <v-avatar :color="getProjectColor(project.type)" size="36">
@@ -77,20 +64,26 @@
               </v-avatar>
             </div>
             
-            <div v-if="showProjectsSidebar" class="project-details">
+            <div class="project-details">
               <div class="project-name">{{ project.name }}</div>
               <div class="project-last-message">{{ getLastMessage(project.id) }}</div>
             </div>
             
-            <div v-if="showProjectsSidebar && getUnreadCount(project.id) > 0" class="unread-badge">
+            <div v-if="getUnreadCount(project.id) > 0" class="unread-badge">
               {{ getUnreadCount(project.id) }}
             </div>
           </div>
         </div>
-      </v-navigation-drawer>
+      </div>
 
-      <!-- Chat Area -->
-      <div class="chat-main" :class="{ 'has-members-sheet': isMobile && showMembersSidebar }">
+      <!-- Chat Area - Middle Column -->
+      <div 
+        class="chat-column"
+        :class="{ 
+          'visible': isWide || isMedium || (isMobile && currentView === 'chat'),
+          'hidden': isMobile && currentView !== 'chat'
+        }"
+      >
         <!-- Chat Header -->
         <div v-if="selectedRoom" class="chat-header">
           <div class="chat-project-info">
@@ -105,9 +98,10 @@
           
           <div class="chat-actions">
             <v-btn
+              v-if="isMedium || isWide"
               icon
               variant="text"
-              @click="toggleMembersSidebar"
+              @click="showMembersSidebar = !showMembersSidebar"
               :class="{ active: showMembersSidebar }"
             >
               <v-icon>mdi-account-group</v-icon>
@@ -119,6 +113,14 @@
             >
               <v-icon>mdi-cog</v-icon>
             </v-btn>
+          </div>
+        </div>
+        
+        <!-- Empty Header for Chat -->
+        <div v-else class="chat-header empty-header">
+          <div class="chat-project-info">
+            <h3>Team Chat</h3>
+            <p>Select a project to start chatting</p>
           </div>
         </div>
 
@@ -258,7 +260,7 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else class="empty-chat-state">
+        <div v-if="!selectedRoom" class="empty-chat-state">
           <v-avatar size="80" color="grey-lighten-3" class="mb-4">
             <v-icon size="40" color="grey">mdi-chat</v-icon>
           </v-avatar>
@@ -267,24 +269,15 @@
             Choose a project from the sidebar to start chatting with your team members.
           </p>
         </div>
-
-        <!-- Mobile Members FAB -->
-        <div v-if="isMobile" class="members-fab">
-          <v-btn color="primary" icon variant="flat" @click="toggleMembersSidebar">
-            <v-icon>{{ showMembersSidebar ? 'mdi-chevron-down' : 'mdi-account-group' }}</v-icon>
-          </v-btn>
-        </div>
       </div>
 
-      <!-- Members Sidebar -->
-      <v-navigation-drawer
-        v-model="showMembersSidebar"
-        location="right"
-        :width="sidebarWidth"
-        :permanent="!isMobile"
-        :temporary="isMobile"
-        :scrim="false"
-        class="members-sidebar"
+      <!-- Members Sidebar - Right Column -->
+      <div 
+        class="members-column"
+        :class="{ 
+          'visible': (isWide && showMembersSidebar) || (isMobile && currentView === 'members'),
+          'hidden': !isWide || !showMembersSidebar || (isMobile && currentView !== 'members')
+        }"
       >
         <div class="sidebar-header">
           <div class="header-content">
@@ -293,7 +286,7 @@
               icon
               variant="text"
               size="small"
-              @click="toggleMembersSidebar"
+              @click="isMobile ? (currentView = 'chat') : (showMembersSidebar = false)"
               class="toggle-btn"
             >
               <v-icon>mdi-close</v-icon>
@@ -343,7 +336,7 @@
             </div>
           </div>
         </div>
-      </v-navigation-drawer>
+      </div>
     </div>
   </div>
 </template>
@@ -420,6 +413,12 @@ const newMessage = ref('');
 const currentUserId = ref('user-1'); // This should come from auth
 const sidebarWidth = ref(280);
 
+// Responsive state
+const isMobile = ref(false);
+const isMedium = ref(false);
+const isWide = ref(false);
+const currentView = ref<'projects' | 'chat' | 'members'>('chat');
+
 // Real-time states
 const isTyping = ref(false);
 const typingUsers = ref<string[]>([]);
@@ -447,10 +446,16 @@ const offlineMembers = computed(() => {
   return projectMembers.value.filter(member => !member.online);
 });
 
-const isMobile = ref(false);
-
-const updateIsMobile = () => {
-  isMobile.value = window.innerWidth <= 768;
+const updateResponsiveState = () => {
+  const width = window.innerWidth;
+  isMobile.value = width < 768;
+  isMedium.value = width >= 768 && width < 1200;
+  isWide.value = width >= 1200;
+  
+  // Auto-set initial view based on screen size
+  if (isMobile.value && currentView.value === 'chat' && !selectedRoom.value) {
+    currentView.value = 'projects';
+  }
 };
 
 // API Methods
@@ -784,14 +789,7 @@ const scrollToBottom = () => {
   }
 };
 
-const toggleProjectsSidebar = () => {
-  showProjectsSidebar.value = !showProjectsSidebar.value;
-  sidebarWidth.value = showProjectsSidebar.value ? 280 : 60;
-};
-
-const toggleMembersSidebar = () => {
-  showMembersSidebar.value = !showMembersSidebar.value;
-};
+// Toggle functions removed - using currentView for mobile navigation instead
 
 const getUnreadCount = (roomId: string) => {
   return unreadCounts.value[roomId] || 0;
@@ -893,12 +891,21 @@ onMounted(async () => {
     }
   ];
 
-  updateIsMobile();
-  window.addEventListener('resize', updateIsMobile);
-  // Ensure sidebar defaults
-  showProjectsSidebar.value = !isMobile.value;
-  // Show members as a section on both, especially mobile
-  showMembersSidebar.value = true;
+  updateResponsiveState();
+  window.addEventListener('resize', updateResponsiveState);
+  
+  // Set initial view based on screen size
+  if (isMobile.value) {
+    // On mobile, start with projects list if no room selected, otherwise chat
+    currentView.value = selectedRoom.value ? 'chat' : 'projects';
+  } else {
+    showProjectsSidebar.value = true;
+    if (isWide.value) {
+      showMembersSidebar.value = false; // Hidden by default on wide screens
+    } else if (isMedium.value) {
+      showMembersSidebar.value = false; // Hidden by default on tablet
+    }
+  }
 });
 
 onUnmounted(() => {
@@ -920,110 +927,114 @@ onUnmounted(() => {
   if (typingTimeout.value) {
     clearTimeout(typingTimeout.value);
   }
+  
+  // Clean up resize listener
+  window.removeEventListener('resize', updateResponsiveState);
 });
 </script>
 
 <style scoped>
 .team-chat-page {
   min-height: 100vh;
+  height: 100vh;
   background: var(--erp-page-bg);
   transition: background-color 0.3s ease;
-}
-
-/* Header Section */
-.team-chat-header {
-  background: transparent;
-  padding: 4rem 2rem;
-  text-align: center;
-  position: relative;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  border: 1px solid var(--erp-border);
-  border-radius: 16px;
-  margin-bottom: 2rem;
 }
 
-.header-content {
-  position: relative;
-  z-index: 2;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.header-icon {
-  margin-bottom: 1.5rem;
-}
-
-.header-icon .v-icon {
-  color: var(--erp-accent-green);
-}
-
-.header-title {
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--erp-text);
-  margin: 0 0 1rem 0;
-  letter-spacing: -0.025em;
-}
-
-.header-subtitle {
-  font-size: 1.25rem;
-  color: var(--erp-text);
-  opacity: 0.8;
-  margin: 0;
-  font-weight: 400;
-}
-
-/* Chat Interface */
+/* Chat Interface - Main Container */
 .chat-interface {
   display: flex;
-  height: calc(100vh - 200px);
+  flex: 1;
+  height: 100%;
   background: var(--erp-card-bg);
-  border-radius: 16px;
-  border: 1px solid var(--erp-border);
+  border-radius: 0;
+  border: none;
   overflow: hidden;
-  margin: 2rem;
-  max-width: 1400px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0;
+  position: relative;
 }
 
 /* Mobile toolbar */
 .mobile-chat-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--erp-surface);
+  border-bottom: 1px solid var(--erp-border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.mobile-chat-actions .spacer { 
+  flex: 1; 
+}
+
+/* Column Layouts - Projects Column (Left) */
+.projects-column {
+  display: flex;
+  flex-direction: column;
+  background: var(--erp-surface);
+  border-right: 1px solid var(--erp-border);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  overflow: hidden;
+}
+
+.projects-column.visible {
+  display: flex;
+}
+
+.projects-column.hidden {
   display: none;
 }
 
-@media (max-width: 768px) {
-  .mobile-chat-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    background: var(--erp-surface);
-    border-bottom: 1px solid var(--erp-border);
-  }
-  .mobile-chat-actions .spacer { flex: 1; }
+/* Chat Column (Middle) */
+.chat-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: var(--erp-card-bg);
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
 }
 
-/* Sidebar Styles */
-.projects-sidebar,
-.members-sidebar {
-  background: var(--erp-surface) !important;
-  border-right: 1px solid var(--erp-border);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.chat-column.visible {
+  display: flex;
 }
 
-.members-sidebar {
-  border-right: none !important;
+.chat-column.hidden {
+  display: none;
+}
+
+/* Members Column (Right) */
+.members-column {
+  display: flex;
+  flex-direction: column;
+  background: var(--erp-surface);
   border-left: 1px solid var(--erp-border);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  overflow: hidden;
+}
+
+.members-column.visible {
+  display: flex;
+}
+
+.members-column.hidden {
+  display: none;
 }
 
 .sidebar-header {
   padding: 1rem;
   border-bottom: 1px solid var(--erp-border);
   background: var(--erp-surface);
+  flex-shrink: 0;
 }
 
-.header-content {
+.sidebar-header .header-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1047,7 +1058,10 @@ onUnmounted(() => {
 
 /* Projects List */
 .projects-list {
+  flex: 1;
+  overflow-y: auto;
   padding: 0.5rem;
+  min-height: 0;
 }
 
 .loading-state,
@@ -1133,12 +1147,23 @@ onUnmounted(() => {
   justify-content: center;
 }
 
-/* Chat Main Area */
-.chat-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: var(--erp-card-bg);
+/* Chat Header */
+.empty-header {
+  justify-content: flex-start;
+}
+
+.empty-header h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--erp-text);
+}
+
+.empty-header p {
+  font-size: 0.875rem;
+  color: var(--erp-text);
+  opacity: 0.7;
+  margin: 0.25rem 0 0 0;
 }
 
 .chat-header {
@@ -1333,9 +1358,12 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-/* Members Sidebar */
+/* Members List */
 .members-list {
+  flex: 1;
+  overflow-y: auto;
   padding: 0.5rem;
+  min-height: 0;
 }
 
 .member-section {
@@ -1485,94 +1513,123 @@ onUnmounted(() => {
   background: var(--erp-card-bg);
 }
 
-/* FAB */
-.members-fab {
-  position: fixed;
-  right: 16px;
-  bottom: 16px;
-  z-index: 1100;
-}
-
-@media (max-width: 768px) {
-  /* Hide FAB when members list is a static section */
-  .members-fab { display: none; }
-}
-
-/* Prevent content from being hidden behind bottom sheet (only used if overlay mode is re-enabled) */
-.has-members-sheet {
-  padding-bottom: 62vh;
-}
-
-@media (max-width: 768px) {
-  /* Members as a normal section at the bottom on mobile */
-  .members-sidebar {
-    position: relative !important;
-    width: 100% !important;
-    height: auto !important;
-    left: auto !important;
-    right: auto !important;
-    bottom: auto !important;
-    top: auto !important;
-    transform: none !important;
-    z-index: auto !important;
-    border-radius: 12px !important;
-    box-shadow: none !important;
-    margin-top: 0.75rem;
-  }
-  .members-list { max-height: none; overflow: visible; }
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
+/* Responsive Design - Desktop (≥1200px) - 3 columns */
+@media (min-width: 1200px) {
   .chat-interface {
-    height: calc(100vh - 150px);
-    margin: 1rem;
+    display: flex;
+    flex-direction: row;
   }
   
-  .sidebarWidth {
-    width: 240px;
-  }
-}
-
-@media (max-width: 768px) {
-  .team-chat-container {
-    background: transparent !important;
-    padding: 0 !important;
+  .projects-column {
+    width: 25%;
+    min-width: 280px;
+    max-width: 320px;
   }
   
-  .team-chat-header {
-    padding: 1.5rem 1rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  .header-title {
-    font-size: 1.75rem;
-  }
-  
-  .header-subtitle {
-    font-size: 0.9rem;
-  }
-  
-  .chat-interface {
-    height: calc(100vh - 100px);
-    margin: 0;
-    border-radius: 8px;
-    flex-direction: column;
-    background: var(--erp-surface) !important;
-  }
-  
-  .projects-sidebar {
-    width: 100% !important;
-    height: 200px !important;
-    position: relative !important;
-    border-right: none !important;
-    border-bottom: 1px solid var(--erp-border) !important;
-    background: var(--erp-surface) !important;
-  }
-  
-  .chat-main {
+  .chat-column {
     flex: 1;
-    height: calc(100% - 200px);
+    min-width: 0;
+  }
+  
+  .members-column {
+    width: 30%;
+    min-width: 280px;
+    max-width: 360px;
+  }
+  
+  .mobile-chat-actions {
+    display: none;
+  }
+}
+
+/* Tablet (768px - 1199px) - 2 columns */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .chat-interface {
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .projects-column {
+    width: 25%;
+    min-width: 240px;
+    max-width: 280px;
+  }
+  
+  .chat-column {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .members-column.hidden {
+    display: none;
+  }
+  
+  .members-column.visible {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 320px;
+    max-width: 80%;
+    z-index: 100;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .mobile-chat-actions {
+    display: none;
+  }
+}
+
+/* Mobile (<768px) - Single column with progressive disclosure */
+@media (max-width: 767px) {
+  .chat-interface {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  
+  .projects-column {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    z-index: 100;
+    border-right: none;
+  }
+  
+  .projects-column.hidden {
+    display: none;
+  }
+  
+  .chat-column {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    z-index: 50;
+  }
+  
+  .chat-column.hidden {
+    display: none;
+  }
+  
+  .members-column {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    z-index: 100;
+    border-left: none;
+  }
+  
+  .members-column.hidden {
+    display: none;
   }
   
   .chat-header {
@@ -1595,59 +1652,17 @@ onUnmounted(() => {
     padding: 0.75rem;
   }
   
-  .project-details {
-    display: block;
-  }
-  
   .project-item {
-    justify-content: flex-start;
     padding: 0.75rem;
   }
   
-  .members-sidebar {
-    width: 100% !important;
-    height: 60vh !important;
-    position: fixed !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    top: auto !important;
-    transform: none !important;
-    z-index: 1000 !important;
-    border-radius: 12px 12px 0 0 !important;
-    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2) !important;
+  .sidebar-header {
+    padding: 0.75rem 1rem;
   }
-  .members-list { height: calc(60vh - 64px); overflow-y: auto; }
 }
 
+/* Small Mobile (<480px) */
 @media (max-width: 480px) {
-  .team-chat-header {
-    padding: 1rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  .header-title {
-    font-size: 1.5rem;
-  }
-  
-  .header-subtitle {
-    font-size: 0.85rem;
-  }
-  
-  .chat-interface {
-    height: calc(100vh - 80px);
-    margin: 0;
-    border-radius: 6px;
-  }
-  
-  .projects-sidebar {
-    height: 150px !important;
-  }
-  
-  .chat-main {
-    height: calc(100% - 150px);
-  }
-  
   .chat-header {
     padding: 0.5rem;
     flex-wrap: wrap;
@@ -1709,10 +1724,8 @@ onUnmounted(() => {
     font-size: 16px; /* Prevents zoom on iOS */
   }
   
-  .members-sidebar {
-    height: 80vh !important;
-    width: 95vw !important;
-    max-width: 400px !important;
+  .sidebar-header {
+    padding: 0.5rem;
   }
 }
 </style>
