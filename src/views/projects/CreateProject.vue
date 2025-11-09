@@ -623,11 +623,26 @@ const configData = ref<any>(null);
 // Removed template/draft state
 const userPermissions = ref<any>(null);
 
-// Form options (will be populated from API)
-const projectTypes = ref<Array<{title: string, value: string}>>([]);
-const departmentTypes = ref<Array<{title: string, value: string}>>([]);
-const roleTypes = ref<Array<{title: string, value: string}>>([]);
-const priorityLevels = ref<Array<{title: string, value: string}>>([]);
+// Form options with fallback values (will be enhanced from API)
+const projectTypes = ref<Array<{title: string, value: string}>>([
+  { title: 'Progressive', value: 'PROGRESSIVE' },
+  { title: 'Parallel', value: 'PARALLEL' }
+]);
+const departmentTypes = ref<Array<{title: string, value: string}>>([
+  { title: 'Major', value: 'MAJOR' },
+  { title: 'Minor', value: 'MINOR' }
+]);
+const roleTypes = ref<Array<{title: string, value: string}>>([
+  { title: 'Project Owner', value: 'PROJECT_OWNER' },
+  { title: 'Project Manager', value: 'PROJECT_MANAGER' },
+  { title: 'Employee', value: 'EMPLOYEE' }
+]);
+const priorityLevels = ref<Array<{title: string, value: string}>>([
+  { title: 'Low', value: 'LOW' },
+  { title: 'Medium', value: 'MEDIUM' },
+  { title: 'High', value: 'HIGH' },
+  { title: 'Critical', value: 'CRITICAL' }
+]);
 const budgetRanges = ref<Array<{title: string, value: string}>>([]);
 
 // API base URL
@@ -1173,16 +1188,17 @@ onMounted(async () => {
   background: var(--erp-page-bg);
 }
 
-/* Hero Section */
+/* Hero Section with Modern Web3 Aesthetic */
 .create-project-hero {
   position: relative;
-  background: transparent;
+  background: var(--erp-card-bg);
   padding: 3rem 2rem;
   text-align: center;
   overflow: hidden;
   border: 1px solid var(--erp-border);
-  border-radius: 16px;
+  border-radius: 20px;
   margin: 1rem 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .hero-content {
@@ -1194,10 +1210,18 @@ onMounted(async () => {
 
 .hero-icon {
   margin-bottom: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--erp-accent-green) 0%, var(--erp-accent-indigo) 100%);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(91, 200, 91, 0.3);
 }
 
 .hero-icon .v-icon {
-  color: var(--erp-accent-green);
+  color: white;
 }
 
 .hero-title {
@@ -1206,6 +1230,10 @@ onMounted(async () => {
   color: var(--erp-text);
   margin: 0 0 0.5rem 0;
   letter-spacing: -0.025em;
+  background: linear-gradient(135deg, var(--erp-accent-green) 0%, var(--erp-accent-indigo) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .hero-subtitle {

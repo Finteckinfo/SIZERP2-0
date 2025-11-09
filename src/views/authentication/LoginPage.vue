@@ -63,7 +63,7 @@ console.log('🔍 Theme state:', isDark.value);
             <!-- SignIn Component -->
             <SignIn 
               v-if="isLoginMode"
-              :redirect-url="'/'"
+              :redirect-url="'/dashboard/default'"
               :sign-up-url="'/register'"
               :routing="'path'"
               path="/login"
@@ -73,7 +73,7 @@ console.log('🔍 Theme state:', isDark.value);
             <!-- SignUp Component -->
             <SignUp 
               v-else
-              :redirect-url="'/'"
+              :redirect-url="'/dashboard/default'"
               :sign-in-url="'/login'"
               :routing="'path'"
               path="/register"
@@ -158,20 +158,28 @@ console.log('🔍 Theme state:', isDark.value);
 }
 
 .banner-content {
-  width: 66.67%;
+  width: 90%;
+  max-width: 800px;
   margin: 0 auto;
   text-align: left;
+  padding: 2rem;
 }
 
 .banner-title {
   color: white;
   font-size: 2rem;
   font-weight: 600;
-  line-height: 1.2;
-  margin-bottom: 2.5rem;
+  line-height: 1.3;
+  margin-bottom: 2rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
   
   @media (min-width: 768px) {
-    font-size: 6rem;
+    font-size: 4rem;
+  }
+  
+  @media (min-width: 1024px) {
+    font-size: 4.5rem;
   }
 }
 

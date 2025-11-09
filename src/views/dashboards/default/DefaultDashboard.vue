@@ -396,6 +396,9 @@ const fetchUserProjects = async () => {
     }
     teamMembers.value = allTeamMembers;
     
+    // Calculate stats immediately after loading projects
+    await fetchDashboardStats();
+    
   } catch (err) {
     console.warn('User projects API error:', err);
     projectsError.value = 'Failed to load projects. Please try again.';

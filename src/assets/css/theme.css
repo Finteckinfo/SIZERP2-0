@@ -8,21 +8,57 @@
 /* Light Mode (Default) - using non-conflicting variable names */
 :root {
   --theme-page-bg: #ffffff;
-  --theme-text-color: #212121;
+  --theme-text-color: #1a202c;
+  --theme-text-primary: #1a202c;
+  --theme-text-secondary: #4a5568;
+  --theme-text-tertiary: #6b7280;
+  --theme-text-muted: #9ca3af;
   --theme-card-bg: #ffffff;
-  --theme-border-color: #d0d0d0;
-  --theme-primary-color: #39B84C;
+  --theme-border-color: #e2e8f0;
+  --theme-primary-color: #5BC85B;
   --theme-secondary-color: #02124C;
+  --theme-accent-green: #5BC85B;
+  
+  /* ERP-specific variables for consistent theming */
+  --erp-text: #1a202c;
+  --erp-text-primary: #1a202c;
+  --erp-text-secondary: #4a5568;
+  --erp-text-tertiary: #6b7280;
+  --erp-text-muted: #9ca3af;
+  --erp-heading: #0f172a;
+  --erp-card-bg: #ffffff;
+  --erp-border: #e2e8f0;
+  --erp-accent-green: #5BC85B;
+  --erp-hover-bg: #f7fafc;
+  --erp-accent-light: rgba(91, 200, 91, 0.1);
 }
 
 /* Dark Mode - using non-conflicting variable names */
 .dark-theme {
   --theme-page-bg: #101828;
-  --theme-text-color: #ffffff;
-  --theme-card-bg: #101828;
-  --theme-border-color: #404040;
-  --theme-primary-color: #2d8a3a;
+  --theme-text-color: #f8fafc;
+  --theme-text-primary: #f8fafc;
+  --theme-text-secondary: #cbd5e1;
+  --theme-text-tertiary: #94a3b8;
+  --theme-text-muted: #64748b;
+  --theme-card-bg: #1a2332;
+  --theme-border-color: #2d3748;
+  --theme-primary-color: #5BC85B;
   --theme-secondary-color: #010d2e;
+  --theme-accent-green: #5BC85B;
+  
+  /* ERP-specific variables for dark mode */
+  --erp-text: #f8fafc;
+  --erp-text-primary: #f8fafc;
+  --erp-text-secondary: #cbd5e1;
+  --erp-text-tertiary: #94a3b8;
+  --erp-text-muted: #64748b;
+  --erp-heading: #ffffff;
+  --erp-card-bg: #1a2332;
+  --erp-border: #2d3748;
+  --erp-accent-green: #5BC85B;
+  --erp-hover-bg: #1e293b;
+  --erp-accent-light: rgba(91, 200, 91, 0.15);
 }
 
 /* Apply theme to body and html */
@@ -245,6 +281,109 @@ body.dark-theme {
 .hover\:bg-gray-100:hover { background-color: #F3F4F6; }
 .dark\:border-gray-600.dark { border-color: #4B5563; }
 .dark\:text-gray-200.dark { color: #E5E7EB; }
+
+/* Global text color rules for readability */
+body,
+html {
+  color: var(--erp-text) !important;
+}
+
+/* Headings use primary text color */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--erp-heading) !important;
+}
+
+/* Paragraphs and general text */
+p {
+  color: var(--erp-text-primary) !important;
+}
+
+/* Labels and small text */
+label,
+small {
+  color: var(--erp-text-secondary) !important;
+}
+
+/* Muted text */
+.text-muted,
+.muted {
+  color: var(--erp-text-muted) !important;
+}
+
+/* Card text */
+.v-card,
+.v-card * {
+  color: var(--erp-text) !important;
+}
+
+/* List items */
+li {
+  color: var(--erp-text-primary) !important;
+}
+
+/* Input labels and placeholders */
+.v-label {
+  color: var(--erp-text-secondary) !important;
+}
+
+.v-field input::placeholder,
+.v-field textarea::placeholder {
+  color: var(--erp-text-muted) !important;
+}
+
+/* Ensure Vuetify components respect theme text colors */
+.v-list-item-title,
+.v-list-item-subtitle {
+  color: var(--erp-text-primary) !important;
+}
+
+.v-list-item-subtitle {
+  color: var(--erp-text-secondary) !important;
+}
+
+/* Tables */
+table {
+  color: var(--erp-text-primary) !important;
+}
+
+th {
+  color: var(--erp-heading) !important;
+}
+
+td {
+  color: var(--erp-text-primary) !important;
+}
+
+/* Buttons should maintain their own colors but text should be readable */
+.v-btn {
+  transition: all 0.3s ease;
+}
+
+/* Tooltips and helper text */
+.v-tooltip .v-overlay__content {
+  color: #ffffff !important;
+}
+
+/* Ensure links are visible */
+a {
+  color: var(--erp-accent-green) !important;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+/* Navigation items */
+.v-navigation-drawer .v-list-item-title {
+  color: var(--erp-text-primary) !important;
+}
+
+/* Ensure all div text inherits properly unless specifically styled */
+div {
+  color: inherit;
+}
 
 /* Responsive adjustments */
 @media (max-width: 768px) {

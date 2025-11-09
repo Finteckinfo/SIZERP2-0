@@ -163,21 +163,21 @@ const activeRate = computed(() => {
 </template>
 
 <style scoped>
-/* Dark mode progress bar styling */
+/* Progress bar styling using theme variables */
 .task-completion-progress :deep(.v-progress-linear__determinate) {
-  background-color: #6ec207 !important;
+  background-color: var(--erp-accent-green, #5BC85B) !important;
 }
 
 .project-activity-progress :deep(.v-progress-linear__determinate) {
-  background-color: #615fff !important;
+  background-color: var(--erp-accent-indigo, #615fff) !important;
 }
 
 /* Ensure the progress bars have proper styling in dark mode */
 .dark-theme .task-completion-progress :deep(.v-progress-linear__determinate) {
-  background-color: #6ec207 !important;
+  background-color: var(--erp-accent-green, #5BC85B) !important;
 }
 
 .dark-theme .project-activity-progress :deep(.v-progress-linear__determinate) {
-  background-color: #615fff !important;
+  background-color: var(--erp-accent-indigo, #615fff) !important;
 }
 </style>
