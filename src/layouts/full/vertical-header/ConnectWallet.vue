@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, type Ref } from 'vue';
+import { ref, computed, watch, onMounted, type Ref } from 'vue';
 import { useWallet, WalletId } from '@txnlab/use-wallet-vue';
 import { addManualWallet, removeManualWallet } from '@/lib/walletManager';
 import { activeAccount as walletManagerAccount } from '@/lib/walletManager';
@@ -38,6 +38,15 @@ const success = ref<string | null>(null);
 const toastMsg = ref('');
 const showToast = ref(false);
 const copied = ref(false);
+
+// Listen for custom event to show create wallet
+onMounted(() => {
+  window.addEventListener('show-create-wallet', () => {
+    // Instead of showing modal, redirect to unified wallet auth flow
+    router.push('/wallet-auth');
+    isWalletModalOpen.value = false;
+  });
+});
 
 // Manual wallet input
 const manualWallet = ref<{ address: string }>({ address: '' });
@@ -458,7 +467,7 @@ const shortenAddress = (address: string) => {
             <v-btn
               variant="text"
               color="primary"
-              @click="showCreateWallet = true"
+              @click="router.push('/wallet-auth'); isWalletModalOpen = false"
             >
               Create New Wallet
             </v-btn>

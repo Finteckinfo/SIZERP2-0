@@ -47,7 +47,7 @@ const clerkConfig: any = {
   appearance: {
     baseTheme: dark,
     variables: {
-      colorPrimary: '#39B84C',
+      colorPrimary: '#5BC85B',
       colorBackground: 'transparent',
       colorInputBackground: 'transparent',
     },

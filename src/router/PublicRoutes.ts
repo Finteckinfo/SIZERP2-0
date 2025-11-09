@@ -11,6 +11,16 @@ const PublicRoutes = {
       component: () => import('@/views/pages/LandingPage.vue')
     },
     {
+      name: 'AuthChoice',
+      path: '/auth-choice',
+      component: () => import('@/views/authentication/AuthChoice.vue')
+    },
+    {
+      name: 'WalletAuth',
+      path: '/wallet-auth',
+      component: () => import('@/views/authentication/WalletAuth.vue')
+    },
+    {
       name: 'Authentication',
       path: '/login',
       beforeEnter: () => {

@@ -73,15 +73,15 @@ const getThemeColors = () => {
   if (theme.isDark.value) {
     return {
       baseColor: [2, 18, 76] as [number, number, number], // #02124C (theme-secondary-color)
-      markerColor: [57, 184, 76] as [number, number, number], // #39B84C (theme-primary-color)
+      markerColor: [91, 200, 91] as [number, number, number], // #5BC85B (theme-primary-color)
       glowColor: [2, 18, 76] as [number, number, number], // #02124C (theme-secondary-color)
       dark: 1
     }
   } else {
     return {
-      baseColor: [57, 184, 76] as [number, number, number], // #39B84C (theme-primary-color)
+      baseColor: [91, 200, 91] as [number, number, number], // #5BC85B (theme-primary-color)
       markerColor: [2, 18, 76] as [number, number, number], // #02124C (theme-secondary-color)
-      glowColor: [57, 184, 76] as [number, number, number], // #39B84C (theme-primary-color)
+      glowColor: [91, 200, 91] as [number, number, number], // #5BC85B (theme-primary-color)
       dark: 0
     }
   }

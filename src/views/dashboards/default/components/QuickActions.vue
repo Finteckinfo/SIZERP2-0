@@ -27,7 +27,7 @@ const quickActions = [
 </script>
 
 <template>
-  <v-card elevation="0" class="overflow-hidden" :style="{ background: '#39b84c' }">
+  <v-card elevation="0" class="overflow-hidden" :style="{ background: '#5BC85B' }">
     <v-card-text class="pa-6">
       <div class="d-flex align-center justify-space-between mb-3">
         <div>

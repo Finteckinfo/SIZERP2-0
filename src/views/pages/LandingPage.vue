@@ -234,13 +234,13 @@ const backgroundStyle = computed(() => {
     }
   } else {
     return {
-      background: 'linear-gradient(135deg, #39B84C 0%, #2d8a3a 50%, #1e5d2a 100%)'
+      background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f1f3f5 100%)'
     }
   }
 })
 
 const goToLogin = () => {
-  router.push('/login')
+  router.push('/auth-choice')
 }
 
 const scrollToFeatures = () => {
@@ -258,6 +258,13 @@ const scrollToFeatures = () => {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
+}
+
+.landing-page:not(.dark-theme) {
+  color: #1a202c;
+}
+
+.landing-page.dark-theme {
   color: white;
 }
 
@@ -355,11 +362,12 @@ const scrollToFeatures = () => {
 }
 
 .brand-text {
-  background: linear-gradient(45deg, #ffffff, #f0f0f0);
+  background: linear-gradient(45deg, #5BC85B, #4BB74B);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-shadow: none;
+  font-weight: 700;
 }
 
 .dark-theme .brand-text {
@@ -755,14 +763,14 @@ const scrollToFeatures = () => {
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  background: linear-gradient(45deg, #ffffff, #f0f0f0);
+  background: linear-gradient(45deg, #5BC85B, #4BB74B);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .dark-theme .footer-brand-name {
-  background: linear-gradient(45deg, #66BB6A, #4CAF50);
+  background: linear-gradient(45deg, #5BC85B, #4BB74B);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -800,7 +808,7 @@ const scrollToFeatures = () => {
 }
 
 .footer-links-list a:hover {
-  color: #66BB6A;
+  color: #5BC85B;
   transform: translateX(5px);
 }
 
@@ -847,7 +855,7 @@ const scrollToFeatures = () => {
 
 .built-by {
   font-weight: 700;
-  background: linear-gradient(45deg, #66BB6A, #4CAF50);
+  background: linear-gradient(45deg, #5BC85B, #4BB74B);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

@@ -38,40 +38,32 @@ let globalThemeState: ReturnType<typeof createThemeState> | null = null;
 function createThemeState() {
   const isDark = ref<boolean>(false);
 
-  // Toggle theme
+  // Toggle theme - optimized for performance
   const toggle = () => {
     isDark.value = !isDark.value;
     storeTheme(isDark.value);
-    
-    // Apply theme immediately to DOM
-    if (isDark.value) {
-      document.body.classList.add('dark-theme');
-      document.documentElement.classList.add('dark-theme');
-    } else {
-      document.body.classList.remove('dark-theme');
-      document.documentElement.classList.remove('dark-theme');
-    }
-    
-    // Force a reflow to ensure CSS changes are applied immediately
-    document.body.offsetHeight;
+    applyTheme(isDark.value);
   };
 
   // Set specific theme
   const setTheme = (darkMode: boolean) => {
     isDark.value = darkMode;
     storeTheme(isDark.value);
-    
-    // Apply theme immediately to DOM
-    if (isDark.value) {
-      document.body.classList.add('dark-theme');
-      document.documentElement.classList.add('dark-theme');
-    } else {
-      document.body.classList.remove('dark-theme');
-      document.documentElement.classList.remove('dark-theme');
-    }
-    
-    // Force a reflow to ensure CSS changes are applied immediately
-    document.body.offsetHeight;
+    applyTheme(darkMode);
+  };
+
+  // Apply theme to DOM - optimized function
+  const applyTheme = (darkMode: boolean) => {
+    // Use requestAnimationFrame for smoother transitions
+    requestAnimationFrame(() => {
+      if (darkMode) {
+        document.body.classList.add('dark-theme');
+        document.documentElement.classList.add('dark-theme');
+      } else {
+        document.body.classList.remove('dark-theme');
+        document.documentElement.classList.remove('dark-theme');
+      }
+    });
   };
 
   // Reset to system preference
