@@ -1,10 +1,7 @@
 <template>
   <div
     class="auth-choice-card"
-    :class="[
-      `auth-choice-card--${flavor}`,
-      { 'auth-choice-card--hover': supportsHover }
-    ]"
+    :class="cardClasses"
     tabindex="0"
     role="button"
     @click="handleClick"
@@ -68,6 +65,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useTheme } from '@/composables/useTheme';
 import Web3Icon from './icons/Web3Icon.vue';
 import Web2Icon from './icons/Web2Icon.vue';
 
@@ -85,6 +83,17 @@ const emit = defineEmits<{ (e: 'click'): void }>();
 const iconComponent = computed(() => (props.flavor === 'web3' ? Web3Icon : Web2Icon));
 const supportsHover =
   typeof window !== 'undefined' && !!window.matchMedia?.('(hover: hover)').matches;
+
+const { isDark } = useTheme();
+
+const cardClasses = computed(() => {
+  const classes: string[] = [`auth-choice-card--${props.flavor}`];
+  if (supportsHover) {
+    classes.push('auth-choice-card--hover');
+  }
+  classes.push(isDark.value ? 'auth-choice-card--dark' : 'auth-choice-card--light');
+  return classes;
+});
 
 const handleClick = () => {
   emit('click');
@@ -154,12 +163,12 @@ const handleClick = () => {
   background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.12), transparent 70%);
 }
 
-:global(.dark-theme) .auth-choice-card--web2 .card-back {
-  background: radial-gradient(circle at 20% 20%, rgba(15, 23, 42, 0.35), transparent 70%);
+.auth-choice-card--dark .card-back {
+  background: radial-gradient(circle at 20% 20%, rgba(15, 23, 42, 0.5), transparent 75%);
 }
 
-:global(.dark-theme) .auth-choice-card--web3 .card-back {
-  background: radial-gradient(circle at 20% 20%, rgba(15, 58, 32, 0.35), transparent 70%);
+.auth-choice-card--dark.auth-choice-card--web3 .card-back {
+  background: radial-gradient(circle at 20% 20%, rgba(15, 58, 32, 0.5), transparent 75%);
 }
 
 .card-back__glow {
@@ -187,25 +196,24 @@ const handleClick = () => {
     transparent
   );
 }
-
-:global(.dark-theme) .auth-choice-card--web3 .card-back__glow {
+.auth-choice-card--dark .card-back__glow {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(15, 58, 32, 0.4),
-    rgba(15, 58, 32, 0.7),
-    rgba(15, 58, 32, 0.4),
+    rgba(15, 23, 42, 0.5),
+    rgba(15, 23, 42, 0.75),
+    rgba(15, 23, 42, 0.5),
     transparent
   );
 }
 
-:global(.dark-theme) .auth-choice-card--web2 .card-back__glow {
+.auth-choice-card--dark.auth-choice-card--web3 .card-back__glow {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(15, 23, 42, 0.45),
-    rgba(15, 23, 42, 0.7),
-    rgba(15, 23, 42, 0.45),
+    rgba(15, 58, 32, 0.5),
+    rgba(15, 58, 32, 0.8),
+    rgba(15, 58, 32, 0.5),
     transparent
   );
 }
@@ -223,7 +231,7 @@ const handleClick = () => {
   position: relative;
   width: 92%;
   height: 92%;
-  background: linear-gradient(135deg, rgba(223, 242, 255, 0.95), rgba(247, 250, 255, 0.92));
+  background: linear-gradient(135deg, rgba(233, 242, 255, 0.95), rgba(249, 252, 255, 0.92));
   border-radius: 16px;
   color: #0f1729;
   display: flex;
@@ -237,17 +245,16 @@ const handleClick = () => {
 }
 
 .auth-choice-card--web3 .card-back__content {
-  background: linear-gradient(135deg, rgba(222, 255, 234, 0.96), rgba(240, 255, 246, 0.92));
+  background: linear-gradient(135deg, rgba(226, 255, 241, 0.96), rgba(242, 255, 249, 0.92));
 }
 
-:global(.dark-theme) .auth-choice-card--web2 .card-back__content {
-  background: rgba(15, 23, 42, 0.92);
+.auth-choice-card--dark .card-back__content {
+  background: rgba(18, 26, 42, 0.92);
   color: #f8fafc;
 }
 
-:global(.dark-theme) .auth-choice-card--web3 .card-back__content {
-  background: rgba(15, 58, 32, 0.92);
-  color: #f8fafc;
+.auth-choice-card--dark.auth-choice-card--web3 .card-back__content {
+  background: rgba(17, 64, 37, 0.9);
 }
 
 .card-back__icon {
@@ -263,7 +270,7 @@ const handleClick = () => {
   height: 100%;
 }
 
-:global(.dark-theme) .auth-choice-card .card-back__icon svg {
+.auth-choice-card--dark .card-back__icon svg {
   color: white;
 }
 
@@ -294,19 +301,19 @@ const handleClick = () => {
 }
 
 .auth-choice-card--web3 .card-front {
-  background: linear-gradient(135deg, rgba(91, 200, 91, 0.08), rgba(91, 200, 91, 0.02));
+  background: linear-gradient(135deg, rgba(91, 200, 91, 0.1), rgba(91, 200, 91, 0.02));
 }
 
 .auth-choice-card--web2 .card-front {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.12), rgba(102, 126, 234, 0.03));
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.14), rgba(102, 126, 234, 0.03));
 }
 
-:global(.dark-theme) .auth-choice-card--web3 .card-front {
-  background: linear-gradient(135deg, rgba(15, 58, 32, 0.9), rgba(15, 58, 32, 0.75));
+.auth-choice-card--dark .card-front {
+  background: rgba(15, 23, 42, 0.88);
 }
 
-:global(.dark-theme) .auth-choice-card--web2 .card-front {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.78));
+.auth-choice-card--dark.auth-choice-card--web3 .card-front {
+  background: rgba(15, 58, 32, 0.88);
 }
 
 .card-front__drip {
@@ -325,17 +332,13 @@ const handleClick = () => {
 .auth-choice-card:hover .card-front__drip {
   opacity: 0.2;
 }
-
-:global(.dark-theme) .auth-choice-card .card-front__drip {
-  opacity: 0.25;
+.auth-choice-card--dark .card-front__drip {
+  opacity: 0.18;
+  background: radial-gradient(circle at 20% 20%, rgba(96, 165, 250, 0.18), transparent 60%);
 }
 
-:global(.dark-theme) .auth-choice-card--web3 .card-front__drip {
-  background: radial-gradient(circle at 20% 20%, rgba(34, 197, 94, 0.25), transparent 60%);
-}
-
-:global(.dark-theme) .auth-choice-card--web2 .card-front__drip {
-  background: radial-gradient(circle at 20% 20%, rgba(96, 165, 250, 0.25), transparent 60%);
+.auth-choice-card--dark.auth-choice-card--web3 .card-front__drip {
+  background: radial-gradient(circle at 20% 20%, rgba(34, 197, 94, 0.18), transparent 60%);
 }
 
 .card-front__body {
@@ -408,29 +411,29 @@ const handleClick = () => {
   letter-spacing: 0.02em;
 }
 
-:global(.dark-theme) .auth-choice-card .card-front__icon svg {
-  color: #f8fafc;
+.auth-choice-card--dark .card-front__icon svg {
+  color: #f1f5f9;
 }
 
-:global(.dark-theme) .auth-choice-card--web3 .card-front__icon svg {
+.auth-choice-card--dark.auth-choice-card--web3 .card-front__icon svg {
   color: #86efac;
 }
 
-:global(.dark-theme) .auth-choice-card--web2 .card-front__icon svg {
+.auth-choice-card--dark.auth-choice-card--web2 .card-front__icon svg {
   color: #93c5fd;
 }
 
-:global(.dark-theme) .auth-choice-card .card-front__badge {
+.auth-choice-card--dark .card-front__badge {
   background: rgba(248, 250, 252, 0.14);
-  color: #f8fafc;
+  color: #f1f5f9;
 }
 
-:global(.dark-theme) .auth-choice-card--web3 .card-front__badge {
+.auth-choice-card--dark.auth-choice-card--web3 .card-front__badge {
   background: rgba(34, 197, 94, 0.22);
   color: #dcfce7;
 }
 
-:global(.dark-theme) .auth-choice-card--web2 .card-front__badge {
+.auth-choice-card--dark.auth-choice-card--web2 .card-front__badge {
   background: rgba(96, 165, 250, 0.24);
   color: #dbeafe;
 }
@@ -448,7 +451,7 @@ const handleClick = () => {
   width: 100%;
 }
 
-:global(.dark-theme) .auth-choice-card .card-front__body {
+.auth-choice-card--dark .card-front__body {
   color: #f1f5f9;
 }
 
@@ -467,11 +470,11 @@ const handleClick = () => {
   color: #34d399;
 }
 
-:global(.dark-theme) .auth-choice-card--web2 .feature-icon {
+.auth-choice-card--dark.auth-choice-card--web2 .feature-icon {
   color: #60a5fa;
 }
 
-:global(.dark-theme) .auth-choice-card--web3 .feature-icon {
+.auth-choice-card--dark.auth-choice-card--web3 .feature-icon {
   color: #4ade80;
 }
 
