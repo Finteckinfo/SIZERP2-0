@@ -1,36 +1,49 @@
 import { ref, watch } from 'vue';
 import { WalletId, NetworkId, type SupportedWallet } from '@txnlab/use-wallet-vue';
 import type { AlgodTokenHeader, BaseHTTPClient, CustomTokenHeader } from 'algosdk';
+import { secureStorage } from '@/utils/secureStorage';
+import { logger } from '@/services/logger';
 
-// Initialize wallet connection from localStorage
-function getInitialWalletState() {
-  const saved = localStorage.getItem('wallet_connection');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      console.log('[walletManager] Restored wallet connection from storage:', parsed);
-      return parsed;
-    } catch (e) {
-      console.warn('[walletManager] Failed to parse saved wallet connection:', e);
-      localStorage.removeItem('wallet_connection');
+// Initialize wallet connection from encrypted localStorage
+async function getInitialWalletState() {
+  try {
+    const saved = await secureStorage.getItem('wallet_connection');
+    if (saved) {
+      logger.debug('Restored wallet connection from secure storage');
+      return saved;
     }
+  } catch (e) {
+    logger.warn('Failed to restore wallet connection from secure storage');
+    secureStorage.removeItem('wallet_connection');
   }
   return null;
 }
 
 // Tracks currently active wallet with persistence
-export const activeAccount = ref<{ address: string } | null>(getInitialWalletState());
+export const activeAccount = ref<{ address: string } | null>(null);
 
-// Log changes automatically and persist to localStorage
-watch(activeAccount, (val) => {
-  if (val) {
-    console.log('[walletManager] Wallet connected:', val.address);
-    localStorage.setItem('wallet_connection', JSON.stringify(val));
-  } else {
-    console.log('[walletManager] Wallet disconnected');
-    localStorage.removeItem('wallet_connection');
+// Initialize wallet state asynchronously
+getInitialWalletState().then(state => {
+  if (state) {
+    activeAccount.value = state;
   }
-}, { immediate: true });
+});
+
+// Log changes automatically and persist to encrypted localStorage
+watch(activeAccount, async (val) => {
+  if (val) {
+    logger.info('Wallet connected');
+    logger.security('Wallet connected', { address: val.address });
+    try {
+      await secureStorage.setItem('wallet_connection', val);
+    } catch (error) {
+      logger.error('Failed to save wallet connection', error);
+    }
+  } else {
+    logger.info('Wallet disconnected');
+    secureStorage.removeItem('wallet_connection');
+  }
+}, { immediate: false });
 
 // Wallet providers
 import deflyIcon from '@/assets/images/wallets/defly.png';
@@ -98,24 +111,24 @@ export const networks: Record<NetworkId, {
 
 // Manual wallet management
 export function addManualWallet(address: string) {
-  console.log('[walletManager] addManualWallet called with', address);
+  logger.debug('addManualWallet called', { address });
   activeAccount.value = { address };
 }
 
 export function removeManualWallet() {
-  console.log('[walletManager] removeManualWallet called');
+  logger.debug('removeManualWallet called');
   activeAccount.value = null;
 }
 
 export function isWalletConnected(): boolean {
   const connected = activeAccount.value !== null;
-  console.log('[walletManager] isWalletConnected =', connected);
+  logger.debug('isWalletConnected check', { connected });
   return connected;
 }
 
 // Function to clear wallet connection (useful for logout)
 export function clearWalletConnection() {
-  console.log('[walletManager] clearWalletConnection called');
+  logger.info('Clearing wallet connection');
   activeAccount.value = null;
-  localStorage.removeItem('wallet_connection');
+  secureStorage.removeItem('wallet_connection');
 }

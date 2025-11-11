@@ -37,16 +37,31 @@
               blockchain-based project management, and guaranteed on-time payments.
             </p>
             <div class="hero-buttons">
+              <!-- For Project Owners -->
               <v-btn
                 color="primary"
                 size="large"
                 variant="elevated"
                 class="cta-button"
-                @click="goToLogin"
+                @click="goToCreateProject"
               >
-                <v-icon class="mr-2">mdi-login</v-icon>
-                Get Started
+                <v-icon class="mr-2">mdi-briefcase-plus</v-icon>
+                Create a Project
               </v-btn>
+              
+              <!-- For Team Members -->
+              <v-btn
+                color="success"
+                size="large"
+                variant="elevated"
+                class="cta-button"
+                @click="goToJoinProject"
+              >
+                <v-icon class="mr-2">mdi-account-multiple-plus</v-icon>
+                Join a Project
+              </v-btn>
+              
+              <!-- Learn More -->
               <v-btn
                 color="secondary"
                 size="large"
@@ -148,7 +163,7 @@
             size="x-large"
             variant="elevated"
             class="cta-button-large"
-            @click="goToLogin"
+            @click="goToCreateProject"
           >
             <v-icon class="mr-2">mdi-rocket-launch</v-icon>
             Start Your Journey
@@ -239,8 +254,30 @@ const backgroundStyle = computed(() => {
   }
 })
 
-const goToLogin = () => {
-  router.push('/auth-choice')
+const goToCreateProject = () => {
+  // Check if user is authenticated
+  const isAuthenticated = localStorage.getItem('web3_authenticated') || localStorage.getItem('clerk_session')
+  
+  if (isAuthenticated) {
+    router.push('/projects/create')
+  } else {
+    // Store intent to create project after authentication
+    localStorage.setItem('post_auth_action', 'create_project')
+    router.push('/auth-choice')
+  }
+}
+
+const goToJoinProject = () => {
+  // Check if user is authenticated
+  const isAuthenticated = localStorage.getItem('web3_authenticated') || localStorage.getItem('clerk_session')
+  
+  if (isAuthenticated) {
+    router.push('/invitations')
+  } else {
+    // Store intent to join project after authentication
+    localStorage.setItem('post_auth_action', 'join_project')
+    router.push('/auth-choice')
+  }
 }
 
 const scrollToFeatures = () => {
