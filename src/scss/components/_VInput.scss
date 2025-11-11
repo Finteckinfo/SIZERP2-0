@@ -15,3 +15,17 @@
 .v-checkbox .v-label {
   opacity: 1;
 }
+
+/* Emphasize required field errors */
+.v-input--error .v-label,
+.v-input--error .v-field__input {
+  color: #ff4d4f !important;
+}
+
+.v-input--error .v-field__outline__path {
+  stroke: #ff4d4f !important;
+}
+
+.v-input--error .v-messages__message {
+  color: #ff4d4f !important;
+}
