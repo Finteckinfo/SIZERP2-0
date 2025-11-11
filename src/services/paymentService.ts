@@ -60,9 +60,15 @@ export interface EscrowAccount {
 
 export interface EscrowBalance {
   balance: number;
-  allocated: number;
+  obligations: {
+    pendingTasks: number;
+    processingTransfers: number;
+    total: number;
+  };
   released: number;
-  available: number;
+  netAvailable: number;
+  escrowAddress?: string;
+  funded?: boolean;
 }
 
 /**
@@ -490,6 +496,8 @@ export async function getUserEarnings(userId: string): Promise<{
  * Gets payment summary for a project
  */
 export interface ProjectPayoutSummary {
+  projectId?: string;
+  projectName?: string;
   escrow: {
     address?: string;
     funded: boolean;
