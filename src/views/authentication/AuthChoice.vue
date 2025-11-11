@@ -20,140 +20,28 @@
           <!-- Authentication Options -->
           <v-row class="auth-options">
             <!-- Web3 Wallet Authentication -->
-            <v-col cols="12" md="6">
-              <v-card
-                class="auth-option-card web3-card"
-                elevation="8"
-                @click="handleWeb3Choice"
-              >
-                <v-card-text class="pa-8">
-                  <div class="option-header mb-4">
-                    <div class="icon-container web3-icon mb-4">
-                      <v-icon size="72" color="white">mdi-wallet</v-icon>
-                    </div>
-                    <div class="d-flex align-items-center justify-center mb-2">
-                      <h2 class="text-h4 font-weight-bold mr-2 text-white">Web3 Mode</h2>
-                      <v-chip color="success" size="small" variant="elevated">
-                        Recommended for Crypto Users
-                      </v-chip>
-                    </div>
-                  </div>
+        <v-col cols="12" md="6">
+          <AuthChoiceCard
+            title="Web3 Mode"
+            badge="Crypto Friendly"
+            :features="web3Features"
+            flavor="web3"
+            :cta-label="'Continue with Wallet'"
+            @click="handleWeb3Choice"
+          />
+        </v-col>
 
-                  <v-list class="feature-list bg-transparent">
-                    <v-list-item class="px-0">
-                      <template v-slot:prepend>
-                        <v-icon color="white">mdi-check-circle</v-icon>
-                      </template>
-                      <v-list-item-title class="text-white">Wallet-first authentication</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item class="px-0">
-                      <template v-slot:prepend>
-                        <v-icon color="white">mdi-check-circle</v-icon>
-                      </template>
-                      <v-list-item-title class="text-white">Full decentralization</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item class="px-0">
-                      <template v-slot:prepend>
-                        <v-icon color="white">mdi-check-circle</v-icon>
-                      </template>
-                      <v-list-item-title class="text-white">Direct blockchain access</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item class="px-0">
-                      <template v-slot:prepend>
-                        <v-icon color="white">mdi-check-circle</v-icon>
-                      </template>
-                      <v-list-item-title class="text-white">Secure password protection</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item class="px-0">
-                      <template v-slot:prepend>
-                        <v-icon color="white">mdi-check-circle</v-icon>
-                      </template>
-                      <v-list-item-title class="text-white">Account recovery options</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-
-                  <v-btn
-                    color="white"
-                    variant="elevated"
-                    size="large"
-                    block
-                    class="mt-6"
-                    @click.stop="handleWeb3Choice"
-                  >
-                    <v-icon start>mdi-wallet-plus</v-icon>
-                    Continue with Wallet
-                  </v-btn>
-                </v-card-text>
-              </v-card>
-            </v-col>
-
-            <!-- Web2 Traditional Authentication -->
-            <v-col cols="12" md="6">
-              <v-card
-                class="auth-option-card web2-card"
-                elevation="8"
-                @click="handleWeb2Choice"
-              >
-                <v-card-text class="pa-8">
-                  <div class="option-header mb-4">
-                    <div class="icon-container web2-icon mb-4">
-                      <v-icon size="72" color="primary">mdi-account-circle</v-icon>
-                    </div>
-                    <div class="d-flex align-items-center justify-center mb-2">
-                      <h2 class="text-h4 font-weight-bold mr-2">Web2 Mode</h2>
-                      <v-chip color="info" size="small" variant="elevated">
-                        Familiar & Easy
-                      </v-chip>
-                    </div>
-                  </div>
-
-                  <v-list class="feature-list">
-                    <v-list-item class="px-0">
-                      <template v-slot:prepend>
-                        <v-icon color="primary">mdi-check-circle</v-icon>
-                      </template>
-                      <v-list-item-title>Email/password login</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item class="px-0">
-                      <template v-slot:prepend>
-                        <v-icon color="primary">mdi-check-circle</v-icon>
-                      </template>
-                      <v-list-item-title>Social login (Google, GitHub)</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item class="px-0">
-                      <template v-slot:prepend>
-                        <v-icon color="primary">mdi-check-circle</v-icon>
-                      </template>
-                      <v-list-item-title>Connect wallet later (optional)</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item class="px-0">
-                      <template v-slot:prepend>
-                        <v-icon color="primary">mdi-check-circle</v-icon>
-                      </template>
-                      <v-list-item-title>Easy account recovery</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item class="px-0">
-                      <template v-slot:prepend>
-                        <v-icon color="primary">mdi-check-circle</v-icon>
-                      </template>
-                      <v-list-item-title>Multi-device access</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-
-                  <v-btn
-                    color="primary"
-                    variant="elevated"
-                    size="large"
-                    block
-                    class="mt-6"
-                    @click.stop="handleWeb2Choice"
-                  >
-                    <v-icon start>mdi-login</v-icon>
-                    Continue with Email/Social
-                  </v-btn>
-                </v-card-text>
-              </v-card>
-            </v-col>
+        <!-- Web2 Traditional Authentication -->
+        <v-col cols="12" md="6">
+          <AuthChoiceCard
+            title="Web2 Mode"
+            badge="Traditional Login"
+            :features="web2Features"
+            flavor="web2"
+            :cta-label="'Continue with Email/Social'"
+            @click="handleWeb2Choice"
+          />
+        </v-col>
           </v-row>
 
           <!-- Help Section -->
@@ -227,10 +115,27 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import LandingBackground from '@/components/ui/LandingBackground.vue';
+import AuthChoiceCard from './components/AuthChoiceCard.vue';
 
 const router = useRouter();
 
 const showHelp = ref(false);
+
+const web3Features = [
+  'Wallet-first authentication',
+  'Full decentralization',
+  'Direct blockchain access',
+  'Secure password protection',
+  'Account recovery options',
+];
+
+const web2Features = [
+  'Email/password login',
+  'Social login (Google, Apple)',
+  'Connect wallet later (optional)',
+  'Easy account recovery',
+  'Multi-device access',
+];
 
 const handleWeb3Choice = () => {
   // Store preference
@@ -288,89 +193,10 @@ const handleWeb2Choice = () => {
 
 .auth-options {
   margin-top: 3rem;
-}
-
-.auth-option-card {
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border-radius: 24px;
-  height: 100%;
-  min-height: 600px;
   display: flex;
-  flex-direction: column;
-}
-
-.auth-option-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-}
-
-.web3-card {
-  background: linear-gradient(135deg, #5BC85B 0%, #4BB74B 100%);
-  border: 3px solid rgba(255, 255, 255, 0.3);
-}
-
-.web3-card:hover {
-  background: linear-gradient(135deg, #4BB74B 0%, #3BA63B 100%);
-  box-shadow: 0 20px 40px rgba(91, 200, 91, 0.5);
-}
-
-.web2-card {
-  background: white;
-  border: 3px solid rgba(102, 126, 234, 0.3);
-}
-
-:global(.dark-theme) .web2-card {
-  background: #1a2332;
-  color: white;
-}
-
-.web2-card:hover {
-  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
-}
-
-.icon-container {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  margin: 0 auto;
-  backdrop-filter: blur(10px);
-}
-
-.web3-icon {
-  background: rgba(255, 255, 255, 0.2);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.web2-icon {
-  background: rgba(102, 126, 234, 0.1);
-}
-
-:global(.dark-theme) .web2-icon {
-  background: rgba(102, 126, 234, 0.2);
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0);
-  }
-}
-
-.feature-list {
-  background: transparent;
-}
-
-.feature-list .v-list-item-title {
-  font-size: 1rem;
-  line-height: 1.5;
+  gap: 2rem;
+  flex-wrap: wrap;
 }
 
 .help-content {
@@ -387,9 +213,8 @@ const handleWeb2Choice = () => {
 
 /* Responsive */
 @media (max-width: 960px) {
-  .auth-option-card {
-    min-height: auto;
-    margin-bottom: 2rem;
+  .auth-options {
+    margin-top: 2rem;
   }
 }
 
@@ -401,20 +226,6 @@ const handleWeb2Choice = () => {
   .auth-logo {
     width: 80px;
     height: 80px;
-  }
-
-  .theme-toggle-container {
-    top: 15px;
-    right: 15px;
-  }
-
-  .icon-container {
-    width: 80px;
-    height: 80px;
-  }
-
-  .auth-option-card {
-    margin-bottom: 1.5rem;
   }
 }
 </style>
