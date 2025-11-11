@@ -297,27 +297,30 @@ const handleDrop = (event: DragEvent) => {
     }
   });
   
-  if (!draggedTaskId.value) {
+  const dataTransferTaskId = event.dataTransfer?.getData('text/plain');
+  const taskId = draggedTaskId.value || dataTransferTaskId || null;
+
+  if (!taskId) {
     console.warn('[KanbanColumn] Drop event but no dragged task ID - ignoring');
     return;
   }
   
   // Calculate new position (append to end of column)
   const newPosition: TaskPosition = {
-    taskId: draggedTaskId.value,
+    taskId,
     status: props.column.status,
     order: props.tasks.length,
     departmentId: undefined // Will be handled by the API
   };
   
   console.log('[KanbanColumn] Emitting task-move event:', {
-    taskId: draggedTaskId.value,
+    taskId,
     newPosition,
     fromColumn: 'unknown', // We don't track source column here
     toColumn: props.column.status
   });
   
-  emit('task-move', draggedTaskId.value, newPosition);
+  emit('task-move', taskId, newPosition);
   draggedTaskId.value = null;
 };
 </script>
