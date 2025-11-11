@@ -81,8 +81,8 @@
                 <v-col cols="12" md="8">
                   <v-text-field
                     v-model="projectData.name"
-                    label="Name of board"
-                    placeholder="Name of board"
+                    label="Project Name"
+                    placeholder="Project Name"
                     variant="outlined"
                     :rules="[v => !!v || 'Project name is required']"
                     class="mb-4"
@@ -90,8 +90,8 @@
                   
                   <v-select
                     v-model="projectData.type"
-                    label="Board Type"
-                    placeholder="Board Type"
+                    label="Project Type"
+                    placeholder="Project Type"
                     :items="projectTypes"
                     variant="outlined"
                     :rules="[v => !!v || 'Project type is required']"
@@ -133,7 +133,7 @@
                 
                 <v-col cols="12" md="4">
                   <v-card elevation="0" class="pa-4 border rounded-lg" :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }">
-                    <h4 class="text-subtitle-1 font-weight-medium mb-3" :style="{ color: 'var(--erp-text)' }">Board Visibility</h4>
+                    <h4 class="text-subtitle-1 font-weight-medium mb-3" :style="{ color: 'var(--erp-text)' }">Project Visibility</h4>
                     <v-radio-group v-model="projectData.isPublic" class="mb-4">
                       <v-radio value="false" label="Private" :color="'var(--erp-accent-green)'" />
                       <v-radio value="true" label="Public" :color="'var(--erp-accent-green)'" />
