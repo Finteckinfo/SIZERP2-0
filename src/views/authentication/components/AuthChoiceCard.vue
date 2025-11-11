@@ -78,9 +78,9 @@ const handleClick = () => {
 .auth-choice-card {
   position: relative;
   width: 100%;
-  max-width: 360px;
-  height: 420px;
-  margin: 0 auto;
+  max-width: 440px;
+  height: 500px;
+  margin: 2.5rem auto;
   perspective: 1200px;
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -122,7 +122,7 @@ const handleClick = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.2), transparent 70%);
+  background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.12), transparent 70%);
 }
 
 .card-back__glow {
@@ -133,20 +133,20 @@ const handleClick = () => {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.35),
-    rgba(255, 255, 255, 0.6),
-    rgba(255, 255, 255, 0.35),
+    rgba(59, 130, 246, 0.2),
+    rgba(59, 130, 246, 0.45),
+    rgba(59, 130, 246, 0.2),
     transparent
   );
 }
 
-.auth-choice-card--web2 .card-back__glow {
+.auth-choice-card--web3 .card-back__glow {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(102, 126, 234, 0.35),
-    rgba(102, 126, 234, 0.6),
-    rgba(102, 126, 234, 0.35),
+    rgba(34, 197, 94, 0.25),
+    rgba(34, 197, 94, 0.5),
+    rgba(34, 197, 94, 0.25),
     transparent
   );
 }
@@ -164,26 +164,31 @@ const handleClick = () => {
   position: relative;
   width: 92%;
   height: 92%;
-  background: rgba(10, 17, 29, 0.92);
+  background: rgba(237, 242, 247, 0.95);
   border-radius: 14px;
-  color: white;
+  color: #0f1729;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 24px;
-  padding: 3rem 2rem;
+  gap: 28px;
+  padding: 3.5rem 2.5rem;
   text-align: center;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
 }
 
 .auth-choice-card--web3 .card-back__content {
-  background: rgba(15, 58, 32, 0.92);
+  background: rgba(220, 255, 235, 0.95);
+}
+
+:global(.dark-theme) .auth-choice-card .card-back__content {
+  background: rgba(10, 17, 29, 0.92);
+  color: white;
 }
 
 .card-back__icon {
-  width: 74px;
-  height: 74px;
+  width: 86px;
+  height: 86px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -194,9 +199,13 @@ const handleClick = () => {
   height: 100%;
 }
 
+:global(.dark-theme) .auth-choice-card .card-back__icon svg {
+  color: white;
+}
+
 .card-back__heading h2 {
   margin: 0.5rem 0 0;
-  font-size: 1.6rem;
+  font-size: 1.9rem;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -252,7 +261,7 @@ const handleClick = () => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 2.5rem 2.25rem;
+  padding: 2.75rem 2.5rem;
   backdrop-filter: blur(8px);
 }
 
@@ -262,8 +271,8 @@ const handleClick = () => {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 1.15rem;
-  font-size: 0.95rem;
+  gap: 1.25rem;
+  font-size: 1rem;
   color: rgba(15, 23, 42, 0.78);
 }
 
@@ -287,6 +296,10 @@ const handleClick = () => {
   font-weight: 600;
   letter-spacing: 0.03em;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cta-button:hover {
@@ -300,19 +313,32 @@ const handleClick = () => {
 
 @media (max-width: 960px) {
   .auth-choice-card {
-    max-width: 320px;
-    height: 380px;
+    max-width: 380px;
+    height: 460px;
   }
 
   .card-front__body {
-    padding: 2rem 1.75rem;
+    padding: 2.25rem 2rem;
   }
 }
 
 @media (max-width: 600px) {
   .auth-choice-card {
-    max-width: 280px;
-    height: 360px;
+    max-width: 320px;
+    min-height: 380px;
+    height: auto;
+  }
+
+  .card-content {
+    transform: none !important;
+  }
+
+  .auth-choice-card:hover .card-content {
+    transform: none;
+  }
+
+  .card-front__body {
+    padding: 2.25rem 1.75rem 1.75rem;
   }
 }
 </style>

@@ -195,8 +195,8 @@ const handleWeb2Choice = () => {
   margin-top: 3rem;
   display: flex;
   justify-content: center;
-  gap: 2rem;
-  flex-wrap: wrap;
+  gap: 2.5rem;
+  flex-wrap: nowrap;
 }
 
 .help-content {
@@ -212,17 +212,26 @@ const handleWeb2Choice = () => {
 }
 
 /* Responsive */
-@media (max-width: 960px) {
+@media (max-width: 1200px) {
   .auth-options {
-    margin-top: 2rem;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .auth-options {
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .auth-choice-page {
+    padding: 1.5rem 0;
   }
 }
 
 @media (max-width: 600px) {
-  .auth-choice-page {
-    padding: 1rem 0;
-  }
-
   .auth-logo {
     width: 80px;
     height: 80px;
