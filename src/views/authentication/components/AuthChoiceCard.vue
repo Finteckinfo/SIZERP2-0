@@ -1,14 +1,20 @@
 <template>
   <div
     class="auth-choice-card"
-    :class="[`auth-choice-card--${flavor}`]"
+    :class="[
+      `auth-choice-card--${flavor}`,
+      { 'auth-choice-card--hover': supportsHover }
+    ]"
     tabindex="0"
     role="button"
     @click="handleClick"
     @keydown.space.prevent="handleClick"
     @keydown.enter.prevent="handleClick"
   >
-    <div class="card-content">
+    <div
+      class="card-content"
+      :class="{ 'card-content--static': !supportsHover }"
+    >
       <div class="card-back">
         <div class="card-back__glow"></div>
         <div class="card-back__content">
@@ -25,6 +31,16 @@
       <div class="card-front">
         <div class="card-front__drip" />
         <div class="card-front__body">
+          <div class="card-front__header">
+            <div class="card-front__icon">
+              <component :is="iconComponent" />
+            </div>
+            <div class="card-front__text">
+              <small class="card-front__badge">{{ badge }}</small>
+              <h3 class="card-front__title">{{ title }}</h3>
+            </div>
+          </div>
+
           <ul class="feature-list">
             <li v-for="feature in features" :key="feature">
               <v-icon size="16" class="feature-icon">mdi-check-circle</v-icon>
@@ -37,7 +53,6 @@
             :color="flavor === 'web3' ? 'success' : 'primary'"
             variant="elevated"
             size="large"
-            block
             @click.stop="handleClick"
           >
             <v-icon start size="18">
@@ -68,6 +83,8 @@ const props = defineProps<Props>();
 const emit = defineEmits<{ (e: 'click'): void }>();
 
 const iconComponent = computed(() => (props.flavor === 'web3' ? Web3Icon : Web2Icon));
+const supportsHover =
+  typeof window !== 'undefined' && !!window.matchMedia?.('(hover: hover)').matches;
 
 const handleClick = () => {
   emit('click');
@@ -78,21 +95,21 @@ const handleClick = () => {
 .auth-choice-card {
   position: relative;
   width: 100%;
-  max-width: 440px;
-  height: 500px;
-  margin: 2.5rem auto;
+  max-width: 480px;
+  height: 520px;
+  margin: 2rem auto;
   perspective: 1200px;
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.auth-choice-card:focus {
+.auth-choice-card:focus-visible {
   outline: 2px solid rgba(59, 130, 246, 0.6);
   outline-offset: 6px;
 }
 
-.auth-choice-card:hover {
-  transform: translateY(-10px);
+.auth-choice-card--hover:hover {
+  transform: translateY(-12px);
 }
 
 .card-content {
@@ -104,8 +121,20 @@ const handleClick = () => {
   position: relative;
 }
 
-.auth-choice-card:hover .card-content {
+.auth-choice-card--hover:hover .card-content {
   transform: rotateY(180deg);
+}
+
+.card-content--static {
+  transform: none !important;
+}
+
+.card-content--static .card-back {
+  display: none !important;
+}
+
+.card-content--static .card-front {
+  transform: none !important;
 }
 
 .card-back,
@@ -123,6 +152,14 @@ const handleClick = () => {
   align-items: center;
   justify-content: center;
   background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.12), transparent 70%);
+}
+
+:global(.dark-theme) .auth-choice-card--web2 .card-back {
+  background: radial-gradient(circle at 20% 20%, rgba(15, 23, 42, 0.35), transparent 70%);
+}
+
+:global(.dark-theme) .auth-choice-card--web3 .card-back {
+  background: radial-gradient(circle at 20% 20%, rgba(15, 58, 32, 0.35), transparent 70%);
 }
 
 .card-back__glow {
@@ -151,6 +188,28 @@ const handleClick = () => {
   );
 }
 
+:global(.dark-theme) .auth-choice-card--web3 .card-back__glow {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(15, 58, 32, 0.4),
+    rgba(15, 58, 32, 0.7),
+    rgba(15, 58, 32, 0.4),
+    transparent
+  );
+}
+
+:global(.dark-theme) .auth-choice-card--web2 .card-back__glow {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(15, 23, 42, 0.45),
+    rgba(15, 23, 42, 0.7),
+    rgba(15, 23, 42, 0.45),
+    transparent
+  );
+}
+
 @keyframes rotateGlow {
   from {
     transform: rotateZ(0deg);
@@ -164,26 +223,31 @@ const handleClick = () => {
   position: relative;
   width: 92%;
   height: 92%;
-  background: rgba(237, 242, 247, 0.95);
-  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(223, 242, 255, 0.95), rgba(247, 250, 255, 0.92));
+  border-radius: 16px;
   color: #0f1729;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 28px;
-  padding: 3.5rem 2.5rem;
+  gap: 32px;
+  padding: 3.75rem 2.75rem;
   text-align: center;
   box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
 }
 
 .auth-choice-card--web3 .card-back__content {
-  background: rgba(220, 255, 235, 0.95);
+  background: linear-gradient(135deg, rgba(222, 255, 234, 0.96), rgba(240, 255, 246, 0.92));
 }
 
-:global(.dark-theme) .auth-choice-card .card-back__content {
-  background: rgba(10, 17, 29, 0.92);
-  color: white;
+:global(.dark-theme) .auth-choice-card--web2 .card-back__content {
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+}
+
+:global(.dark-theme) .auth-choice-card--web3 .card-back__content {
+  background: rgba(15, 58, 32, 0.92);
+  color: #f8fafc;
 }
 
 .card-back__icon {
@@ -237,6 +301,14 @@ const handleClick = () => {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.12), rgba(102, 126, 234, 0.03));
 }
 
+:global(.dark-theme) .auth-choice-card--web3 .card-front {
+  background: linear-gradient(135deg, rgba(15, 58, 32, 0.9), rgba(15, 58, 32, 0.75));
+}
+
+:global(.dark-theme) .auth-choice-card--web2 .card-front {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.78));
+}
+
 .card-front__drip {
   position: absolute;
   inset: 0;
@@ -254,6 +326,18 @@ const handleClick = () => {
   opacity: 0.2;
 }
 
+:global(.dark-theme) .auth-choice-card .card-front__drip {
+  opacity: 0.25;
+}
+
+:global(.dark-theme) .auth-choice-card--web3 .card-front__drip {
+  background: radial-gradient(circle at 20% 20%, rgba(34, 197, 94, 0.25), transparent 60%);
+}
+
+:global(.dark-theme) .auth-choice-card--web2 .card-front__drip {
+  background: radial-gradient(circle at 20% 20%, rgba(96, 165, 250, 0.25), transparent 60%);
+}
+
 .card-front__body {
   position: relative;
   z-index: 2;
@@ -261,8 +345,94 @@ const handleClick = () => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 2.75rem 2.5rem;
+  padding: 3rem 2.75rem 2.25rem;
   backdrop-filter: blur(8px);
+}
+
+.card-front__header {
+  margin-bottom: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  text-align: center;
+}
+
+.card-front__icon {
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-front__icon svg {
+  width: 100%;
+  height: 100%;
+  color: #0f1729;
+}
+
+.auth-choice-card--web3 .card-front__icon svg {
+  color: #047857;
+}
+
+.auth-choice-card--web2 .card-front__icon svg {
+  color: #1d4ed8;
+}
+
+.card-front__badge {
+  display: inline-flex;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  background: rgba(15, 23, 42, 0.08);
+  color: rgba(15, 23, 42, 0.75);
+}
+
+.auth-choice-card--web3 .card-front__badge {
+  background: rgba(34, 197, 94, 0.14);
+  color: #047857;
+}
+
+.auth-choice-card--web2 .card-front__badge {
+  background: rgba(59, 130, 246, 0.14);
+  color: #1d4ed8;
+}
+
+.card-front__title {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+:global(.dark-theme) .auth-choice-card .card-front__icon svg {
+  color: #f8fafc;
+}
+
+:global(.dark-theme) .auth-choice-card--web3 .card-front__icon svg {
+  color: #86efac;
+}
+
+:global(.dark-theme) .auth-choice-card--web2 .card-front__icon svg {
+  color: #93c5fd;
+}
+
+:global(.dark-theme) .auth-choice-card .card-front__badge {
+  background: rgba(248, 250, 252, 0.14);
+  color: #f8fafc;
+}
+
+:global(.dark-theme) .auth-choice-card--web3 .card-front__badge {
+  background: rgba(34, 197, 94, 0.22);
+  color: #dcfce7;
+}
+
+:global(.dark-theme) .auth-choice-card--web2 .card-front__badge {
+  background: rgba(96, 165, 250, 0.24);
+  color: #dbeafe;
 }
 
 .feature-list {
@@ -274,6 +444,12 @@ const handleClick = () => {
   gap: 1.25rem;
   font-size: 1rem;
   color: rgba(15, 23, 42, 0.78);
+  flex: 1;
+  width: 100%;
+}
+
+:global(.dark-theme) .auth-choice-card .card-front__body {
+  color: #f1f5f9;
 }
 
 .feature-list li {
@@ -291,15 +467,27 @@ const handleClick = () => {
   color: #34d399;
 }
 
+:global(.dark-theme) .auth-choice-card--web2 .feature-icon {
+  color: #60a5fa;
+}
+
+:global(.dark-theme) .auth-choice-card--web3 .feature-icon {
+  color: #4ade80;
+}
+
 .cta-button {
-  margin-top: 2rem;
+  margin-top: auto;
+  align-self: center;
+  width: 88%;
+  max-width: 280px;
   font-weight: 600;
   letter-spacing: 0.03em;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  height: 56px;
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 0.75rem;
 }
 
 .cta-button:hover {
@@ -311,34 +499,31 @@ const handleClick = () => {
   box-shadow: 0 18px 30px rgba(34, 197, 94, 0.35);
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1024px) {
   .auth-choice-card {
-    max-width: 380px;
+    max-width: 360px;
     height: 460px;
   }
 
   .card-front__body {
-    padding: 2.25rem 2rem;
+    padding: 2.5rem 2.25rem 2.1rem;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 720px) {
   .auth-choice-card {
     max-width: 320px;
-    min-height: 380px;
+    min-height: 360px;
     height: auto;
   }
 
-  .card-content {
-    transform: none !important;
-  }
-
-  .auth-choice-card:hover .card-content {
-    transform: none;
-  }
-
   .card-front__body {
-    padding: 2.25rem 1.75rem 1.75rem;
+    padding: 2.25rem 1.75rem 1.9rem;
+  }
+
+  .cta-button {
+    width: 100%;
+    max-width: none;
   }
 }
 </style>
