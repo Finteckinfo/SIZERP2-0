@@ -76,15 +76,29 @@
                     <span class="balance-value">{{ formatAmount(currentBalance) }} SIZ</span>
                   </div>
 
-                  <!-- Required Budget -->
+                  <!-- Obligation Details -->
                   <div class="detail-row">
-                    <span class="label">Project Budget:</span>
-                    <span class="value">{{ formatAmount(projectBudget) }} SIZ</span>
+                    <span class="label">Pending Task Hold:</span>
+                    <span class="value">{{ formatAmount(pendingHold) }} SIZ</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label">Processing Transfers:</span>
+                    <span class="value">{{ formatAmount(processingHold) }} SIZ</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label">Total Obligations:</span>
+                    <span class="value">{{ formatAmount(obligationsTotal) }} SIZ</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label">Net Available:</span>
+                    <span :class="['value', netAvailable > 0 ? 'text-success' : 'text-warning']">
+                      {{ formatAmount(netAvailable) }} SIZ
+                    </span>
                   </div>
 
                   <!-- Remaining -->
                   <div class="detail-row remaining-row">
-                    <span class="label">Still Needed:</span>
+                    <span class="label">Recommended Top-up:</span>
                     <span :class="['value', remainingAmount > 0 ? 'text-warning' : 'text-success']">
                       {{ formatAmount(remainingAmount) }} SIZ
                     </span>
@@ -278,11 +292,11 @@
                 <div class="stat-grid">
                   <div class="stat-item">
                     <div class="stat-icon">
-                      <v-icon color="primary">mdi-currency-usd</v-icon>
+                      <v-icon color="primary">mdi-scale-balance</v-icon>
                     </div>
                     <div class="stat-content">
-                      <span class="stat-label">Total Budget</span>
-                      <span class="stat-value">{{ formatAmount(projectBudget) }} SIZ</span>
+                      <span class="stat-label">Total Obligations</span>
+                      <span class="stat-value">{{ formatAmount(obligationsTotal) }} SIZ</span>
                     </div>
                   </div>
 
@@ -291,7 +305,7 @@
                       <v-icon color="success">mdi-check-circle</v-icon>
                     </div>
                     <div class="stat-content">
-                      <span class="stat-label">Funded</span>
+                      <span class="stat-label">Escrow Balance</span>
                       <span class="stat-value">{{ formatAmount(currentBalance) }} SIZ</span>
                     </div>
                   </div>
@@ -301,7 +315,7 @@
                       <v-icon color="warning">mdi-alert</v-icon>
                     </div>
                     <div class="stat-content">
-                      <span class="stat-label">Needed</span>
+                      <span class="stat-label">Recommended Top-up</span>
                       <span class="stat-value">{{ formatAmount(remainingAmount) }} SIZ</span>
                     </div>
                   </div>
@@ -496,7 +510,10 @@ const error = ref('');
 const escrowData = ref<any>(null);
 const projectData = ref<any>(null);
 const currentBalance = ref(0);
-const projectBudget = ref(0);
+const pendingHold = ref(0);
+const processingHold = ref(0);
+const obligationsTotal = ref(0);
+const netAvailable = ref(0);
 const transactions = ref<any[]>([]);
 const fundingNeeded = ref<any>(null);
 const fundingTab = ref('wallet');
@@ -522,13 +539,13 @@ const isWalletConnected = computed(() => !!activeAccount.value);
 const connectedWalletAddress = computed(() => activeAccount.value?.address || '');
 const projectName = computed(() => projectData.value?.name || 'Project');
 
-const remainingAmount = computed(() => {
-  return Math.max(0, projectBudget.value - currentBalance.value);
-});
+const recommendedFunding = computed(() => fundingNeeded.value?.recommended || 0);
+
+const remainingAmount = computed(() => Math.max(0, recommendedFunding.value - currentBalance.value));
 
 const fundingProgress = computed(() => {
-  if (projectBudget.value === 0) return 0;
-  return Math.min(100, (currentBalance.value / projectBudget.value) * 100);
+  if (recommendedFunding.value === 0) return 0;
+  return Math.min(100, (currentBalance.value / recommendedFunding.value) * 100);
 });
 
 // Load escrow data
@@ -539,11 +556,16 @@ const loadEscrowData = async () => {
 
     // Load project data
     projectData.value = await projectApi.getProject(projectId.value);
-    projectBudget.value = projectData.value.budgetAmount || 0;
 
     // Load escrow balance
     const balance = await getEscrowBalance(projectId.value);
     currentBalance.value = balance.balance;
+    pendingHold.value = balance.obligations?.pendingTasks || 0;
+    processingHold.value = balance.obligations?.processingTransfers || 0;
+    obligationsTotal.value = balance.obligations?.total || (pendingHold.value + processingHold.value);
+    netAvailable.value = typeof balance.netAvailable === 'number'
+      ? balance.netAvailable
+      : Math.max(0, balance.balance - obligationsTotal.value);
     escrowData.value = {
       escrowAddress: projectData.value.escrowAddress,
       balance: balance.balance
@@ -559,6 +581,9 @@ const loadEscrowData = async () => {
     // Load funding needed information
     try {
       fundingNeeded.value = await getEscrowFundingNeeded(projectId.value);
+      if (recommendedFunding.value > 0) {
+        sendAmount.value = Math.max(0, recommendedFunding.value - currentBalance.value);
+      }
     } catch (fundingErr) {
       console.warn('Failed to load funding needed data:', fundingErr);
       // Don't fail the whole load if this fails

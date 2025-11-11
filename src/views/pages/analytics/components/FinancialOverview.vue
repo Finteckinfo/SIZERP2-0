@@ -16,8 +16,8 @@
       <div class="widget-content">
         <div class="financial-metrics">
           <div class="metric-item">
-            <div class="metric-label">Budget Utilization</div>
-            <div class="metric-value">{{ data?.budgetUtilization || 'N/A' }}</div>
+            <div class="metric-label">Escrow Coverage</div>
+            <div class="metric-value">{{ data?.budgetUtilization ?? 'N/A' }}</div>
           </div>
           <div class="metric-item">
             <div class="metric-label">Cost per Task</div>

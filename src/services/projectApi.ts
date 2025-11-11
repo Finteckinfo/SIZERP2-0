@@ -111,12 +111,8 @@ export interface Project {
   description?: string;
   type: 'PROGRESSIVE' | 'PARALLEL';
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  budgetRange?: string;
-  // Payment/Escrow fields
-  budgetAmount?: number;
   escrowAddress?: string;
   escrowFunded?: boolean;
-  allocatedFunds?: number;
   releasedFunds?: number;
   startDate: string;
   endDate: string;
@@ -288,7 +284,6 @@ export const projectApi = {
     description?: string;
     type: 'PROGRESSIVE' | 'PARALLEL';
     priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-    budgetRange?: string;
     startDate: string;
     endDate: string;
     departments: CreateDepartmentData[];

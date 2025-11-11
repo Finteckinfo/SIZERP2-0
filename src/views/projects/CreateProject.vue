@@ -338,39 +338,6 @@
             <v-row>
               <v-col cols="12" md="8">
                 <v-form ref="settingsForm" v-model="settingsValid">
-                  <v-text-field
-                    v-model="projectData.budgetRange"
-                    label="Total Project Budget (SIZCOIN)"
-                    placeholder="Enter total budget for all tasks and team"
-                    variant="outlined"
-                    class="mb-4"
-                    type="number"
-                    suffix="SIZ"
-                    hint="This will be held in escrow and released as tasks are completed"
-                    persistent-hint
-                  >
-                    <template v-slot:prepend-inner>
-                      <v-icon color="warning" size="20">mdi-currency-usd</v-icon>
-                    </template>
-                  </v-text-field>
-                  
-                  <!-- Escrow Info Alert -->
-                  <v-alert 
-                    v-if="projectData.budgetRange && parseFloat(projectData.budgetRange) > 0"
-                    type="info" 
-                    variant="tonal" 
-                    class="mb-4"
-                    density="compact"
-                  >
-                    <template v-slot:prepend>
-                      <v-icon>mdi-shield-lock</v-icon>
-                    </template>
-                    <div class="text-caption">
-                      <strong>{{ parseFloat(projectData.budgetRange).toFixed(2) }} SIZ</strong> will be held in escrow.
-                      Funds are released automatically when tasks are approved.
-                    </div>
-                  </v-alert>
-                  
                   <v-select
                     v-model="projectData.priority"
                     label="Priority Level"
@@ -591,7 +558,6 @@ const projectData = reactive({
   description: '',
   type: '' as 'PROGRESSIVE' | 'PARALLEL',
   priority: 'MEDIUM' as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL',
-  budgetRange: '',
   startDate: '',
   endDate: '',
   isPublic: false,
@@ -643,8 +609,6 @@ const priorityLevels = ref<Array<{title: string, value: string}>>([
   { title: 'High', value: 'HIGH' },
   { title: 'Critical', value: 'CRITICAL' }
 ]);
-const budgetRanges = ref<Array<{title: string, value: string}>>([]);
-
 // API base URL
 const API_BASE = import.meta.env.VITE_BACKEND_URL;
 
@@ -671,10 +635,7 @@ const canCreateProject = computed(() => {
          projectData.departments.length > 0 &&
          projectData.roles.length > 0 &&
          projectData.roles.every(r => r.role === 'PROJECT_OWNER' ? true : r.departmentId !== null) &&
-         projectData.budgetRange &&
-         projectData.priority &&
-         projectData.tags &&
-         projectData.notes;
+         projectData.priority;
 });
 
 // Wallet + SIZ balance gating
@@ -756,21 +717,6 @@ const fetchConfigData = async () => {
     }
   } catch (err) {
     console.error('Failed to fetch config data:', err);
-  }
-};
-
-const fetchBudgetRanges = async () => {
-  try {
-    const response = await fetch(`${API_BASE}/api/config/budget-ranges`);
-    if (response.ok) {
-      const data = await response.json();
-      budgetRanges.value = data.ranges?.map((range: string) => ({
-        title: range,
-        value: range
-      })) || [];
-    }
-  } catch (err) {
-    console.error('Failed to fetch budget ranges:', err);
   }
 };
 
@@ -1012,8 +958,6 @@ const createProject = async () => {
       description: projectData.description,
       type: projectData.type,
       priority: projectData.priority,
-      budgetRange: projectData.budgetRange,
-      budgetAmount: projectData.budgetRange ? parseFloat(projectData.budgetRange) : undefined, // Numeric budget for escrow
       startDate: projectData.startDate,
       endDate: projectData.endDate,
       ownerId: user.value.id, // Required by backend
@@ -1081,44 +1025,9 @@ const createProject = async () => {
       
       success.value = 'Project created successfully!';
       
-      // If project has budget, create escrow account and opt-in to SIZCOIN
-      if (projectPayload.budgetAmount && projectPayload.budgetAmount > 0) {
-        try {
-          console.log('[CreateProject] Creating escrow account for project...');
-          const { createProjectEscrow, optInEscrowToSIZCOIN, SIZCOIN_CONFIG } = await import('@/services/paymentService');
-          
-          // Step 1: Create escrow account
-          const escrowAccount = await createProjectEscrow(response.id);
-          console.log('[CreateProject] Escrow account created:', escrowAccount.escrowAddress);
-          
-          // Step 2: Opt-in escrow to SIZCOIN
-          console.log('[CreateProject] Opting escrow into SIZCOIN...');
-          const optInResult = await optInEscrowToSIZCOIN(response.id);
-          console.log('[CreateProject] SIZCOIN opt-in successful:', optInResult.txHash);
-          
-          // Show success message with instructions
-          success.value = `✅ Project created!\n\n` +
-            `🔐 Escrow Address: ${escrowAccount.escrowAddress}\n` +
-            `🪙 Asset: SIZCOIN (${SIZCOIN_CONFIG.ASSET_ID})\n` +
-            `✓ Opt-in Complete: ${optInResult.txHash}\n\n` +
-            `Please fund the escrow with ${projectPayload.budgetAmount.toFixed(2)} SIZ`;
-        } catch (escrowError: any) {
-          console.error('[CreateProject] Escrow setup failed:', escrowError);
-          
-          // Show detailed error message
-          const errorMsg = escrowError.response?.data?.error || escrowError.message || 'Unknown error';
-          success.value = `Project created! (⚠️ Escrow setup issue: ${errorMsg})`;
-        }
-      }
-      
       setTimeout(() => {
-        // If project has budget, go to funding page
-        if (projectPayload.budgetAmount && projectPayload.budgetAmount > 0) {
-          router.push(`/projects/${response.id}/fund-escrow`);
-        } else {
-          router.push('/projects');
-        }
-      }, 3000); // Increased timeout to show escrow address
+        router.push('/projects');
+      }, 2500);
     } else {
       throw new Error('Failed to create project');
     }
@@ -1165,7 +1074,6 @@ onMounted(async () => {
     // Fetch all configuration data in parallel
     await Promise.all([
       fetchConfigData(),
-      fetchBudgetRanges(),
       fetchUserPermissions()
     ]);
     

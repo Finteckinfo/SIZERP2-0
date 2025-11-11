@@ -29,11 +29,11 @@
         </div>
         
         <div class="budget-section">
-          <h4 class="section-title">Budget Utilization</h4>
+          <h4 class="section-title">Escrow Snapshot</h4>
           <div class="budget-info">
             <div class="budget-item">
-              <span class="budget-label">Budget Utilization</span>
-              <span class="budget-value">{{ data?.metrics?.budgetUtilization || 'N/A' }}</span>
+              <span class="budget-label">Coverage</span>
+              <span class="budget-value">{{ data?.metrics?.budgetUtilization ?? 'N/A' }}</span>
             </div>
           </div>
         </div>

@@ -20,9 +20,9 @@ export interface DashboardOverviewResponse {
     teamMembers: number;
   };
   scores: {
-    productivity: number;
-    budgetUtilization: number;
-    timelineAdherence: number;
+    productivity: number | null;
+    budgetUtilization: number | null;
+    timelineAdherence: number | null;
   };
 }
 
@@ -41,8 +41,8 @@ export interface ProjectPerformanceResponse {
     healthScore: number;
     completionRate: number;
     budgetVsActual: {
-      budget: number;
-      actual: number;
+      budget: number | null;
+      actual: number | null;
     };
     timelineProgress: number;
     riskAssessment: Array<{
@@ -166,7 +166,7 @@ export const analyticsApi = {
   },
 
   // 7. Resource Utilization
-  getResourceUtilization: async (params: { projectId: string; resourceType?: 'human' | 'equipment' | 'budget' }) => {
+  getResourceUtilization: async (params: { projectId: string; resourceType?: 'human' | 'equipment' | 'escrow' }) => {
     const response = await api.get('/analytics/resources/utilization', { params });
     return response.data;
   },
@@ -184,7 +184,7 @@ export const analyticsApi = {
   },
 
   // 10. Predictions Forecast
-  getPredictionsForecast: async (params: { projectId: string; predictionType?: 'completion' | 'budget' | 'timeline'; horizon?: '30d' | '90d' | '180d' }) => {
+  getPredictionsForecast: async (params: { projectId: string; predictionType?: 'completion' | 'escrow' | 'timeline'; horizon?: '30d' | '90d' | '180d' }) => {
     const response = await api.get('/analytics/predictions/forecast', { params });
     return response.data;
   },

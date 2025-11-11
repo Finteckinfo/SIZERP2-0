@@ -489,30 +489,88 @@ export async function getUserEarnings(userId: string): Promise<{
 /**
  * Gets payment summary for a project
  */
-export async function getProjectPaymentSummary(projectId: string): Promise<{
-  budget: {
-    total: number;
-    allocated: number;
-    released: number;
-    available: number;
-    utilizationPercent: number;
+export interface ProjectPayoutSummary {
+  escrow: {
+    address?: string;
+    funded: boolean;
+    status?: string;
+    balance: number;
   };
-  employeeBreakdown: Array<{
-    employeeId: string;
-    employeeName: string;
-    tasksCount: number;
-    totalEarned: number;
-    pending: number;
-  }>;
-  statusDistribution: {
-    pending: number;
-    allocated: number;
-    processing: number;
-    paid: number;
-    failed: number;
+  payouts: {
+    totalRecipients: number;
+    totals: {
+      assigned: number;
+      pending: number;
+      processing: number;
+      paid: number;
+      oversight: {
+        paid: number;
+        processing: number;
+      };
+    };
+    statusBreakdown: {
+      pending: number;
+      allocated: number;
+      processing: number;
+      paid: number;
+      failed: number;
+    };
+    byRecipient: Array<{
+      id: string;
+      userId?: string;
+      name: string;
+      email?: string | null;
+      walletAddress?: string | null;
+      totals: {
+        assigned: number;
+        pending: number;
+        processing: number;
+        paid: number;
+      };
+      completedTasks: number;
+      taskCount: number;
+      history: Array<{
+        reference: string;
+        amount: number;
+        status: string;
+        type: string;
+        txHash?: string;
+        confirmedAt?: string;
+      }>;
+    }>;
+    recent: Array<{
+      txHash: string;
+      type: string;
+      amount: number;
+      status: string;
+      to: {
+        id: string;
+        name: string;
+        email?: string | null;
+      };
+      reference: string;
+      confirmedAt?: string | null;
+    }>;
   };
-  recentTransactions: BlockchainTransaction[];
-}> {
+  tasksSummary: {
+    totalWithPayments: number;
+    recentPayments: Array<{
+      taskId: string;
+      taskTitle: string;
+      amount: number | null;
+      employee: {
+        id: string;
+        firstName: string | null;
+        lastName: string | null;
+        email: string;
+      } | null;
+      txHash?: string | null;
+      paidAt?: string | null;
+    }>;
+  };
+}
+
+export async function getProjectPaymentSummary(projectId: string): Promise<ProjectPayoutSummary> {
   const response = await api.get(`/projects/${projectId}/payment-summary`);
   return response.data;
 }

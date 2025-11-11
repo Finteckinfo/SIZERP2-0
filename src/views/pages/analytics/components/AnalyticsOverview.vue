@@ -138,18 +138,22 @@
             <div class="score-card">
               <div class="score-header">
                 <v-icon color="success" class="mr-2" icon="mdi-cash" />
-                <span class="score-title">Budget Utilization</span>
+                <span class="score-title">Escrow Coverage</span>
               </div>
-              <div class="score-value">{{ data?.scores?.budgetUtilization || 0 }}%</div>
+              <div class="score-value">
+                <template v-if="budgetScore !== null">{{ budgetScore }}%</template>
+                <template v-else>N/A</template>
+              </div>
               <v-progress-linear
-                :model-value="data?.scores?.budgetUtilization || 0"
-                :color="getBudgetColor(data?.scores?.budgetUtilization || 0)"
+                v-if="budgetScore !== null"
+                :model-value="budgetScore"
+                :color="getBudgetColor(budgetScore)"
                 height="8"
                 rounded
                 class="mt-2"
               />
               <div class="score-description">
-                Budget efficiency and cost management performance
+                {{ budgetScore !== null ? 'Escrow capacity versus active obligations' : 'No escrow utilization data yet' }}
               </div>
             </div>
           </v-col>
@@ -245,6 +249,11 @@ const handleTimeRangeChange = (value: string) => {
   selectedTimeRange.value = value;
   emit('timeRangeChange', value);
 };
+
+const budgetScore = computed(() => {
+  const value = props.data?.scores?.budgetUtilization;
+  return typeof value === 'number' && !Number.isNaN(value) ? value : null;
+});
 
 const getBudgetColor = (value: number) => {
   if (value <= 60) return 'success';

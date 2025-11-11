@@ -6,8 +6,8 @@
           <v-icon color="primary" size="32">mdi-wallet</v-icon>
         </div>
         <div class="header-content">
-          <h3 class="widget-title text-center">Project Budgets</h3>
-          <p class="widget-subtitle text-center">Overview of all project funds</p>
+          <h3 class="widget-title text-center">Escrow Overview</h3>
+          <p class="widget-subtitle text-center">Live payouts across every project</p>
         </div>
       </div>
 
@@ -17,9 +17,9 @@
       </div>
 
       <!-- Budget Summary -->
-      <div v-else-if="projectBudgets.length > 0" class="budget-summary">
+      <div v-else-if="projectSummaries.length > 0" class="budget-summary">
         <div 
-          v-for="project in projectBudgets" 
+          v-for="project in projectSummaries" 
           :key="project.projectId"
           class="project-budget-item"
           @click="navigateToProject(project.projectId)"
@@ -28,38 +28,40 @@
             <h4 class="project-name">{{ project.projectName }}</h4>
             <div class="budget-details">
               <div class="budget-row">
-                <span class="budget-label">Total Budget:</span>
-                <span class="budget-value total">{{ formatAmount(project.totalBudget) }} SIZ</span>
+                <span class="budget-label">Escrow Balance:</span>
+                <span class="budget-value total">{{ formatAmount(project.balance) }} SIZ</span>
               </div>
               <div class="budget-row">
-                <span class="budget-label">Allocated:</span>
-                <span class="budget-value allocated">{{ formatAmount(project.allocated) }} SIZ</span>
+                <span class="budget-label">Assigned:</span>
+                <span class="budget-value allocated">{{ formatAmount(project.assigned) }} SIZ</span>
               </div>
               <div class="budget-row">
-                <span class="budget-label">Released:</span>
-                <span class="budget-value released">{{ formatAmount(project.released) }} SIZ</span>
+                <span class="budget-label">Pending:</span>
+                <span class="budget-value pending">{{ formatAmount(project.pending) }} SIZ</span>
               </div>
               <div class="budget-row">
-                <span class="budget-label">Available:</span>
-                <span class="budget-value available">{{ formatAmount(project.available) }} SIZ</span>
+                <span class="budget-label">Processing:</span>
+                <span class="budget-value processing">{{ formatAmount(project.processing) }} SIZ</span>
+              </div>
+              <div class="budget-row">
+                <span class="budget-label">Paid Out:</span>
+                <span class="budget-value released">{{ formatAmount(project.paid) }} SIZ</span>
+              </div>
+              <div class="budget-row">
+                <span class="budget-label">Team Members Paid:</span>
+                <span class="budget-value recipients">{{ project.totalRecipients }}</span>
               </div>
             </div>
             
-            <!-- Budget Progress Bar -->
             <div class="budget-progress">
-              <v-progress-linear
-                :model-value="project.utilizationPercent"
-                :color="getUtilizationColor(project.utilizationPercent)"
-                height="6"
-                rounded
-              />
-              <span class="progress-text">{{ project.utilizationPercent.toFixed(0) }}% utilized</span>
+              <v-chip size="small" color="primary" variant="tonal">
+                Oversight Paid: {{ formatAmount(project.oversightPaid) }} SIZ
+              </v-chip>
             </div>
           </div>
 
           <!-- Action Button -->
           <v-btn
-            v-if="project.available > 0"
             size="small"
             color="primary"
             variant="outlined"
@@ -75,7 +77,7 @@
       <div v-else class="empty-state">
         <v-icon size="48" color="grey-lighten-2">mdi-wallet-outline</v-icon>
         <p class="text-body-2 text-medium-emphasis mt-2">
-          No projects with budgets yet
+          No escrow activity yet
         </p>
       </div>
     </v-card-text>
@@ -85,13 +87,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useUser } from '@clerk/vue';
 import { getProjectPaymentSummary } from '@/services/paymentService';
 
 // Composables
 const router = useRouter();
-const { user } = useUser();
-
 // Props
 interface Props {
   projectIds: string[];
@@ -101,18 +100,20 @@ const props = defineProps<Props>();
 
 // Reactive data
 const loading = ref(true);
-const projectBudgets = ref<Array<{
+const projectSummaries = ref<Array<{
   projectId: string;
   projectName: string;
-  totalBudget: number;
-  allocated: number;
-  released: number;
-  available: number;
-  utilizationPercent: number;
+  balance: number;
+  assigned: number;
+  pending: number;
+  processing: number;
+  paid: number;
+  oversightPaid: number;
+  totalRecipients: number;
 }>>([]);
 
-// Load budget data for all projects
-const loadBudgets = async () => {
+// Load payout data for all projects
+const loadSummaries = async () => {
   if (!props.projectIds || props.projectIds.length === 0) {
     loading.value = false;
     return;
@@ -122,17 +123,19 @@ const loadBudgets = async () => {
     loading.value = true;
     
     // Fetch budget data for each project
-    const budgetPromises = props.projectIds.map(async (projectId) => {
+    const summaryPromises = props.projectIds.map(async (projectId) => {
       try {
         const summary = await getProjectPaymentSummary(projectId);
         return {
           projectId,
-          projectName: projectId, // This should come from project data
-          totalBudget: summary.budget.total,
-          allocated: summary.budget.allocated,
-          released: summary.budget.released,
-          available: summary.budget.available,
-          utilizationPercent: summary.budget.utilizationPercent
+          projectName: summary.projectName || projectId,
+          balance: summary.escrow.balance,
+          assigned: summary.payouts.totals.assigned,
+          pending: summary.payouts.totals.pending,
+          processing: summary.payouts.totals.processing,
+          paid: summary.payouts.totals.paid,
+          oversightPaid: summary.payouts.totals.oversight.paid,
+          totalRecipients: summary.payouts.totalRecipients,
         };
       } catch (error) {
         console.error(`Failed to load budget for project ${projectId}:`, error);
@@ -140,10 +143,10 @@ const loadBudgets = async () => {
       }
     });
     
-    const results = await Promise.all(budgetPromises);
-    projectBudgets.value = results.filter((b): b is NonNullable<typeof b> => b !== null);
+    const results = await Promise.all(summaryPromises);
+    projectSummaries.value = results.filter((b): b is NonNullable<typeof b> => b !== null);
   } catch (error) {
-    console.error('Failed to load project budgets:', error);
+    console.error('Failed to load project payouts:', error);
   } finally {
     loading.value = false;
   }
@@ -157,13 +160,6 @@ const formatAmount = (amount: number) => {
   }).format(amount);
 };
 
-const getUtilizationColor = (percent: number) => {
-  if (percent >= 90) return 'error';
-  if (percent >= 75) return 'warning';
-  if (percent >= 50) return 'info';
-  return 'success';
-};
-
 const navigateToProject = (projectId: string) => {
   router.push(`/projects/${projectId}`);
 };
@@ -175,7 +171,7 @@ const addFunds = (projectId: string) => {
 
 // Lifecycle
 onMounted(() => {
-  loadBudgets();
+  loadSummaries();
 });
 </script>
 
@@ -296,7 +292,15 @@ onMounted(() => {
   opacity: 0.6;
 }
 
-.budget-value.available {
+.budget-value.pending {
+  color: var(--erp-accent-orange);
+}
+
+.budget-value.processing {
+  color: var(--erp-accent-blue);
+}
+
+.budget-value.recipients {
   color: var(--erp-accent-green);
 }
 
