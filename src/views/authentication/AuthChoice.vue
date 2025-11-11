@@ -1,10 +1,6 @@
 <template>
-  <div class="auth-choice-page" :class="{ 'dark-theme': isDark }">
-    <!-- Theme Toggle -->
-    <div class="theme-toggle-container">
-      <ThemeToggle :show-label="false" size="small" />
-    </div>
-
+  <LandingBackground>
+    <div class="auth-choice-page">
     <v-container fluid class="fill-height">
       <v-row align="center" justify="center">
         <v-col cols="12" md="10" lg="8">
@@ -223,17 +219,16 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </div>
+    </div>
+  </LandingBackground>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useTheme } from '@/composables/useTheme';
-import ThemeToggle from '@/components/shared/ThemeToggle.vue';
+import LandingBackground from '@/components/ui/LandingBackground.vue';
 
 const router = useRouter();
-const { isDark } = useTheme();
 
 const showHelp = ref(false);
 
@@ -253,19 +248,14 @@ const handleWeb2Choice = () => {
 <style lang="scss" scoped>
 .auth-choice-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem 0;
+  padding: 4rem 0;
+  position: relative;
+  z-index: 10;
+  color: var(--erp-text);
 }
 
-.auth-choice-page.dark-theme {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-}
-
-.theme-toggle-container {
-  position: fixed;
-  top: 28px;
-  right: 56px;
-  z-index: 1000;
+:global(.dark-theme) .auth-choice-page {
+  color: #f8fafc;
 }
 
 .logo-container {
@@ -293,8 +283,7 @@ const handleWeb2Choice = () => {
 
 .auth-choice-page h1,
 .auth-choice-page .text-h6 {
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: inherit;
 }
 
 .auth-options {
@@ -331,7 +320,7 @@ const handleWeb2Choice = () => {
   border: 3px solid rgba(102, 126, 234, 0.3);
 }
 
-.dark-theme .web2-card {
+:global(.dark-theme) .web2-card {
   background: #1a2332;
   color: white;
 }
@@ -360,7 +349,7 @@ const handleWeb2Choice = () => {
   background: rgba(102, 126, 234, 0.1);
 }
 
-.dark-theme .web2-icon {
+:global(.dark-theme) .web2-icon {
   background: rgba(102, 126, 234, 0.2);
 }
 

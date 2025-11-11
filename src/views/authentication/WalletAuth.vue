@@ -1,10 +1,6 @@
 <template>
-  <div class="wallet-auth-page" :class="{ 'dark-theme': isDark }">
-    <!-- Theme Toggle -->
-    <div class="theme-toggle-container">
-      <ThemeToggle :show-label="false" size="small" />
-    </div>
-
+  <LandingBackground>
+    <div class="wallet-auth-page">
     <v-container fluid class="fill-height">
       <v-row align="center" justify="center">
         <v-col cols="12" sm="10" md="8" lg="6">
@@ -331,14 +327,14 @@
         <v-btn variant="text" @click="showToast = false">Close</v-btn>
       </template>
     </v-snackbar>
-  </div>
+    </div>
+  </LandingBackground>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { useTheme } from '@/composables/useTheme';
-import ThemeToggle from '@/components/shared/ThemeToggle.vue';
+import LandingBackground from '@/components/ui/LandingBackground.vue';
 import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue';
 import { generateAlgorandWallet } from '@/lib/algorand/walletGenerator';
 import { encryptWallet, storeEncryptedWallet } from '@/services/walletEncryption';
@@ -351,7 +347,6 @@ import { isWalletModalOpen } from '@/stores/walletStore';
 import { addManualWallet } from '@/lib/walletManager';
 
 const router = useRouter();
-const { isDark } = useTheme();
 
 // State
 type Step = 'choice' | 'create' | 'mnemonic' | 'password' | 'security';
@@ -558,19 +553,10 @@ watch(isWalletModalOpen, (isOpen) => {
 <style lang="scss" scoped>
 .wallet-auth-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #5BC85B 0%, #4BB74B 50%, #3BA63B 100%);
-  padding: 2rem 0;
-}
-
-.wallet-auth-page.dark-theme {
-  background: linear-gradient(135deg, #02124C 0%, #001A6B 50%, #002680 100%);
-}
-
-.theme-toggle-container {
-  position: fixed;
-  top: 28px;
-  right: 56px;
-  z-index: 1000;
+  padding: 4rem 0;
+  position: relative;
+  z-index: 10;
+  color: var(--erp-text);
 }
 
 .logo-container {
@@ -602,7 +588,7 @@ watch(isWalletModalOpen, (isOpen) => {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
-.dark-theme .auth-card {
+:global(.dark-theme) .auth-card {
   background: #1a2332;
 }
 
@@ -631,7 +617,7 @@ watch(isWalletModalOpen, (isOpen) => {
   border: 2px solid rgba(91, 200, 91, 0.3);
 }
 
-.dark-theme .wallet-choice-card.existing-wallet {
+:global(.dark-theme) .wallet-choice-card.existing-wallet {
   background: #2a3442;
   border-color: rgba(91, 200, 91, 0.5);
 }
@@ -654,7 +640,7 @@ watch(isWalletModalOpen, (isOpen) => {
   background: rgba(91, 200, 91, 0.05);
 }
 
-.dark-theme .mnemonic-card {
+:global(.dark-theme) .mnemonic-card {
   background: rgba(91, 200, 91, 0.1);
 }
 
@@ -671,7 +657,7 @@ watch(isWalletModalOpen, (isOpen) => {
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.dark-theme .mnemonic-word {
+:global(.dark-theme) .mnemonic-word {
   background: #2a3442;
   border-color: rgba(255, 255, 255, 0.1);
 }
@@ -709,11 +695,6 @@ watch(isWalletModalOpen, (isOpen) => {
   .mnemonic-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
-  }
-
-  .theme-toggle-container {
-    top: 15px;
-    right: 15px;
   }
 }
 </style>
