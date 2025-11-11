@@ -429,7 +429,7 @@
               
               <div v-if="currentStep === 'settings'" class="d-flex flex-column align-end" style="gap: 8px;">
                 <v-alert
-                  v-if="!walletConnected || sizBalance < 20"
+                  v-if="!walletConnected || sizBalance < 1"
                   type="warning"
                   variant="tonal"
                   density="compact"
@@ -443,7 +443,7 @@
                       Connect a wallet to create a project.
                     </div>
                     <div v-else>
-                      Minimum 20.00 SIZ required to create a project.
+                      Minimum 1.00 SIZ required to create a project.
                       <span class="ml-1">Current: {{ sizBalance.toFixed(2) }} SIZ</span>
                     </div>
                     <div v-if="balanceError" class="text-error text-caption">{{ balanceError }}</div>
@@ -681,7 +681,7 @@ watch(() => connectedWallet.value, async (addr) => {
 }, { immediate: true });
 
 // Gate strictly on the displayed formattedAmount per product requirement
-const meetsSizRequirement = computed(() => sizBalanceFormatted.value >= 20);
+const meetsSizRequirement = computed(() => sizBalanceFormatted.value >= 1);
 const canSubmit = computed(() => !!canCreateProject.value && walletConnected.value && meetsSizRequirement.value);
 
 // Draft state removed
@@ -938,7 +938,7 @@ const createProject = async () => {
   }
   
   if (!meetsSizRequirement.value) {
-    error.value = 'You need at least 20.00 SIZ in your connected wallet to create a project.';
+    error.value = 'You need at least 1.00 SIZ in your connected wallet to create a project.';
     setTimeout(() => error.value = '', 5000);
     return;
   }
