@@ -9,7 +9,7 @@
       :staticity="50"
       :ease="50"
       :size="0.4"
-      class="particles-background"
+      class="particles-background" 
     />
 
     <World class="world-background" />
