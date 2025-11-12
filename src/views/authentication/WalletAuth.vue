@@ -698,3 +698,4 @@ watch(isWalletModalOpen, (isOpen) => {
   }
 }
 </style>
+ 
