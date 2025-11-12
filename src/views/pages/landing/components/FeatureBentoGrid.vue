@@ -44,7 +44,7 @@ interface Feature {
   cta: string;
   icon: string;
   iconColor: string;
-  variant: 'emerald' | 'indigo' | 'violet' | 'amber' | 'sky';
+  variant: 'emerald' | 'indigo' | 'violet' | 'amber' | 'sky' | 'rose';
   layout: string;
 }
 
@@ -58,7 +58,7 @@ const features: Feature[] = [
     icon: 'mdi-shield-lock',
     iconColor: '#4ade80',
     variant: 'emerald',
-    layout: 'layout--pillar',
+    layout: 'layout--center-tall',
   },
   {
     title: 'Web3 Native',
@@ -103,6 +103,17 @@ const features: Feature[] = [
     iconColor: '#818cf8',
     variant: 'indigo',
     layout: 'layout--right-bottom',
+  },
+  {
+    title: 'Global Ecosystem',
+    subtitle: 'Talent without borders',
+    description:
+      'Match contributors and projects in any market, with instant onboarding flows and localized compliance baked into the platform.',
+    cta: 'Discover the network',
+    icon: 'mdi-earth',
+    iconColor: '#f472b6',
+    variant: 'rose',
+    layout: 'layout--center-short',
   },
 ];
 </script>
@@ -309,15 +320,25 @@ const features: Feature[] = [
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(79, 70, 229, 0.38));
 }
 
-.layout--pillar {
-  grid-column: auto;
-  grid-row: auto;
+.bento-card--rose {
+  background: linear-gradient(135deg, rgba(244, 114, 182, 0.2), rgba(190, 24, 93, 0.14));
+  border-color: rgba(244, 114, 182, 0.32);
+}
+
+.bento-card--rose .bento-card__orb {
+  background: radial-gradient(circle, rgba(244, 114, 182, 0.55), transparent 70%);
+}
+
+.bento-card--rose .bento-card__wave {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.42), rgba(129, 140, 248, 0.18));
 }
 
 .layout--left-top,
 .layout--left-bottom,
 .layout--right-top,
-.layout--right-bottom {
+.layout--right-bottom,
+.layout--center-tall,
+.layout--center-short {
   grid-column: auto;
   grid-row: auto;
 }
@@ -325,12 +346,7 @@ const features: Feature[] = [
 @media (min-width: 1200px) {
   .bento-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: repeat(3, minmax(190px, 1fr));
-  }
-
-  .layout--pillar {
-    grid-column: 2 / 3;
-    grid-row: 1 / 4;
+    grid-template-rows: repeat(4, minmax(170px, 1fr));
   }
 
   .layout--left-top {
@@ -341,6 +357,16 @@ const features: Feature[] = [
   .layout--left-bottom {
     grid-column: 1 / 2;
     grid-row: 2 / 4;
+  }
+
+  .layout--center-tall {
+    grid-column: 2 / 3;
+    grid-row: 1 / 4;
+  }
+
+  .layout--center-short {
+    grid-column: 2 / 3;
+    grid-row: 4 / 5;
   }
 
   .layout--right-top {
