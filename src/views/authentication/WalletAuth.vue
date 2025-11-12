@@ -5,7 +5,12 @@
       <v-row align="center" justify="center">
         <v-col cols="12" sm="10" md="8" lg="6">
           <!-- Step 1: Initial Choice (New vs Existing Wallet) -->
-          <v-card v-if="currentStep === 'choice'" elevation="8" class="auth-card pa-8">
+          <v-card
+            v-if="currentStep === 'choice'"
+            elevation="8"
+            class="auth-card pa-8"
+            :style="authCardStyle"
+          >
             <div class="text-center mb-6">
               <div class="logo-container mb-4">
                 <img src="/images/sizlogo.png" alt="SIZ Logo" class="auth-logo" />
@@ -76,7 +81,12 @@
           </v-card>
 
           <!-- Step 2: Create New Wallet -->
-          <v-card v-if="currentStep === 'create'" elevation="8" class="auth-card pa-8">
+          <v-card
+            v-if="currentStep === 'create'"
+            elevation="8"
+            class="auth-card pa-8"
+            :style="authCardStyle"
+          >
             <div class="text-center mb-6">
               <v-icon size="64" color="success" class="mb-3">mdi-wallet-plus</v-icon>
               <h2 class="text-h5 font-weight-bold mb-2">Create New Wallet</h2>
@@ -113,7 +123,12 @@
           </v-card>
 
           <!-- Step 3: Display Mnemonic -->
-          <v-card v-if="currentStep === 'mnemonic'" elevation="8" class="auth-card pa-8">
+          <v-card
+            v-if="currentStep === 'mnemonic'"
+            elevation="8"
+            class="auth-card pa-8"
+            :style="authCardStyle"
+          >
             <div class="text-center mb-6">
               <v-icon size="64" color="warning" class="mb-3">mdi-key-variant</v-icon>
               <h2 class="text-h5 font-weight-bold mb-2">Save Your Recovery Phrase</h2>
@@ -172,7 +187,12 @@
           </v-card>
 
           <!-- Step 4: Set Password -->
-          <v-card v-if="currentStep === 'password'" elevation="8" class="auth-card pa-8">
+          <v-card
+            v-if="currentStep === 'password'"
+            elevation="8"
+            class="auth-card pa-8"
+            :style="authCardStyle"
+          >
             <div class="text-center mb-6">
               <v-icon size="64" color="primary" class="mb-3">mdi-lock</v-icon>
               <h2 class="text-h5 font-weight-bold mb-2">Set Wallet Password</h2>
@@ -235,7 +255,12 @@
           </v-card>
 
           <!-- Step 5: Security Questions -->
-          <v-card v-if="currentStep === 'security'" elevation="8" class="auth-card pa-8">
+          <v-card
+            v-if="currentStep === 'security'"
+            elevation="8"
+            class="auth-card pa-8"
+            :style="authCardStyle"
+          >
             <div class="text-center mb-6">
               <v-icon size="64" color="info" class="mb-3">mdi-help-circle</v-icon>
               <h2 class="text-h5 font-weight-bold mb-2">Security Questions</h2>
@@ -345,8 +370,23 @@ import {
 } from '@/services/securityQuestions';
 import { isWalletModalOpen } from '@/stores/walletStore';
 import { addManualWallet } from '@/lib/walletManager';
+import { useTheme } from '@/composables/useTheme';
 
 const router = useRouter();
+const { isDark } = useTheme();
+
+const authCardStyle = computed(() => {
+  if (isDark.value) {
+    return {
+      '--v-theme-surface': '#1a2332',
+      'background-color': '#1a2332'
+    };
+  }
+  return {
+    '--v-theme-surface': '#ffffff',
+    'background-color': '#ffffff'
+  };
+});
 
 // State
 type Step = 'choice' | 'create' | 'mnemonic' | 'password' | 'security';
