@@ -1,8 +1,6 @@
-import { mdiClose, mdiHome, mdiEyeOff, mdiEye } from '@mdi/js';
-
 export const icons = {
-  close: mdiClose,
-  home: mdiHome,
-  eyeOff: mdiEyeOff,
-  eye: mdiEye
+  close: 'mdi-close',
+  home: 'mdi-home',
+  eyeOff: 'mdi-eye-off',
+  eye: 'mdi-eye'
 };

@@ -22,16 +22,12 @@
                 <v-icon class="mr-2">mdi-login</v-icon>
                 Get Started
               </ZigZagButton>
-              <v-btn
-                color="secondary"
-                size="large"
-                variant="outlined"
-                class="cta-button"
+              <ZigZagButton class="hero-zigzag-button" variant="B"
                 @click="scrollToFeatures"
               >
                 <v-icon class="mr-2">mdi-information</v-icon>
                 Learn More
-              </v-btn>
+              </ZigZagButton>
             </div>
           </div>
         </div>

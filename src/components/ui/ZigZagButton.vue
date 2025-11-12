@@ -5,7 +5,11 @@
     class="zigzag-button"
     :class="[
       `zigzag-button--${variant.toLowerCase()}`,
-      { 'zigzag-button--block': block, 'zigzag-button--dark': isDark }
+      {
+        'zigzag-button--block': block,
+        'zigzag-button--dark': isDark,
+        'zigzag-button--disabled': disabled
+      }
     ]"
     :disabled="disabled && componentTag === 'button'"
     @click="handleClick"
