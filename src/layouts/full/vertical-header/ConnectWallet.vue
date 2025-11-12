@@ -452,9 +452,7 @@ const shortenAddress = (address: string) => {
                 </div>
                 <div class="wallet-action-btn__body">
                   <span class="wallet-action-btn__title">{{ wallet.metadata?.name || 'Unknown Wallet' }}</span>
-                  <span v-if="wallet.metadata?.description" class="wallet-action-btn__subtitle">
-                    {{ wallet.metadata?.description }}
-                  </span>
+                  <span class="wallet-action-btn__subtitle">Tap to connect</span>
                 </div>
                 <v-icon class="wallet-action-btn__chevron">mdi-chevron-right</v-icon>
               </v-btn>
