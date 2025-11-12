@@ -509,7 +509,7 @@ const handleClick = () => {
 @media (max-width: 1024px) {
   .auth-choice-card {
     max-width: 360px;
-    height: 460px;
+    height: 500px;
   }
 
   .card-front__body {
@@ -520,7 +520,7 @@ const handleClick = () => {
 @media (max-width: 720px) {
   .auth-choice-card {
     max-width: 320px;
-    min-height: 360px;
+    min-height: 440px;
     height: auto;
   }
 
