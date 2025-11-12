@@ -533,5 +533,24 @@ const handleClick = () => {
     max-width: none;
   }
 }
+
+@media (hover: none) {
+  .auth-choice-card {
+    height: auto;
+  }
+
+  .auth-choice-card .card-content {
+    transform: none !important;
+  }
+
+  .auth-choice-card .card-back {
+    display: none !important;
+  }
+
+  .auth-choice-card .card-front {
+    transform: none !important;
+    position: relative;
+  }
+}
 </style>
 

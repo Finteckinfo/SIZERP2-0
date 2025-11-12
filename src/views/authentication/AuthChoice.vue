@@ -193,26 +193,21 @@ const handleWeb2Choice = () => {
 
 .auth-options {
   margin-top: 3rem;
-  row-gap: 2.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2.5rem;
 }
 
 .auth-options :deep(.v-col) {
   display: flex;
   justify-content: center;
+  flex: 1 1 320px;
+  max-width: 420px;
 }
 
 .help-section {
   margin-bottom: 0;
-}
-
-@media (max-width: 960px) {
-  .auth-options {
-    margin-top: 2rem;
-  }
-
-  .auth-options :deep(.v-col) {
-    justify-content: stretch;
-  }
 }
 
 .ecosystem-font {
@@ -250,7 +245,14 @@ const handleWeb2Choice = () => {
 
   .auth-options {
     margin-top: 1.5rem;
-    row-gap: 1.5rem;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .auth-options :deep(.v-col) {
+    flex: 1 1 auto;
+    max-width: 100%;
+    width: 100%;
   }
 
   .help-section {
