@@ -416,6 +416,8 @@ const shortenAddress = (address: string) => {
               class="wallet-action-btn wallet-action-btn--primary mb-3"
               block
               elevation="0"
+              color="success"
+              variant="tonal"
               @click="router.push('/wallet-auth'); isWalletModalOpen = false"
             >
               <div class="wallet-action-btn__icon">
@@ -445,6 +447,7 @@ const shortenAddress = (address: string) => {
                 block
                 elevation="0"
                 variant="outlined"
+                color="primary"
                 @click="connectWallet(wallet.id)"
               >
                 <div class="wallet-action-btn__icon">
@@ -599,25 +602,15 @@ const shortenAddress = (address: string) => {
   text-transform: none;
   letter-spacing: normal;
   border-radius: 12px;
-  background-color: rgba(15, 23, 42, 0.04);
-  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .wallet-action-btn:hover {
-  background-color: rgba(59, 130, 246, 0.08);
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
 }
 
 .wallet-action-btn--primary {
-  background: linear-gradient(135deg, rgba(91, 200, 91, 0.16) 0%, rgba(75, 183, 75, 0.08) 100%);
-  border: 1px solid rgba(91, 200, 91, 0.4);
-  color: #0f172a;
-}
-
-.wallet-action-btn--primary:hover {
-  background: linear-gradient(135deg, rgba(91, 200, 91, 0.22) 0%, rgba(75, 183, 75, 0.12) 100%);
-  box-shadow: 0 10px 22px rgba(34, 197, 94, 0.18);
+  font-weight: 600;
 }
 
 .wallet-action-btn__icon {
@@ -629,11 +622,7 @@ const shortenAddress = (address: string) => {
   justify-content: center;
   border-radius: 10px;
   overflow: hidden;
-  background: rgba(15, 23, 42, 0.08);
-}
-
-.wallet-action-btn--primary .wallet-action-btn__icon {
-  background: rgba(91, 200, 91, 0.18);
+  background: var(--v-theme-surface-variant, rgba(15, 23, 42, 0.08));
 }
 
 .wallet-action-btn__body {
@@ -653,40 +642,12 @@ const shortenAddress = (address: string) => {
 
 .wallet-action-btn__subtitle {
   font-size: 0.78rem;
-  color: rgba(15, 23, 42, 0.65);
+  color: currentColor;
+  opacity: 0.72;
 }
 
 .wallet-action-btn__chevron {
   margin-left: 0.75rem;
-}
-
-::global(.dark-theme) .wallet-action-btn {
-  border-color: rgba(148, 163, 184, 0.3);
-  color: #e2e8f0;
-  background-color: rgba(15, 23, 42, 0.6);
-}
-
-::global(.dark-theme) .wallet-action-btn:hover {
-  background-color: rgba(59, 130, 246, 0.22);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.45);
-}
-
-::global(.dark-theme) .wallet-action-btn__subtitle {
-  color: rgba(226, 232, 240, 0.6);
-}
-
-::global(.dark-theme) .wallet-action-btn__icon {
-  background: rgba(148, 163, 184, 0.18);
-}
-
-::global(.dark-theme) .wallet-action-btn--primary {
-  border-color: rgba(74, 222, 128, 0.5);
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.32) 0%, rgba(34, 197, 94, 0.12) 100%);
-}
-
-::global(.dark-theme) .wallet-action-btn--primary:hover {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.38) 0%, rgba(34, 197, 94, 0.18) 100%);
-  box-shadow: 0 12px 26px rgba(34, 197, 94, 0.28);
 }
 
 .wallet-action-btn__group {
