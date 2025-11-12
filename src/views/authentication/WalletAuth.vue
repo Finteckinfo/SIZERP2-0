@@ -10,7 +10,7 @@
               <div class="logo-container mb-4">
                 <img src="/images/sizlogo.png" alt="SIZ Logo" class="auth-logo" />
               </div>
-              <h1 class="text-h4 font-weight-bold mb-3">
+              <h1 class="text-h4 font-weight-bold mb-3 ecosystem-font">
                 Web3 Authentication
               </h1>
               <p class="text-subtitle-1 text-medium-emphasis">
@@ -647,6 +647,11 @@ watch(isWalletModalOpen, (isOpen) => {
   background: white;
   border-radius: 24px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.ecosystem-font {
+  font-family: 'PIXymbols Very Loose W01 Reg', 'Poppins', sans-serif;
+  letter-spacing: 0.08em;
 }
 
 :global(.dark-theme) .auth-card {
