@@ -34,78 +34,12 @@
       </section>
 
       <!-- Features Section -->
-      <section ref="featuresSection" class="features-section">
+      <section id="features" ref="featuresSection" class="features-section">
         <div class="features-container">
           <h2 class="section-title">
             <span class="ecosystem-heading">Why Choose SizLand ERP?</span>
           </h2>
-          <div class="features-grid">
-            <div class="feature-card">
-              <div class="feature-icon">
-                <v-icon size="48" color="primary">mdi-shield-check</v-icon>
-              </div>
-              <h3 class="feature-title">Secure Escrow Payments</h3>
-              <p class="feature-description">
-                Your funds are protected with blockchain-based escrow system using SIZ coin. 
-                Payments are only released when work is completed and approved.
-              </p>
-            </div>
-
-            <div class="feature-card">
-              <div class="feature-icon">
-                <v-icon size="48" color="primary">mdi-web</v-icon>
-              </div>
-              <h3 class="feature-title">Web3 Technology</h3>
-              <p class="feature-description">
-                Built on Algorand blockchain for transparency, security, and global accessibility. 
-                No traditional banking barriers.
-              </p>
-            </div>
-
-            <div class="feature-card">
-              <div class="feature-icon">
-                <v-icon size="48" color="primary">mdi-account-group</v-icon>
-              </div>
-              <h3 class="feature-title">Remote Team Focus</h3>
-              <p class="feature-description">
-                Designed specifically for remote teams who need affirmation and security 
-                in their work relationships and payments.
-              </p>
-            </div>
-
-            <div class="feature-card">
-              <div class="feature-icon">
-                <v-icon size="48" color="primary">mdi-clock-check</v-icon>
-              </div>
-              <h3 class="feature-title">Guaranteed Payments</h3>
-              <p class="feature-description">
-                On-time payments guaranteed through smart contracts. 
-                No more chasing payments or dealing with payment delays.
-              </p>
-            </div>
-
-            <div class="feature-card">
-              <div class="feature-icon">
-                <v-icon size="48" color="primary">mdi-chart-line</v-icon>
-              </div>
-              <h3 class="feature-title">Project Management</h3>
-              <p class="feature-description">
-                Complete project tracking with Kanban boards, task management, 
-                and real-time collaboration tools.
-              </p>
-            </div>
-
-            <div class="feature-card">
-              <div class="feature-icon">
-                <v-icon size="48" color="primary">mdi-currency-usd-circle</v-icon>
-              </div>
-              <h3 class="feature-title">SIZ Coin Integration</h3>
-              <p class="feature-description">
-                Native SIZ coin support for all transactions. 
-                Low fees, fast settlements, and global accessibility.
-              </p>
-            </div>
-          </div>
+          <FeatureBentoGrid />
         </div>
       </section>
 
@@ -187,6 +121,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import LandingBackground from '@/components/ui/LandingBackground.vue'
 import ZigZagButton from '@/components/ui/ZigZagButton.vue'
+import FeatureBentoGrid from '@/views/pages/landing/components/FeatureBentoGrid.vue'
 
 const router = useRouter()
 const featuresSection = ref<HTMLElement | null>(null)
@@ -354,54 +289,6 @@ const scrollToFeatures = () => {
   text-align: center;
   margin-bottom: 4rem;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 2rem;
-}
-
-.feature-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 2rem;
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-.dark-theme .feature-card {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.feature-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.dark-theme .feature-card:hover {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-.feature-icon {
-  margin-bottom: 1.5rem;
-}
-
-.feature-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: white;
-}
-
-.feature-description {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  opacity: 0.9;
 }
 
 .cta-section {
