@@ -409,9 +409,37 @@ const shortenAddress = (address: string) => {
 
         <!-- Not Connected State - Wallet Options -->
         <div v-else>
+          <!-- Siz Wallet Option (First and Primary) -->
+          <section class="mb-4">
+            <h6 class="mb-3 text-subtitle-1 font-weight-medium">Recommended</h6>
+            <v-list class="pa-0">
+              <v-list-item
+                class="wallet-option mb-2 siz-wallet-option"
+                @click="router.push('/wallet-auth'); isWalletModalOpen = false"
+                :style="{ 
+                  cursor: 'pointer', 
+                  borderRadius: '8px', 
+                  border: '2px solid #5BC85B',
+                  background: 'linear-gradient(135deg, rgba(91, 200, 91, 0.1) 0%, rgba(75, 183, 75, 0.05) 100%)'
+                }"
+              >
+                <v-list-item-avatar size="40" class="mr-3">
+                  <v-img src="/wallets/siz.png" alt="Siz Wallet logo" />
+                </v-list-item-avatar>
+                <v-list-item-title class="font-weight-bold" style="color: #5BC85B;">Siz Wallet</v-list-item-title>
+                <v-list-item-subtitle class="text-caption">Create or connect your Siz wallet</v-list-item-subtitle>
+                <template v-slot:append>
+                  <v-icon color="success">mdi-chevron-right</v-icon>
+                </template>
+              </v-list-item>
+            </v-list>
+          </section>
+
+          <v-divider class="my-4"></v-divider>
+
           <!-- Provider Wallets -->
           <section>
-            <h6 class="mb-3 text-subtitle-1 font-weight-medium">Connect with Wallet</h6>
+            <h6 class="mb-3 text-subtitle-1 font-weight-medium">Other Wallet Providers</h6>
             <div v-if="!wallets || wallets.length === 0" class="text-center py-4">
               <p class="text-body-2 text-medium-emphasis">No wallet providers available</p>
             </div>
@@ -438,21 +466,29 @@ const shortenAddress = (address: string) => {
 
           <!-- Manual Entry -->
           <section class="mb-4">
-            <h6 class="mb-2 text-subtitle-1 font-weight-medium">Manual Entry</h6>
+            <h6 class="mb-3 text-subtitle-1 font-weight-medium">Connect Manually</h6>
+            <p class="text-body-2 text-medium-emphasis mb-3">
+              Enter your Algorand wallet address (58 characters)
+            </p>
             <v-text-field
               v-model="manualWallet.address"
               label="Wallet Address"
-              outlined
-              dense
-              hide-details
+              variant="outlined"
+              density="comfortable"
               placeholder="Enter your Algorand wallet address"
+              :rules="[
+                v => !!v || 'Wallet address is required',
+                v => v.length === 58 || 'Wallet address must be 58 characters'
+              ]"
+              class="mb-2"
             />
             <v-btn
               color="primary"
-              class="mt-3"
               block
               @click="connectManualWallet"
+              :disabled="!manualWallet.address || manualWallet.address.length !== 58"
             >
+              <v-icon start>mdi-link</v-icon>
               Connect Manual Wallet
             </v-btn>
           </section>
