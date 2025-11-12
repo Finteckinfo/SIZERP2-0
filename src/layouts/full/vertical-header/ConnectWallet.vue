@@ -55,6 +55,23 @@ const manualWallet = ref<{ address: string }>({ address: '' });
 // Theme-aware styling helpers
 const { isDark } = useTheme();
 
+const walletModalCardStyle = computed(() => {
+  if (isDark.value) {
+    return {
+      '--v-theme-surface': '#0f172a',
+      '--v-theme-surface-variant': '#182337',
+      'background-color': '#0f172a',
+      color: '#e2e8f0',
+    } as const;
+  }
+  return {
+    '--v-theme-surface': '#ffffff',
+    '--v-theme-surface-variant': '#f5f7fa',
+    'background-color': '#ffffff',
+    color: '#0f172a',
+  } as const;
+});
+
 const walletButtonStyle = computed(() => {
   if (isDark.value) {
     return {
@@ -397,7 +414,7 @@ const shortenAddress = (address: string) => {
 
   <!-- Main Wallet Connect Dialog -->
   <v-dialog v-model="isWalletModalOpen" max-width="500" z-index="2000">
-    <v-card class="rounded-xl elevation-3">
+    <v-card class="rounded-xl elevation-3" :style="walletModalCardStyle">
       <v-card-title class="headline text-primary font-weight-bold d-flex align-center">
         <v-icon class="mr-2">mdi-wallet</v-icon>
         Connect Wallet
