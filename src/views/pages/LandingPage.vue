@@ -18,16 +18,10 @@
               blockchain-based project management, and guaranteed on-time payments.
             </p>
             <div class="hero-buttons">
-              <v-btn
-                color="primary"
-                size="large"
-                variant="elevated"
-                class="cta-button"
-                @click="goToLogin"
-              >
+              <ZigZagButton class="hero-zigzag-button" variant="C" @click="goToLogin">
                 <v-icon class="mr-2">mdi-login</v-icon>
                 Get Started
-              </v-btn>
+              </ZigZagButton>
               <v-btn
                 color="secondary"
                 size="large"
@@ -194,6 +188,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import LandingBackground from '@/components/ui/LandingBackground.vue'
+import ZigZagButton from '@/components/ui/ZigZagButton.vue'
 
 const router = useRouter()
 const featuresSection = ref<HTMLElement | null>(null)
@@ -290,6 +285,19 @@ const scrollToFeatures = () => {
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+.hero-buttons :deep(.zigzag-button) {
+  margin: 0.25rem 0;
+}
+
+.hero-buttons :deep(.zigzag-button__text) {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.hero-buttons :deep(.zigzag-button__text .v-icon) {
+  font-size: 1.2rem;
 }
 
 .cta-button {

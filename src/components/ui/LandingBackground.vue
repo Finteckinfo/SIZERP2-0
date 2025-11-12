@@ -34,7 +34,7 @@ const props = withDefaults(defineProps<{ showThemeToggle?: boolean }>(), {
 
 const { isDark } = useTheme();
 const showThemeToggle = computed(() => props.showThemeToggle);
-const particleColor = computed(() => (isDark.value ? '#ffffff' : '#b3b3b3'));
+const particleColor = computed(() => (isDark.value ? '#ffffff' : '#7a7a7a'));
 
 const backgroundStyle = computed(() => {
   if (isDark.value) {
