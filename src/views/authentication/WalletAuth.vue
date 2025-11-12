@@ -143,7 +143,11 @@
             </v-alert>
 
             <!-- Mnemonic Display -->
-            <v-card variant="outlined" class="mnemonic-card mb-4">
+            <v-card
+              variant="outlined"
+              class="mnemonic-card mb-4"
+              :style="mnemonicCardStyle"
+            >
               <v-card-text class="pa-4">
                 <div class="mnemonic-grid">
                   <div
@@ -399,6 +403,19 @@ const existingWalletCardStyle = computed(() => {
   return {
     '--v-theme-surface': '#ffffff',
     'background-color': '#ffffff'
+  };
+});
+
+const mnemonicCardStyle = computed(() => {
+  if (isDark.value) {
+    return {
+      '--v-theme-surface': '#252f3f',
+      'background-color': '#252f3f'
+    };
+  }
+  return {
+    '--v-theme-surface': 'rgba(91, 200, 91, 0.05)',
+    'background-color': 'rgba(91, 200, 91, 0.05)'
   };
 });
 
