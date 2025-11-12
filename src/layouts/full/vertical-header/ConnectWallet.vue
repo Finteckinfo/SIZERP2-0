@@ -7,6 +7,7 @@ import { isWalletModalOpen as storeWalletModalOpen } from '@/stores/walletStore'
 import { useUser } from '@clerk/vue';
 import { generateAlgorandWallet, storeWallet } from '@/lib/algorand/walletGenerator';
 import { useRouter } from 'vue-router';
+import { useTheme } from '@/composables/useTheme';
 
 // Router
 const router = useRouter();
@@ -50,6 +51,45 @@ onMounted(() => {
 
 // Manual wallet input
 const manualWallet = ref<{ address: string }>({ address: '' });
+
+// Theme-aware styling helpers
+const { isDark } = useTheme();
+
+const walletButtonStyle = computed(() => {
+  if (isDark.value) {
+    return {
+      '--v-theme-surface': '#1f2735',
+      'background-color': '#1f2735',
+      color: '#e2e8f0',
+    } as const;
+  }
+  return {
+    '--v-theme-surface': '#ffffff',
+    'background-color': '#ffffff',
+    color: '#0f172a',
+  } as const;
+});
+
+const walletPrimaryButtonStyle = computed(() => {
+  if (isDark.value) {
+    return {
+      '--v-theme-surface': '#123524',
+      'background-color': '#123524',
+      color: '#dcfce7',
+    } as const;
+  }
+  return {
+    '--v-theme-surface': '#e7f8ed',
+    'background-color': '#e7f8ed',
+    color: '#14532d',
+  } as const;
+});
+
+const walletIconStyle = computed(() =>
+  isDark.value
+    ? { backgroundColor: 'rgba(148, 163, 184, 0.22)' }
+    : { backgroundColor: 'rgba(15, 23, 42, 0.08)' }
+);
 
 // Sync useWallet activeAccount with walletManager - This ensures state is shared across all components
 watch(activeAccount, (newAccount) => {
@@ -418,9 +458,10 @@ const shortenAddress = (address: string) => {
               elevation="0"
               color="success"
               variant="tonal"
+              :style="walletPrimaryButtonStyle"
               @click="router.push('/wallet-auth'); isWalletModalOpen = false"
             >
-              <div class="wallet-action-btn__icon">
+              <div class="wallet-action-btn__icon" :style="walletIconStyle">
                 <v-img src="/wallets/siz.png" alt="Siz Wallet logo" />
               </div>
               <div class="wallet-action-btn__body">
@@ -448,9 +489,10 @@ const shortenAddress = (address: string) => {
                 elevation="0"
                 variant="outlined"
                 color="primary"
+                :style="walletButtonStyle"
                 @click="connectWallet(wallet.id)"
               >
-                <div class="wallet-action-btn__icon">
+                <div class="wallet-action-btn__icon" :style="walletIconStyle">
                   <v-img :src="wallet.metadata?.icon" alt="wallet logo" />
                 </div>
                 <div class="wallet-action-btn__body">
