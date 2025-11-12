@@ -258,4 +258,16 @@ const handleWeb2Choice = () => {
     height: 80px;
   }
 }
+
+@media (min-width: 960px) {
+  .auth-options {
+    display: flex;
+    flex-wrap: nowrap;
+  }
+
+  .auth-options :deep(.v-col) {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
 </style>
