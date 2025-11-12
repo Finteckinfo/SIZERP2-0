@@ -146,7 +146,7 @@ const handleWeb3Choice = () => {
 const handleWeb2Choice = () => {
   // Store preference
   localStorage.setItem('auth_mode', 'web2');
-  window.location.href = 'https://www.siz.land/login';
+  router.push('/login');
 };
 </script>
 
