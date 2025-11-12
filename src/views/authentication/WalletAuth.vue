@@ -50,6 +50,7 @@
               class="wallet-choice-card existing-wallet"
               elevation="4"
               @click="handleExistingWallet"
+            :style="existingWalletCardStyle"
             >
               <v-card-text class="pa-6">
                 <div class="d-flex align-items-center">
@@ -380,6 +381,19 @@ const authCardStyle = computed(() => {
     return {
       '--v-theme-surface': '#1a2332',
       'background-color': '#1a2332'
+    };
+  }
+  return {
+    '--v-theme-surface': '#ffffff',
+    'background-color': '#ffffff'
+  };
+});
+
+const existingWalletCardStyle = computed(() => {
+  if (isDark.value) {
+    return {
+      '--v-theme-surface': '#1f2a3a',
+      'background-color': '#1f2a3a'
     };
   }
   return {
