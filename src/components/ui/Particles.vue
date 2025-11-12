@@ -69,9 +69,10 @@ const resizeTimeout = ref<NodeJS.Timeout | null>(null)
 
 // Get theme-aware color
 const getThemeColor = () => {
-  if (props.color !== '#ffffff') return props.color
-  
-  // Always use bright white for particles
+  const explicitColor = props.color?.trim()
+  if (explicitColor && explicitColor.length > 0) {
+    return explicitColor
+  }
   return '#ffffff'
 }
 

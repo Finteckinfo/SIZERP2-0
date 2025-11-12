@@ -9,7 +9,8 @@
       :staticity="50"
       :ease="50"
       :size="0.4"
-      class="particles-background" 
+      :color="particleColor"
+      class="particles-background"
     />
 
     <World class="world-background" />
@@ -33,6 +34,7 @@ const props = withDefaults(defineProps<{ showThemeToggle?: boolean }>(), {
 
 const { isDark } = useTheme();
 const showThemeToggle = computed(() => props.showThemeToggle);
+const particleColor = computed(() => (isDark.value ? '#ffffff' : '#b3b3b3'));
 
 const backgroundStyle = computed(() => {
   if (isDark.value) {
