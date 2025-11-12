@@ -5,7 +5,7 @@
     </div>
 
     <Particles
-      :quantity="150"
+      :quantity="particleQuantity"
       :staticity="50"
       :ease="50"
       :size="0.4"
@@ -35,6 +35,7 @@ const props = withDefaults(defineProps<{ showThemeToggle?: boolean }>(), {
 const { isDark } = useTheme();
 const showThemeToggle = computed(() => props.showThemeToggle);
 const particleColor = computed(() => (isDark.value ? '#ffffff' : '#7a7a7a'));
+const particleQuantity = computed(() => (isDark.value ? 150 : 240));
 
 const backgroundStyle = computed(() => {
   if (isDark.value) {
