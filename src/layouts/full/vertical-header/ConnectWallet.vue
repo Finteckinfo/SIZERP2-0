@@ -412,27 +412,21 @@ const shortenAddress = (address: string) => {
           <!-- Siz Wallet Option (First and Primary) -->
           <section class="mb-4">
             <h6 class="mb-3 text-subtitle-1 font-weight-medium">Recommended</h6>
-            <v-list class="pa-0">
-              <v-list-item
-                class="wallet-option mb-2 siz-wallet-option"
-                @click="router.push('/wallet-auth'); isWalletModalOpen = false"
-                :style="{ 
-                  cursor: 'pointer', 
-                  borderRadius: '8px', 
-                  border: '2px solid #5BC85B',
-                  background: 'linear-gradient(135deg, rgba(91, 200, 91, 0.1) 0%, rgba(75, 183, 75, 0.05) 100%)'
-                }"
-              >
-                <v-list-item-avatar size="40" class="mr-3">
-                  <v-img src="/wallets/siz.png" alt="Siz Wallet logo" />
-                </v-list-item-avatar>
-                <v-list-item-title class="font-weight-bold" style="color: #5BC85B;">Siz Wallet</v-list-item-title>
-                <v-list-item-subtitle class="text-caption">Create or connect your Siz wallet</v-list-item-subtitle>
-                <template v-slot:append>
-                  <v-icon color="success">mdi-chevron-right</v-icon>
-                </template>
-              </v-list-item>
-            </v-list>
+            <v-btn
+              class="wallet-action-btn wallet-action-btn--primary mb-3"
+              block
+              elevation="0"
+              @click="router.push('/wallet-auth'); isWalletModalOpen = false"
+            >
+              <div class="wallet-action-btn__icon">
+                <v-img src="/wallets/siz.png" alt="Siz Wallet logo" />
+              </div>
+              <div class="wallet-action-btn__body">
+                <span class="wallet-action-btn__title">Siz Wallet</span>
+                <span class="wallet-action-btn__subtitle">Create or connect your Siz wallet</span>
+              </div>
+              <v-icon class="wallet-action-btn__chevron" color="success">mdi-chevron-right</v-icon>
+            </v-btn>
           </section>
 
           <v-divider class="my-4"></v-divider>
@@ -443,23 +437,28 @@ const shortenAddress = (address: string) => {
             <div v-if="!wallets || wallets.length === 0" class="text-center py-4">
               <p class="text-body-2 text-medium-emphasis">No wallet providers available</p>
             </div>
-            <v-list v-else class="pa-0">
-              <v-list-item
+            <div v-else class="wallet-action-btn__group">
+              <v-btn
                 v-for="wallet in wallets"
                 :key="wallet.id"
-                class="wallet-option mb-2"
+                class="wallet-action-btn mb-2"
+                block
+                elevation="0"
+                variant="outlined"
                 @click="connectWallet(wallet.id)"
-                :style="{ cursor: 'pointer', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.12)' }"
               >
-                <v-list-item-avatar size="40" class="mr-3">
+                <div class="wallet-action-btn__icon">
                   <v-img :src="wallet.metadata?.icon" alt="wallet logo" />
-                </v-list-item-avatar>
-                <v-list-item-title class="font-weight-medium">{{ wallet.metadata?.name || 'Unknown Wallet' }}</v-list-item-title>
-                <template v-slot:append>
-                  <v-icon>mdi-chevron-right</v-icon>
-                </template>
-              </v-list-item>
-            </v-list>
+                </div>
+                <div class="wallet-action-btn__body">
+                  <span class="wallet-action-btn__title">{{ wallet.metadata?.name || 'Unknown Wallet' }}</span>
+                  <span v-if="wallet.metadata?.description" class="wallet-action-btn__subtitle">
+                    {{ wallet.metadata?.description }}
+                  </span>
+                </div>
+                <v-icon class="wallet-action-btn__chevron">mdi-chevron-right</v-icon>
+              </v-btn>
+            </div>
           </section>
 
           <v-divider class="my-4"></v-divider>
@@ -589,12 +588,111 @@ const shortenAddress = (address: string) => {
 </template>
 
 <style scoped>
-.wallet-option:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-  transition: background-color 0.2s ease;
-}
-
 .wallet-connected-state {
   min-height: 200px;
+}
+
+.wallet-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 56px;
+  padding: 0.75rem 1rem;
+  text-transform: none;
+  letter-spacing: normal;
+  border-radius: 12px;
+  background-color: rgba(15, 23, 42, 0.04);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.wallet-action-btn:hover {
+  background-color: rgba(59, 130, 246, 0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+.wallet-action-btn--primary {
+  background: linear-gradient(135deg, rgba(91, 200, 91, 0.16) 0%, rgba(75, 183, 75, 0.08) 100%);
+  border: 1px solid rgba(91, 200, 91, 0.4);
+  color: #0f172a;
+}
+
+.wallet-action-btn--primary:hover {
+  background: linear-gradient(135deg, rgba(91, 200, 91, 0.22) 0%, rgba(75, 183, 75, 0.12) 100%);
+  box-shadow: 0 10px 22px rgba(34, 197, 94, 0.18);
+}
+
+.wallet-action-btn__icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.wallet-action-btn--primary .wallet-action-btn__icon {
+  background: rgba(91, 200, 91, 0.18);
+}
+
+.wallet-action-btn__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex: 1;
+  text-align: left;
+  color: inherit;
+}
+
+.wallet-action-btn__title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.wallet-action-btn__subtitle {
+  font-size: 0.78rem;
+  color: rgba(15, 23, 42, 0.65);
+}
+
+.wallet-action-btn__chevron {
+  margin-left: 0.75rem;
+}
+
+::global(.dark-theme) .wallet-action-btn {
+  border-color: rgba(148, 163, 184, 0.3);
+  color: #e2e8f0;
+  background-color: rgba(15, 23, 42, 0.6);
+}
+
+::global(.dark-theme) .wallet-action-btn:hover {
+  background-color: rgba(59, 130, 246, 0.22);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.45);
+}
+
+::global(.dark-theme) .wallet-action-btn__subtitle {
+  color: rgba(226, 232, 240, 0.6);
+}
+
+::global(.dark-theme) .wallet-action-btn__icon {
+  background: rgba(148, 163, 184, 0.18);
+}
+
+::global(.dark-theme) .wallet-action-btn--primary {
+  border-color: rgba(74, 222, 128, 0.5);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.32) 0%, rgba(34, 197, 94, 0.12) 100%);
+}
+
+::global(.dark-theme) .wallet-action-btn--primary:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.38) 0%, rgba(34, 197, 94, 0.18) 100%);
+  box-shadow: 0 12px 26px rgba(34, 197, 94, 0.28);
+}
+
+.wallet-action-btn__group {
+  display: flex;
+  flex-direction: column;
 }
 </style>
