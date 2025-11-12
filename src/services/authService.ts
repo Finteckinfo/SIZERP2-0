@@ -1,4 +1,5 @@
 import { useClerk } from '@clerk/vue';
+import { logger } from './logger';
 
 // JWT Token Management Service
 export class AuthService {
@@ -26,7 +27,7 @@ export class AuthService {
     try {
       // Wait for Clerk to be ready
       if (!this.isClerkReady()) {
-        console.log('Clerk not ready yet, waiting...');
+        logger.debug('Clerk not ready yet, waiting...');
         return null;
       }
 
@@ -41,7 +42,7 @@ export class AuthService {
       });
 
       if (!token) {
-        console.error('Failed to get JWT token from Clerk API template');
+        logger.error('Failed to get JWT token from Clerk API template');
         return null;
       }
 
@@ -51,36 +52,31 @@ export class AuthService {
         this.tokenExpiry = payload.exp * 1000; // Convert to milliseconds
         this.tokenCache = token;
         
-        // Enhanced JWT payload verification
-        console.log('🔍 JWT Token obtained - VERIFYING PAYLOAD:', {
+        // Enhanced JWT payload verification (only in development)
+        logger.security('JWT Token obtained', {
           userId: payload.user_id,
           sub: payload.sub,
           email: payload.email,
-          audience: payload.aud,
-          issuer: payload.iss,
-          expiresAt: new Date(this.tokenExpiry).toISOString(),
-          tokenPreview: token.substring(0, 20) + '...'
+          expiresAt: new Date(this.tokenExpiry).toISOString()
         });
 
         // CRITICAL: Check if email is a template literal
         if (payload.email && payload.email.includes('{{')) {
-          console.error('🚨 CRITICAL: JWT contains template literals!');
-          console.error('❌ Email field:', payload.email);
-          console.error('💡 Fix: Update Clerk JWT template to use email_address field');
-          console.error('💡 Expected: user@example.com, Got:', payload.email);
-          
-          // Still continue but warn about the issue
-          console.warn('⚠️ Continuing with invalid email - this will cause backend errors');
+          logger.error('JWT contains template literals in email field');
+          if (logger.isDev()) {
+            logger.debug('Email field contains template literal', { email: payload.email });
+          }
+          logger.warn('Continuing with invalid email - may cause backend errors');
         }
 
         // Verify essential claims
         if (!payload.user_id && !payload.sub) {
-          console.error('JWT missing user_id/sub claim');
+          logger.error('JWT missing user_id/sub claim');
           this.clearTokenCache();
           return null;
         }
         if (!payload.email) {
-          console.error('JWT missing email claim');
+          logger.error('JWT missing email claim');
           this.clearTokenCache();
           return null;
         }
@@ -91,7 +87,7 @@ export class AuthService {
 
       return token;
     } catch (error) {
-      console.error('Error getting JWT token:', error);
+      logger.error('Error getting JWT token', error);
       this.clearTokenCache();
       return null;
     }
@@ -100,9 +96,8 @@ export class AuthService {
   // Sync user with backend to ensure session alignment
   private async syncUserWithBackend(payload: any): Promise<void> {
     try {
-      console.log('🔄 Syncing user with backend...', {
-        userId: payload.user_id || payload.sub,
-        email: payload.email
+      logger.info('Syncing user with backend', {
+        userId: payload.user_id || payload.sub
       });
 
       // Import authApi dynamically to avoid circular dependency
@@ -116,22 +111,22 @@ export class AuthService {
         lastName: payload.last_name
       });
 
-      console.log('✅ User synchronized with backend successfully');
+      logger.info('User synchronized with backend successfully');
     } catch (error: any) {
-      console.warn('⚠️ Failed to sync user with backend:', error);
+      logger.warn('Failed to sync user with backend');
       
       // Enhanced error handling for different scenarios
       if (error?.response?.status === 404) {
-        console.warn('⚠️ Backend sync endpoint not found - user sync skipped');
-        console.log('💡 This is normal if the endpoint is not yet deployed');
+        logger.warn('Backend sync endpoint not found - user sync skipped');
+        logger.debug('This is normal if the endpoint is not yet deployed');
       } else if (error?.response?.status === 401) {
-        console.error('❌ Authentication failed during user sync');
-        console.log('💡 Check if JWT token is valid and not expired');
+        logger.error('Authentication failed during user sync');
+        logger.debug('Check if JWT token is valid and not expired');
       } else if (error?.response?.status === 500) {
-        console.error('❌ Backend error during user sync');
-        console.log('💡 Check backend logs for database connection issues');
+        logger.error('Backend error during user sync');
+        logger.debug('Check backend logs for database connection issues');
       } else {
-        console.error('❌ Unknown error during user sync:', error);
+        logger.error('Unknown error during user sync', error);
       }
       
       // Don't throw error - allow authentication to continue
@@ -174,36 +169,31 @@ export class AuthService {
       }).join(''));
       return JSON.parse(jsonPayload);
     } catch (error) {
-      console.error('Failed to decode JWT payload:', error);
+      logger.error('Failed to decode JWT payload', error);
       return null;
     }
   }
 
   // Handle authentication errors
   public handleAuthError(error: any): void {
-    console.error('🚨 AUTH ERROR DETECTED - NO REDIRECT FOR DEBUGGING:', {
+    // Sanitized error logging - details only in development
+    logger.error('Authentication error occurred', error, {
       status: error.response?.status,
-      message: error.message,
-      url: error.config?.url,
-      method: error.config?.method,
-      headers: error.config?.headers,
-      data: error.response?.data,
-      fullError: error
+      message: error.message
     });
 
-    // COMPLETELY DISABLE ALL REDIRECTS FOR DEBUGGING
-    console.log('🚫 REDIRECT DISABLED - You can now see the actual errors!');
+    if (logger.isDev()) {
+      // Detailed debugging info only in development
+      logger.debug('Full auth error details', {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        data: error.response?.data
+      });
+    }
     
     if (error.response?.status === 401) {
-      console.error('❌ 401 UNAUTHORIZED ERROR DETAILS:', {
-        requestUrl: error.config?.url,
-        requestMethod: error.config?.method,
-        hasAuthHeader: !!error.config?.headers?.Authorization,
-        authHeaderPreview: error.config?.headers?.Authorization?.substring(0, 50) + '...',
-        responseData: error.response?.data,
-        responseHeaders: error.response?.headers
-      });
-      
+      logger.warn('Unauthorized request - clearing token cache');
       this.clearTokenCache();
     }
   }
@@ -211,7 +201,7 @@ export class AuthService {
   // Reset redirect flag (call this after successful login)
   public resetRedirectFlag(): void {
     this.isRedirecting = false;
-    console.log('Redirect flag reset');
+    logger.debug('Redirect flag reset');
   }
 
   // Check if we're currently redirecting

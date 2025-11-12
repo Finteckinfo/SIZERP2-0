@@ -445,9 +445,36 @@ const handleExistingWallet = () => {
   window.addEventListener('wallet-connected', handleExistingWalletConnected, { once: true });
 };
 
-const handleExistingWalletConnected = (event: any) => {
-  // Existing wallet connected, proceed to password setup
-  currentStep.value = 'password';
+const handleExistingWalletConnected = async (event: any) => {
+  try {
+    // Mark as Web3 authenticated
+    localStorage.setItem('web3_authenticated', 'true');
+    
+    // Get wallet address for username
+    const walletAddress = localStorage.getItem('active_wallet');
+    if (walletAddress) {
+      // Store user info with wallet address as identifier
+      const userInfo = {
+        authMethod: 'web3',
+        walletAddress: walletAddress,
+        username: `User-${walletAddress.substring(0, 8)}`,
+        displayName: `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}`,
+        createdAt: Date.now()
+      };
+      localStorage.setItem('user_info', JSON.stringify(userInfo));
+    }
+    
+    toastMessage.value = 'Wallet connected successfully!';
+    toastColor.value = 'success';
+    showToast.value = true;
+    
+    // Redirect to dashboard
+    setTimeout(() => {
+      redirectToDashboard();
+    }, 1000);
+  } catch (error) {
+    console.error('Error handling wallet connection:', error);
+  }
 };
 
 const generateNewWallet = async () => {
@@ -508,6 +535,18 @@ const saveSecurityQuestions = async () => {
 
     // Mark as Web3 authenticated
     localStorage.setItem('web3_authenticated', 'true');
+    
+    // Store user info with wallet address
+    if (generatedWallet.value) {
+      const userInfo = {
+        authMethod: 'web3',
+        walletAddress: generatedWallet.value.address,
+        username: `User-${generatedWallet.value.address.substring(0, 8)}`,
+        displayName: `${generatedWallet.value.address.substring(0, 6)}...${generatedWallet.value.address.substring(generatedWallet.value.address.length - 4)}`,
+        createdAt: Date.now()
+      };
+      localStorage.setItem('user_info', JSON.stringify(userInfo));
+    }
 
     showSuccess.value = true;
   } catch (error: any) {
@@ -527,7 +566,19 @@ const cancelWalletCreation = () => {
 };
 
 const redirectToDashboard = () => {
-  router.push('/dashboard/default');
+  // Check for post-auth action
+  const postAuthAction = localStorage.getItem('post_auth_action');
+  
+  if (postAuthAction === 'create_project') {
+    localStorage.removeItem('post_auth_action');
+    router.push('/projects/create');
+  } else if (postAuthAction === 'join_project') {
+    localStorage.removeItem('post_auth_action');
+    router.push('/invitations');
+  } else {
+    // Default to main ERP dashboard
+    router.push('/dashboard/default');
+  }
 };
 
 // Watch for existing wallet connection from different path
@@ -536,15 +587,25 @@ watch(isWalletModalOpen, (isOpen) => {
     // Check if wallet was connected
     const walletConnected = localStorage.getItem('active_wallet');
     if (walletConnected) {
-      // Redirect to password setup for existing wallet
-      // For now, just redirect to dashboard as existing wallets don't need password setup in current flow
+      // Mark as Web3 authenticated and store user info
+      localStorage.setItem('web3_authenticated', 'true');
+      
+      const userInfo = {
+        authMethod: 'web3',
+        walletAddress: walletConnected,
+        username: `User-${walletConnected.substring(0, 8)}`,
+        displayName: `${walletConnected.substring(0, 6)}...${walletConnected.substring(walletConnected.length - 4)}`,
+        createdAt: Date.now()
+      };
+      localStorage.setItem('user_info', JSON.stringify(userInfo));
+      
       toastMessage.value = 'Wallet connected successfully!';
       toastColor.value = 'success';
       showToast.value = true;
       
       setTimeout(() => {
-        router.push('/dashboard/default');
-      }, 1500);
+        redirectToDashboard();
+      }, 1000);
     }
   }
 });

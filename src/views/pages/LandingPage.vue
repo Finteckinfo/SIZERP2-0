@@ -18,13 +18,18 @@
               blockchain-based project management, and guaranteed on-time payments.
             </p>
             <div class="hero-buttons">
-              <ZigZagButton class="hero-zigzag-button" variant="C" @click="goToLogin">
-                <v-icon class="mr-2">mdi-login</v-icon>
-                Get Started
+              <!-- For Project Owners -->
+              <ZigZagButton class="hero-zigzag-button" variant="C" @click="goToCreateProject">
+                <v-icon class="mr-2">mdi-briefcase-plus</v-icon>
+                Create a Project
               </ZigZagButton>
-              <ZigZagButton class="hero-zigzag-button" variant="B"
-                @click="scrollToFeatures"
-              >
+              <!-- For Team Members -->
+              <ZigZagButton class="hero-zigzag-button" variant="B" @click="goToJoinProject">
+                <v-icon class="mr-2">mdi-account-multiple-plus</v-icon>
+                Join a Project
+              </ZigZagButton>
+              <!-- Learn More -->
+              <ZigZagButton class="hero-zigzag-button" variant="A" @click="scrollToFeatures">
                 <v-icon class="mr-2">mdi-information</v-icon>
                 Learn More
               </ZigZagButton>
@@ -55,7 +60,7 @@
             size="x-large"
             variant="elevated"
             class="cta-button-large"
-            @click="goToLogin"
+            @click="goToCreateProject"
           >
             <v-icon class="mr-2">mdi-rocket-launch</v-icon>
             Start Your Journey
@@ -126,8 +131,30 @@ import FeatureBentoGrid from '@/views/pages/landing/components/FeatureBentoGrid.
 const router = useRouter()
 const featuresSection = ref<HTMLElement | null>(null)
 
-const goToLogin = () => {
-  router.push('/auth-choice')
+const goToCreateProject = () => {
+  // Check if user is authenticated
+  const isAuthenticated = localStorage.getItem('web3_authenticated') || localStorage.getItem('clerk_session')
+  
+  if (isAuthenticated) {
+    router.push('/projects/create')
+  } else {
+    // Store intent to create project after authentication
+    localStorage.setItem('post_auth_action', 'create_project')
+    router.push('/auth-choice')
+  }
+}
+
+const goToJoinProject = () => {
+  // Check if user is authenticated
+  const isAuthenticated = localStorage.getItem('web3_authenticated') || localStorage.getItem('clerk_session')
+  
+  if (isAuthenticated) {
+    router.push('/invitations')
+  } else {
+    // Store intent to join project after authentication
+    localStorage.setItem('post_auth_action', 'join_project')
+    router.push('/auth-choice')
+  }
 }
 
 const scrollToFeatures = () => {
