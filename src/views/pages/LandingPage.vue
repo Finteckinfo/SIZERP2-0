@@ -11,7 +11,7 @@
             </div>
             <h1 class="hero-title">
               <span class="ecosystem-heading">Welcome to</span>
-              <span class="brand-text">SizLand ERP</span>
+              <span class="brand-text"><span class="ecosystem-heading">SizLand ERP</span></span>
             </h1>
             <p class="hero-subtitle">
               Professional Web3 ERP system for remote teams with secure SIZ coin escrow payments, 
@@ -36,7 +36,9 @@
       <!-- Features Section -->
       <section ref="featuresSection" class="features-section">
         <div class="features-container">
-          <h2 class="section-title">Why Choose SizLand ERP?</h2>
+          <h2 class="section-title">
+            <span class="ecosystem-heading">Why Choose SizLand ERP?</span>
+          </h2>
           <div class="features-grid">
             <div class="feature-card">
               <div class="feature-icon">
