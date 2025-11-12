@@ -10,7 +10,7 @@
               <img src="/images/sizlogo.png" alt="SIZ Logo" class="hero-logo-image" />
             </div>
             <h1 class="hero-title">
-              Welcome to 
+              <span class="ecosystem-heading">Welcome to</span>
               <span class="brand-text">SizLand ERP</span>
             </h1>
             <p class="hero-subtitle">
@@ -257,6 +257,14 @@ const scrollToFeatures = () => {
   background-clip: text;
   text-shadow: none;
   font-weight: 700;
+}
+
+.ecosystem-heading {
+  font-family: 'PIXymbols Very Loose W01 Reg', 'Poppins', sans-serif;
+  display: inline-block;
+  margin-right: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .dark-theme .brand-text {
