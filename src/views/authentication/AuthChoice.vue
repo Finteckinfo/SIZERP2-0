@@ -9,7 +9,7 @@
             <div class="logo-container mb-4">
               <img src="/images/sizlogo.png" alt="SIZ Logo" class="auth-logo" />
             </div>
-            <h1 class="text-h3 font-weight-bold mb-3">
+            <h1 class="text-h3 font-weight-bold mb-3 ecosystem-font">
               Welcome to SizLand ERP
             </h1>
             <p class="text-h6 text-medium-emphasis">
@@ -197,6 +197,11 @@ const handleWeb2Choice = () => {
   justify-content: center;
   gap: 2.5rem;
   flex-wrap: nowrap;
+}
+
+.ecosystem-font {
+  font-family: 'PIXymbols Very Loose W01 Reg', 'Poppins', sans-serif;
+  letter-spacing: 0.08em;
 }
 
 .help-content {

@@ -449,6 +449,9 @@ const handleClick = () => {
   color: rgba(15, 23, 42, 0.78);
   flex: 1;
   width: 100%;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 2.25rem;
 }
 
 .auth-choice-card--dark .card-front__body {
@@ -458,6 +461,7 @@ const handleClick = () => {
 .feature-list li {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   line-height: 1.4;
 }
