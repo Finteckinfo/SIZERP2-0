@@ -50,6 +50,17 @@ interface Feature {
 
 const features: Feature[] = [
   {
+    title: 'Secure Escrow',
+    subtitle: 'Algorand-backed trust',
+    description:
+      'Safeguard every payment with on-chain escrow and automated release rules that give both teams and contributors confidence.',
+    cta: 'Explore escrow flow',
+    icon: 'mdi-shield-lock',
+    iconColor: '#4ade80',
+    variant: 'emerald',
+    layout: 'layout--center-tall',
+  },
+  {
     title: 'Web3 Native',
     subtitle: 'Wallet-first experience',
     description:
@@ -70,17 +81,6 @@ const features: Feature[] = [
     iconColor: '#c084fc',
     variant: 'violet',
     layout: 'layout--left-bottom',
-  },
-  {
-    title: 'Secure Escrow',
-    subtitle: 'Algorand-backed trust',
-    description:
-      'Safeguard every payment with on-chain escrow and automated release rules that give both teams and contributors confidence.',
-    cta: 'Explore escrow flow',
-    icon: 'mdi-shield-lock',
-    iconColor: '#4ade80',
-    variant: 'emerald',
-    layout: 'layout--center-tall',
   },
   {
     title: 'Guaranteed Payouts',
@@ -346,37 +346,37 @@ const features: Feature[] = [
 @media (min-width: 1200px) {
   .bento-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: repeat(4, minmax(170px, 1fr));
+    grid-template-rows: repeat(3, minmax(190px, 1fr));
   }
 
   .layout--left-top {
     grid-column: 1 / 2;
-    grid-row: 1 / 3;
+    grid-row: 1 / 2;
   }
 
   .layout--left-bottom {
     grid-column: 1 / 2;
-    grid-row: 3 / 4;
+    grid-row: 2 / 4;
   }
 
   .layout--center-tall {
     grid-column: 2 / 3;
-    grid-row: 1 / 4;
+    grid-row: 1 / 3;
   }
 
   .layout--center-short {
     grid-column: 2 / 3;
-    grid-row: 4 / 5;
+    grid-row: 3 / 4;
   }
 
   .layout--right-top {
     grid-column: 3 / 4;
-    grid-row: 1 / 3;
+    grid-row: 1 / 2;
   }
 
   .layout--right-bottom {
     grid-column: 3 / 4;
-    grid-row: 3 / 4;
+    grid-row: 2 / 4;
   }
 }
 
