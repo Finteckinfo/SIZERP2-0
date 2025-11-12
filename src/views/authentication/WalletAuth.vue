@@ -154,6 +154,7 @@
                     v-for="(word, index) in mnemonicWords"
                     :key="index"
                     class="mnemonic-word"
+                    :style="mnemonicWordStyle"
                   >
                     <span class="word-number">{{ index + 1 }}.</span>
                     <span class="word-text">{{ word }}</span>
@@ -416,6 +417,21 @@ const mnemonicCardStyle = computed(() => {
   return {
     '--v-theme-surface': 'rgba(91, 200, 91, 0.05)',
     'background-color': 'rgba(91, 200, 91, 0.05)'
+  };
+});
+
+const mnemonicWordStyle = computed(() => {
+  if (isDark.value) {
+    return {
+      background: '#1f2937',
+      border: '1px solid rgba(255, 255, 255, 0.12)',
+      color: '#f1f5f9'
+    };
+  }
+  return {
+    background: '#ffffff',
+    border: '1px solid rgba(0, 0, 0, 0.1)',
+    color: '#0f172a'
   };
 });
 
