@@ -45,7 +45,7 @@
           </v-row>
 
           <!-- Help Section -->
-          <div class="text-center mt-8">
+          <div class="text-center mt-8 help-section">
             <v-btn
               variant="text"
               color="primary"
@@ -193,10 +193,26 @@ const handleWeb2Choice = () => {
 
 .auth-options {
   margin-top: 3rem;
+  row-gap: 2.5rem;
+}
+
+.auth-options :deep(.v-col) {
   display: flex;
   justify-content: center;
-  gap: 2.5rem;
-  flex-wrap: nowrap;
+}
+
+.help-section {
+  margin-bottom: 0;
+}
+
+@media (max-width: 960px) {
+  .auth-options {
+    margin-top: 2rem;
+  }
+
+  .auth-options :deep(.v-col) {
+    justify-content: stretch;
+  }
 }
 
 .ecosystem-font {
@@ -221,18 +237,24 @@ const handleWeb2Choice = () => {
   .auth-options {
     gap: 2rem;
   }
-}
 
-@media (max-width: 1024px) {
-  .auth-options {
-    flex-wrap: wrap;
-    gap: 2rem;
+  .help-section {
+    margin-bottom: 3.5rem;
   }
 }
 
 @media (max-width: 768px) {
   .auth-choice-page {
     padding: 1.5rem 0;
+  }
+
+  .auth-options {
+    margin-top: 1.5rem;
+    row-gap: 1.5rem;
+  }
+
+  .help-section {
+    margin-bottom: 4.5rem;
   }
 }
 
