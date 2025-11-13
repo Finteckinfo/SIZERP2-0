@@ -302,6 +302,8 @@ import { useTheme } from '@/composables/useTheme';
 import { taskApi } from '@/services/projectApi';
 import type { CreateTaskData, KanbanTask } from '../types/kanban';
 
+type SelectOption<T = string> = { title: string; value: T };
+
 interface Props {
   modelValue: boolean;
   defaultStatus?: string;
@@ -354,29 +356,29 @@ const rules = {
 };
 
 // Options
-const statusOptions = [
+const statusOptions: SelectOption[] = [
   { title: 'Pending', value: 'PENDING' },
   { title: 'In Progress', value: 'IN_PROGRESS' },
   { title: 'Completed', value: 'COMPLETED' },
   { title: 'Approved', value: 'APPROVED' }
-] satisfies SelectOption[];
+];
 
-const priorityOptions = [
+const priorityOptions: SelectOption[] = [
   { title: 'Critical', value: 'CRITICAL' },
   { title: 'High', value: 'HIGH' },
   { title: 'Medium', value: 'MEDIUM' },
   { title: 'Low', value: 'LOW' }
 ];
 
-const projectOptions = ref([
+const projectOptions = ref<SelectOption[]>([
   // Will be loaded from user's projects
-]);
+]) as SelectOption[];
 
-const departmentOptions = ref<Array<{title: string, value: string}>>([
+const departmentOptions = ref<SelectOption[]>([
   // Will be loaded based on selected project
 ]);
 
-const assigneeOptions = ref([
+const assigneeOptions = ref<SelectOption<string | null>>([
   { title: 'Unassigned', value: null }
   // Will be loaded from project's team members
 ]);
