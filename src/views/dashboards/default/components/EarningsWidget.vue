@@ -603,6 +603,26 @@ onUnmounted(() => {
 
 .loading-state {
   padding: 24px 0;
+  border: 1px dashed var(--erp-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--erp-page-bg) 85%, transparent);
+}
+
+.loading-state :deep(.v-skeleton-loader) {
+  background: transparent;
+}
+
+.loading-state :deep(.v-skeleton-loader__bone) {
+  background: color-mix(in srgb, var(--erp-surface) 70%, transparent);
+  border-radius: 10px;
+}
+
+.loading-state :deep(.v-skeleton-loader__bone)::after {
+  background: linear-gradient(90deg,
+    transparent,
+    color-mix(in srgb, var(--erp-surface) 40%, transparent),
+    transparent
+  );
 }
 
 /* Responsive Design */
