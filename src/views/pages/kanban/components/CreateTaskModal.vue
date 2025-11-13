@@ -370,15 +370,13 @@ const priorityOptions: SelectOption[] = [
   { title: 'Low', value: 'LOW' }
 ];
 
-const projectOptions = ref<SelectOption[]>([
+const projectOptions = ref<SelectOption<string>[]>([
   // Will be loaded from user's projects
-]) as SelectOption[];
-
-const departmentOptions = ref<SelectOption[]>([
-  // Will be loaded based on selected project
 ]);
 
-const assigneeOptions = ref<SelectOption<string | null>>([
+const departmentOptions = ref<SelectOption<string>[]>([]);
+
+const assigneeOptions = ref<SelectOption<string | null>[]>([
   { title: 'Unassigned', value: null }
   // Will be loaded from project's team members
 ]);
