@@ -322,10 +322,16 @@
                 <v-form ref="addDepartmentForm" v-model="addDepartmentValid">
                   <v-row>
                     <v-col cols="12" md="6">
-                      <v-text-field v-model="newDepartment.name" label="Department Name" variant="outlined" :rules="[v=>!!v||'Required']" />
+                      <v-text-field
+                         v-model="newDepartment.name"
+                         label="Department Name"
+                         variant="outlined"
+                         :rules="[v=>!!v||'Required']"
+                        class="workspace-input"
+                       />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-select v-model="newDepartment.type" :items="departmentTypeOptions" label="Type" variant="outlined" :rules="[v=>!!v||'Required']" />
+                      <v-select v-model="newDepartment.type" :items="departmentTypeOptions" label="Type" variant="outlined" :rules="[v=>!!v||'Required']" class="workspace-select" />
                     </v-col>
                     <v-col cols="12">
                       <v-textarea v-model="newDepartment.description" label="Description" variant="outlined" rows="3" />
@@ -347,39 +353,43 @@
                 <v-form ref="addTaskForm" v-model="addTaskValid">
                   <v-row>
                     <v-col cols="12" md="6">
-                      <v-text-field v-model="newTask.title" label="Task Title" variant="outlined" :rules="[v=>!!v||'Required']" />
+                      <v-text-field
+                        v-model="newTask.title"
+                        label="Task Title"
+                        variant="outlined"
+                        :rules="[v=>!!v||'Required']"
+                        class="workspace-input"
+                      />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-select v-model="newTask.priority" :items="priorityOptions" label="Priority" variant="outlined" :rules="[v=>!!v||'Required']" />
+                      <v-select v-model="newTask.priority" :items="priorityOptions" label="Priority" variant="outlined" :rules="[v=>!!v||'Required']" class="workspace-select" />
                     </v-col>
                     <v-col cols="12">
                       <v-textarea v-model="newTask.description" label="Description" variant="outlined" rows="3" />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-select v-model="newTask.departmentId" :items="departmentSelectItems" item-title="name" item-value="id" label="Department" variant="outlined" :rules="[v=>!!v||'Required']" />
+                      <v-select v-model="newTask.departmentId" :items="departmentSelectItems" item-title="name" item-value="id" label="Department" variant="outlined" :rules="[v=>!!v||'Required']" class="workspace-select" />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-select v-model="newTask.assignedRoleId" :items="roleSelectItems" item-title="label" item-value="id" label="Assign To (optional)" variant="outlined" />
+                      <v-select v-model="newTask.assignedRoleId" :items="roleSelectItems" item-title="label" item-value="id" label="Assign To (optional)" variant="outlined" class="workspace-select" />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-text-field v-model="newTask.dueDate" type="date" label="Due Date" variant="outlined" :rules="[v=>!!v||'Required']" />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field 
-                        v-model.number="newTask.paymentAmount" 
-                        type="number" 
-                        label="Payment Amount (SIZ)" 
+                      <v-text-field
+                        v-model="newTask.dueDate"
+                        label="Due Date"
+                        type="date"
                         variant="outlined"
-                        suffix="SIZ"
-                        :min="0"
-                        :step="0.01"
-                        hint="Amount to pay when task is completed"
-                        persistent-hint
-                      >
-                        <template v-slot:prepend-inner>
-                          <v-icon color="success" size="20">mdi-cash</v-icon>
-                        </template>
-                      </v-text-field>
+                        class="workspace-input"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model.number="newTask.paymentAmount"
+                        label="Payment Amount (SIZ)"
+                        type="number"
+                        variant="outlined"
+                        class="workspace-input"
+                      />
                     </v-col>
                     <v-col cols="12">
                       <v-btn :color="'var(--erp-accent-green)'" :loading="submitting" @click="submitNewTask">Create Task</v-btn>
@@ -395,10 +405,16 @@
                       <v-text-field v-model="invite.email" label="Invitee Email" variant="outlined" :rules="emailRules" />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-select v-model="invite.role" :items="inviteRoleOptions" label="Role" variant="outlined" :rules="[v=>!!v||'Required']" />
+                      <v-select v-model="invite.role" :items="inviteRoleOptions" label="Role" variant="outlined" :rules="[v=>!!v||'Required']" class="workspace-select" />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-text-field v-model="invite.expiresAtDisplay" type="datetime-local" label="Expires At" variant="outlined" :rules="[v=>!!v||'Required']" />
+                      <v-text-field
+                        v-model="invite.expiresAtDisplay"
+                        label="Invite Expires"
+                        type="datetime-local"
+                        variant="outlined"
+                        class="workspace-input"
+                      />
                     </v-col>
                     
                     <!-- Payment Configuration Section -->
@@ -419,6 +435,7 @@
                         label="Payment Type" 
                         variant="outlined"
                         :rules="[v=>!!v||'Required']"
+                        class="workspace-select"
                       >
                         <template #item="{ props, item }">
                           <v-list-item v-bind="props">
@@ -448,6 +465,8 @@
                           variant="outlined" 
                           :rules="[v=>!!v||'Required', v=>v>0||'Must be positive']"
                           suffix="SIZ"
+                          class="mt-2"
+                          :class="['workspace-input', 'mt-2']"
                         />
                       </v-col>
                       <v-col cols="12" md="6">
@@ -456,9 +475,10 @@
                           :items="salaryFrequencyOptions" 
                           item-title="label"
                           item-value="value"
-                          label="Payment Frequency" 
+                          label="Salary Frequency" 
                           variant="outlined" 
                           :rules="[v=>!!v||'Required']"
+                          class="workspace-select"
                         />
                       </v-col>
                     </template>
@@ -468,13 +488,14 @@
                       <v-col cols="12" md="6">
                         <v-text-field 
                           v-model.number="invite.oversightRate" 
-                          label="Oversight Rate (%)" 
+                          label="Oversight Rate (percentage of task payments)"
                           type="number"
                           variant="outlined" 
                           :rules="[v=>!!v||'Required', v=>v>0&&v<=100||'Must be 1-100%']"
                           suffix="%"
                           hint="Percentage of task payments (e.g., 5 for 5%)"
                           persistent-hint
+                          class="workspace-input"
                         />
                       </v-col>
                     </template>
@@ -484,11 +505,12 @@
                       <v-col cols="12" md="6">
                         <v-text-field 
                           v-model.number="invite.milestoneAmount" 
-                          label="Milestone Amount (SIZ)" 
+                          label="Milestone Payment Amount (SIZ)" 
                           type="number"
                           variant="outlined" 
                           :rules="[v=>!!v||'Required', v=>v>0||'Must be positive']"
                           suffix="SIZ"
+                          class="workspace-input"
                         />
                       </v-col>
                     </template>
@@ -1780,6 +1802,55 @@ onMounted(() => {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+}
+
+.project-workspace-page {
+   display: flex;
+   flex-direction: column;
+   gap: 24px;
+   min-height: 100vh;
+}
+
+.workspace-input,
+.workspace-select {
+  :deep(.v-field) {
+    background: color-mix(in srgb, var(--erp-surface) 92%, transparent);
+    border: 1px solid color-mix(in srgb, var(--erp-border) 80%, transparent);
+    border-radius: 12px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  :deep(.v-field__outline) {
+    display: none;
+  }
+
+  :deep(.v-field__input) {
+    color: var(--erp-text);
+  }
+
+  :deep(.v-label) {
+    color: color-mix(in srgb, var(--erp-text) 70%, transparent);
+    opacity: 0.9;
+  }
+
+  :deep(.v-field--focused .v-field__input) {
+    color: var(--erp-text);
+  }
+
+  :deep(.v-field--focused) {
+    border-color: var(--erp-accent-blue);
+    background: color-mix(in srgb, var(--erp-surface) 85%, transparent);
+  }
+
+  :deep(.v-list) {
+    background: color-mix(in srgb, var(--erp-surface) 98%, transparent);
+    color: var(--erp-text);
+  }
+
+  :deep(.v-list-item--active) {
+    background: color-mix(in srgb, var(--erp-accent-blue) 12%, transparent);
+    color: var(--erp-text);
   }
 }
 </style>
