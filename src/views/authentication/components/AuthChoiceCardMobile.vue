@@ -2,7 +2,7 @@
   <v-card
     class="mobile-auth-card"
     :class="[`mobile-auth-card--${flavor}`]"
-    rounded="xl"
+    rounded="sm"
     elevation="12"
     @click="handleClick"
   >
