@@ -31,7 +31,7 @@
             <v-icon>mdi-plus</v-icon>
           </v-btn>
           
-          <v-menu>
+          <v-menu :scrim="false" content-class="kanban-menu">
             <template #activator="{ props: menuProps }">
               <v-btn
                 icon
@@ -44,7 +44,7 @@
               </v-btn>
             </template>
             
-            <v-list density="compact">
+            <v-list density="compact" class="kanban-menu">
               <v-list-item
                 prepend-icon="mdi-select-all"
                 title="Select All"
@@ -327,54 +327,37 @@ const handleDrop = (event: DragEvent) => {
 
 <style scoped>
 .kanban-column {
-  width: 380px;
-  min-width: 380px;
-  max-width: 380px;
-  height: 100%;
+  width: 360px;
+  min-width: 360px;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  box-shadow: 
-    0 10px 25px rgba(0, 0, 0, 0.1),
-    0 4px 10px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(226, 232, 240, 0.6);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--erp-surface);
+  border: 1px solid var(--erp-border);
+  border-radius: 18px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
-  overflow: hidden;
   flex-shrink: 0;
-  /* Ensure columns maintain their size and don't compress */
-  flex-grow: 0;
-  flex-basis: 380px;
 }
 
-.kanban-column::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
-  border-radius: 20px 20px 0 0;
+.kanban-column:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.12);
 }
 
 .column-header {
   flex-shrink: 0;
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
-  border-radius: 20px 20px 0 0;
-  border-top: 3px solid transparent;
-  background: rgba(248, 250, 252, 0.8);
-  position: relative;
-  z-index: 2;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--erp-border);
+  border-radius: 18px 18px 0 0;
+  background: var(--erp-surface);
 }
 
 .header-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
 }
 
 .column-info {
@@ -385,14 +368,13 @@ const handleDrop = (event: DragEvent) => {
 }
 
 .column-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #1e293b;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--erp-text);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.025em;
 }
 
 .column-actions {
@@ -405,25 +387,26 @@ const handleDrop = (event: DragEvent) => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-top: 0.5rem;
-  padding: 0.25rem 0.5rem;
-  background: rgba(245, 158, 11, 0.1);
-  border-radius: 6px;
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  margin-top: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--erp-primary) 10%, var(--erp-surface));
+  border: 1px solid color-mix(in srgb, var(--erp-primary) 30%, transparent);
 }
 
 .column-content {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 1.5rem 2rem;
-  transition: all 0.3s ease;
-  position: relative;
+  padding: 1.25rem 1.5rem 1.5rem;
+  background: var(--erp-surface);
+  border-radius: 0 0 18px 18px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .column-content.drag-over {
-  background: rgba(59, 130, 246, 0.05);
-  border: 2px dashed rgba(59, 130, 246, 0.3);
+  background: color-mix(in srgb, var(--erp-primary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--erp-primary) 35%, transparent);
 }
 
 .tasks-container {
@@ -438,20 +421,25 @@ const handleDrop = (event: DragEvent) => {
   align-items: center;
   justify-content: center;
   min-height: 120px;
-  border: 2px dashed var(--erp-border);
-  border-radius: 8px;
+  border: 1px dashed var(--erp-border);
+  border-radius: 12px;
   text-align: center;
-  transition: all 0.2s ease;
+  background: var(--erp-page-bg);
+  color: var(--erp-text);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .empty-drop-zone.drag-over {
-  border-color: rgba(59, 130, 246, 0.5);
-  background: rgba(59, 130, 246, 0.05);
+  border-color: color-mix(in srgb, var(--erp-primary) 40%, transparent);
+  background: color-mix(in srgb, var(--erp-primary) 10%, transparent);
 }
 
 .collapsed-content {
   padding: 1rem 1.25rem;
   text-align: center;
+  background: var(--erp-surface);
+  border-top: 1px solid var(--erp-border);
+  border-radius: 0 0 18px 18px;
 }
 
 .column-stats {
@@ -464,156 +452,55 @@ const handleDrop = (event: DragEvent) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: var(--erp-text);
 }
 
 .stat-label {
   font-weight: 500;
-  color: var(--erp-text);
 }
 
 .stat-value {
-  color: var(--erp-text);
   opacity: 0.8;
 }
 
-/* Column States */
 .column-collapsed {
-  max-height: 120px;
+  max-height: 140px;
 }
 
 .column-limit-reached .column-header {
-  background: rgba(245, 158, 11, 0.05);
+  background: color-mix(in srgb, var(--erp-primary) 12%, var(--erp-surface));
 }
 
 .column-drag-over {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 16px 28px rgba(15, 23, 42, 0.16);
 }
 
-/* Responsive Design */
+@media (max-width: 1024px) {
+  .kanban-column {
+    width: 320px;
+    min-width: 320px;
+  }
+}
+
 @media (max-width: 768px) {
   .kanban-column {
-    width: 300px;
-    min-width: 300px;
-    max-width: 300px;
-    flex-shrink: 0;
-    flex-grow: 0;
-    flex-basis: 300px;
+    width: 100%;
+    min-width: 100%;
   }
-  
-  .column-header {
-    padding: 0.875rem 1rem;
-  }
-  
-  .column-content {
-    padding: 0.875rem 1rem;
-  }
-  
-  .column-title {
-    font-size: 0.875rem;
-  }
-  
-  .column-actions .v-btn {
-    min-width: 32px;
-    height: 32px;
-  }
-}
 
-@media (max-width: 480px) {
-  .kanban-column {
-    width: 280px;
-    min-width: 280px;
-    max-width: 280px;
-    flex-shrink: 0;
-    flex-grow: 0;
-    flex-basis: 280px;
-  }
-  
-  .column-header {
-    padding: 0.75rem 0.875rem;
-  }
-  
+  .column-header,
   .column-content {
-    padding: 0.75rem 0.875rem;
+    padding: 1rem 1.1rem;
   }
-  
-  .column-title {
-    font-size: 0.8125rem;
-  }
-  
-  .column-actions .v-btn {
-    min-width: 28px;
-    height: 28px;
-  }
-  
-  .empty-drop-zone {
-    min-height: 100px;
-    padding: 1rem;
-  }
-  
-  .empty-drop-zone .v-icon {
-    font-size: 36px !important;
-  }
-}
 
-/* Large screen optimizations */
-@media (min-width: 1440px) {
-  .kanban-column {
-    width: 420px;
-    min-width: 420px;
-    max-width: 420px;
-    flex-shrink: 0;
-    flex-grow: 0;
-    flex-basis: 420px;
-  }
-  
-  .column-header {
-    padding: 2rem 2.5rem;
-  }
-  
-  .column-content {
-    padding: 2rem 2.5rem;
-  }
-  
-  .column-title {
-    font-size: 1.25rem;
-  }
-  
   .tasks-container {
-    gap: 1.25rem;
+    gap: 0.75rem;
   }
 }
 
-@media (min-width: 1920px) {
-  .kanban-column {
-    width: 480px;
-    min-width: 480px;
-    max-width: 480px;
-    flex-shrink: 0;
-    flex-grow: 0;
-    flex-basis: 480px;
-  }
-  
-  .column-header {
-    padding: 2.5rem 3rem;
-  }
-  
-  .column-content {
-    padding: 2.5rem 3rem;
-  }
-  
-  .column-title {
-    font-size: 1.375rem;
-  }
-  
-  .tasks-container {
-    gap: 1.5rem;
-  }
-}
-
-/* Scrollbar styling */
 .column-content::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .column-content::-webkit-scrollbar-track {
@@ -622,45 +509,19 @@ const handleDrop = (event: DragEvent) => {
 
 .column-content::-webkit-scrollbar-thumb {
   background: var(--erp-border);
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 .column-content::-webkit-scrollbar-thumb:hover {
   background: var(--erp-text);
-  opacity: 0.3;
+  opacity: 0.4;
 }
 
-:global(.dark-theme) .kanban-column {
-  background: color-mix(in srgb, var(--erp-surface) 90%, transparent);
-  border: 1px solid color-mix(in srgb, var(--erp-border) 70%, transparent);
-  box-shadow:
-    0 12px 28px rgba(8, 15, 33, 0.35),
-    0 4px 10px rgba(8, 15, 33, 0.22);
+::global(.dark-theme) .kanban-column {
+  box-shadow: 0 16px 32px rgba(8, 15, 33, 0.35);
 }
 
-:global(.dark-theme) .kanban-column::before {
-  opacity: 0.8;
-}
-
-:global(.dark-theme) .column-header {
-  background: color-mix(in srgb, var(--erp-surface) 92%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--erp-border) 65%, transparent);
-}
-
-:global(.dark-theme) .column-title {
-  color: var(--erp-text);
-}
-
-:global(.dark-theme) .column-info .v-icon {
-  color: inherit;
-}
-
-:global(.dark-theme) .column-content {
-  background: color-mix(in srgb, var(--erp-surface) 96%, transparent);
-}
-
-:global(.dark-theme) .empty-drop-zone {
-  border-color: color-mix(in srgb, var(--erp-border) 65%, transparent);
-  background: color-mix(in srgb, var(--erp-surface) 88%, transparent);
+::global(.dark-theme) .empty-drop-zone {
+  background: color-mix(in srgb, var(--erp-page-bg) 85%, transparent);
 }
 </style>

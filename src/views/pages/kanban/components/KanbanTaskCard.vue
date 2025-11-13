@@ -163,7 +163,7 @@
           <v-icon size="16">mdi-pencil</v-icon>
         </v-btn>
         
-        <v-menu>
+        <v-menu :scrim="false" content-class="kanban-menu">
           <template #activator="{ props: menuProps }">
             <v-btn
               icon
@@ -177,7 +177,7 @@
             </v-btn>
           </template>
           
-          <v-list density="compact">
+          <v-list density="compact" class="kanban-menu">
             <v-list-item
               prepend-icon="mdi-eye"
               title="View Details"
@@ -404,43 +404,28 @@ const handleDragEnd = () => {
 <style scoped>
 .kanban-task-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(226, 232, 240, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--erp-surface);
+  border: 1px solid var(--erp-border);
   border-radius: 16px;
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.05),
-    0 2px 4px rgba(0, 0, 0, 0.03);
-  overflow: hidden;
-}
-
-.kanban-task-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-  border-radius: 16px 16px 0 0;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .kanban-task-card:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.1),
-    0 8px 16px rgba(0, 0, 0, 0.05);
-  border-color: rgba(59, 130, 246, 0.4);
-  background: rgba(255, 255, 255, 1);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.12);
+  border-color: color-mix(in srgb, var(--erp-primary) 35%, var(--erp-border));
 }
 
 .task-selected {
-  border-color: rgba(59, 130, 246, 0.5);
-  background: rgba(59, 130, 246, 0.05);
+  border-color: color-mix(in srgb, var(--erp-primary) 55%, var(--erp-border));
+  background: color-mix(in srgb, var(--erp-primary) 14%, var(--erp-surface));
 }
 
 .task-draggable {
@@ -452,11 +437,11 @@ const handleDragEnd = () => {
 }
 
 .task-overdue {
-  border-left: 4px solid #ef4444;
+  border-left: 3px solid rgba(239, 68, 68, 0.8);
 }
 
 .task-due-soon {
-  border-left: 4px solid #f59e0b;
+  border-left: 3px solid rgba(245, 158, 11, 0.8);
 }
 
 .task-selection {
@@ -467,23 +452,22 @@ const handleDragEnd = () => {
 }
 
 .task-priority {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
 }
 
 .task-title {
   font-size: 1rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 0.75rem 0;
+  font-weight: 600;
+  color: var(--erp-text);
+  margin: 0;
   line-height: 1.4;
   word-break: break-word;
-  letter-spacing: -0.025em;
 }
 
 .task-description {
   font-size: 0.875rem;
-  color: #64748b;
-  margin: 0 0 1rem 0;
+  color: color-mix(in srgb, var(--erp-text) 75%, transparent);
+  margin: 0;
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -494,51 +478,47 @@ const handleDragEnd = () => {
 .task-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
-  margin-bottom: 0.75rem;
+  gap: 0.4rem;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: 0.35rem;
 }
 
 .meta-text {
   font-size: 0.75rem;
-  color: var(--erp-text);
-  opacity: 0.7;
+  color: color-mix(in srgb, var(--erp-text) 70%, transparent);
 }
 
 .meta-overdue .meta-text {
-  color: #ef4444;
+  color: rgba(239, 68, 68, 0.9);
   opacity: 1;
   font-weight: 500;
 }
 
 .meta-due-soon .meta-text {
-  color: #f59e0b;
+  color: rgba(245, 158, 11, 0.95);
   opacity: 1;
   font-weight: 500;
 }
 
-.progress-section {
-  margin-bottom: 0.75rem;
+.progress-section,
+.payment-badge,
+.checklist-section {
+  margin-top: 0.5rem;
 }
 
 .payment-badge {
   display: flex;
   align-items: center;
-  margin-bottom: 0.75rem;
+  gap: 0.5rem;
 }
 
 .payment-chip {
   font-weight: 600;
   font-size: 0.75rem;
-}
-
-.checklist-section {
-  margin-bottom: 0.75rem;
 }
 
 .checklist-progress {
@@ -549,8 +529,7 @@ const handleDragEnd = () => {
 
 .checklist-text {
   font-size: 0.75rem;
-  color: var(--erp-text);
-  opacity: 0.7;
+  color: color-mix(in srgb, var(--erp-text) 70%, transparent);
   flex: 1;
 }
 
@@ -558,6 +537,9 @@ const handleDragEnd = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--erp-border);
 }
 
 .task-assignee {
@@ -568,7 +550,7 @@ const handleDragEnd = () => {
 .task-actions {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.35rem;
   opacity: 0;
   transition: opacity 0.2s ease;
 }
@@ -590,196 +572,56 @@ const handleDragEnd = () => {
   opacity: 1;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .kanban-task-card {
-    padding: 0.875rem;
-    min-height: 120px;
+    padding: 1rem 1.1rem;
   }
-  
-  .task-title {
-    font-size: 0.875rem;
-    line-height: 1.3;
-    margin-bottom: 0.625rem;
-  }
-  
-  .task-description {
-    font-size: 0.8125rem;
-    line-height: 1.4;
-    margin-bottom: 0.875rem;
-  }
-  
-  .task-meta {
-    gap: 0.5rem;
-    margin-bottom: 0.875rem;
-  }
-  
-  .meta-item {
-    gap: 0.5rem;
-  }
-  
-  .meta-text {
-    font-size: 0.8125rem;
-  }
-  
+
   .task-actions {
     opacity: 1;
   }
-  
+
   .task-actions .v-btn {
     min-width: 28px;
     height: 28px;
-  }
-  
-  .task-assignee .v-avatar {
-    width: 28px !important;
-    height: 28px !important;
-  }
-  
-  .progress-section,
-  .checklist-section {
-    margin-bottom: 0.875rem;
   }
 }
 
 @media (max-width: 480px) {
   .kanban-task-card {
-    padding: 0.75rem;
-    min-height: 100px;
+    padding: 0.85rem;
   }
-  
+
   .task-title {
-    font-size: 0.8125rem;
-    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
   }
-  
+
   .task-description {
-    font-size: 0.75rem;
-    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
   }
-  
-  .task-meta {
-    gap: 0.375rem;
-    margin-bottom: 0.75rem;
-  }
-  
-  .meta-item {
-    gap: 0.375rem;
-  }
-  
+
   .meta-text {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
-  
+
   .task-actions .v-btn {
-    min-width: 24px;
-    height: 24px;
-  }
-  
-  .task-assignee .v-avatar {
-    width: 24px !important;
-    height: 24px !important;
-  }
-  
-  .task-priority .v-chip {
-    font-size: 0.625rem;
-    height: 20px;
-  }
-  
-  .progress-section,
-  .checklist-section {
-    margin-bottom: 0.75rem;
+    min-width: 26px;
+    height: 26px;
   }
 }
 
-/* Large screen optimizations */
 @media (min-width: 1440px) {
   .kanban-task-card {
-    padding: 2rem;
-    min-height: 160px;
-    border-radius: 20px;
+    padding: 1.75rem 2rem;
+    border-radius: 18px;
   }
-  
-  .task-title {
-    font-size: 1.125rem;
-    margin-bottom: 1rem;
-  }
-  
-  .task-description {
-    font-size: 1rem;
-    margin-bottom: 1.25rem;
-    -webkit-line-clamp: 4;
-  }
-  
-  .task-meta {
-    gap: 0.75rem;
-    margin-bottom: 1.25rem;
-  }
-  
-  .meta-text {
-    font-size: 0.875rem;
-  }
-  
-  .task-actions .v-btn {
-    min-width: 44px;
-    height: 44px;
-    border-radius: 12px;
-  }
-  
-  .task-assignee .v-avatar {
-    width: 40px !important;
-    height: 40px !important;
-  }
-  
-  .task-priority .v-chip {
-    font-size: 0.875rem;
-    height: 28px;
-    border-radius: 14px;
-  }
-}
 
-@media (min-width: 1920px) {
-  .kanban-task-card {
-    padding: 2.5rem;
-    min-height: 180px;
-    border-radius: 24px;
-  }
-  
   .task-title {
-    font-size: 1.25rem;
-    margin-bottom: 1.25rem;
-  }
-  
-  .task-description {
     font-size: 1.125rem;
-    margin-bottom: 1.5rem;
-    -webkit-line-clamp: 5;
   }
-  
-  .task-meta {
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .meta-text {
-    font-size: 1rem;
-  }
-  
-  .task-actions .v-btn {
-    min-width: 48px;
-    height: 48px;
-    border-radius: 16px;
-  }
-  
-  .task-assignee .v-avatar {
-    width: 44px !important;
-    height: 44px !important;
-  }
-  
-  .task-priority .v-chip {
-    font-size: 1rem;
-    height: 32px;
-    border-radius: 16px;
+
+  .task-description {
+    -webkit-line-clamp: 4;
   }
 }
 </style>

@@ -628,26 +628,24 @@ watch(() => props.modelValue, (isOpen) => {
 }
 
 .create-task-card {
-  background: color-mix(in srgb, var(--erp-surface) 96%, transparent);
-  border: 1px solid color-mix(in srgb, var(--erp-border) 80%, transparent);
+  background: var(--erp-surface);
+  border: 1px solid var(--erp-border);
   border-radius: 20px;
-  box-shadow:
-    0 18px 36px rgba(15, 23, 42, 0.16),
-    0 8px 16px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.12);
 }
 
 .kanban-modal-input :deep(.v-field),
 .kanban-modal-select :deep(.v-field) {
-  background: color-mix(in srgb, var(--erp-surface) 95%, transparent);
-  border: 1px solid color-mix(in srgb, var(--erp-border) 82%, transparent);
+  background: var(--erp-surface);
+  border: 1px solid var(--erp-border);
   border-radius: 12px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .kanban-modal-input :deep(.v-field--focused),
 .kanban-modal-select :deep(.v-field--focused) {
-  border-color: var(--erp-accent-blue);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--erp-accent-blue) 22%, transparent);
+  border-color: var(--erp-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--erp-primary) 22%, transparent);
 }
 
 .kanban-modal-input :deep(.v-field__input),
@@ -658,10 +656,10 @@ watch(() => props.modelValue, (isOpen) => {
 }
 
 :global(.kanban-modal-select-menu) {
-  background: color-mix(in srgb, var(--erp-surface) 96%, transparent) !important;
+  background: var(--erp-surface) !important;
   border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--erp-border) 85%, transparent);
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.28) !important;
+  border: 1px solid var(--erp-border);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18) !important;
 }
 
 :global(.kanban-modal-select-menu .v-list) {
@@ -674,7 +672,7 @@ watch(() => props.modelValue, (isOpen) => {
 }
 
 :global(.kanban-modal-select-menu .v-list-item--active) {
-  background: color-mix(in srgb, var(--erp-accent-blue) 18%, transparent) !important;
+  background: color-mix(in srgb, var(--erp-primary) 18%, transparent) !important;
 }
 
 :global(.kanban-modal-select-menu .v-overlay__scrim) {
@@ -682,10 +680,6 @@ watch(() => props.modelValue, (isOpen) => {
 }
 
 :global(.dark-theme) .create-task-card {
-  background: color-mix(in srgb, var(--erp-surface) 90%, transparent);
-  border: 1px solid color-mix(in srgb, var(--erp-border) 65%, transparent);
-  box-shadow:
-    0 24px 48px rgba(8, 15, 33, 0.38),
-    0 10px 24px rgba(8, 15, 33, 0.2);
+  box-shadow: 0 24px 42px rgba(8, 15, 33, 0.32);
 }
 </style>

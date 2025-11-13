@@ -5,7 +5,7 @@
     
     <!-- Hero Section with Retro Grid -->
     <div class="kanban-hero">
-      <RetroGrid />
+      <RetroGrid v-if="!isDark" class="kanban-hero-grid" />
       <div class="hero-content">
         <div class="hero-icon">
           <v-icon size="48">mdi-view-column</v-icon>
@@ -215,6 +215,7 @@ import CreateTaskModal from './components/CreateTaskModal.vue';
 import BulkActionsModal from './components/BulkActionsModal.vue';
 import { RetroGrid } from '@/components/ui/retro-grid';
 import KanbanAnalytics from './components/KanbanAnalytics.vue';
+import { useTheme } from '@/composables/useTheme';
 
 // Kanban composable (no project ID needed for cross-project view)
 const {
@@ -319,10 +320,7 @@ const handleBulkActionsCompleted = () => {
   showBulkActions.value = false;
 };
 
-// Lifecycle
-onMounted(() => {
-  console.log('[KanbanBoard] Mounted - loading cross-project kanban board');
-});
+const { isDark } = useTheme();
 </script>
 
 <style scoped>
@@ -330,21 +328,30 @@ onMounted(() => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem 1.75rem 3rem;
   background: var(--erp-page-bg);
-  overflow: hidden;
-  position: relative;
 }
 
 /* Hero Section */
 .kanban-hero {
   position: relative;
-  background: transparent;
-  padding: 3rem 2rem;
+  padding: 2.5rem 2rem;
   text-align: center;
-  overflow: hidden;
+  border-radius: 20px;
   border: 1px solid var(--erp-border);
-  border-radius: 16px;
-  margin: 1rem 2rem;
+  background: var(--erp-surface);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  max-width: 1380px;
+  margin: 0 auto;
+}
+
+.kanban-hero-grid {
+  position: absolute;
+  inset: -1px;
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .hero-content {
@@ -381,12 +388,13 @@ onMounted(() => {
 /* Action Bar */
 .kanban-actions {
   flex-shrink: 0;
-  background: var(--erp-card-bg);
-  border-bottom: 1px solid var(--erp-border);
-  padding: 1rem 2rem;
-  margin: 0 2rem 1rem 2rem;
-  border-radius: 12px;
+  background: var(--erp-surface);
   border: 1px solid var(--erp-border);
+  border-radius: 16px;
+  padding: 1.25rem 1.75rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  max-width: 1380px;
+  margin: 0 auto;
 }
 
 .actions-content {
@@ -420,30 +428,20 @@ onMounted(() => {
 
 .kanban-columns {
   flex: 1;
-  overflow: hidden;
-  padding: 2rem 0;
   position: relative;
-  z-index: 5;
   width: 100%;
 }
 
 .columns-container {
   display: flex;
-  gap: 2rem;
-  height: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 0 2rem 2rem 2rem;
-  min-height: calc(100vh - 300px);
+  gap: 1.5rem;
   align-items: flex-start;
   width: 100%;
   box-sizing: border-box;
-  /* Ensure proper horizontal scrolling */
-  scroll-behavior: smooth;
-  /* Add padding to ensure first and last columns are fully visible */
-  padding-left: 2rem;
-  padding-right: 2rem;
-  position: relative;
+  overflow-x: auto;
+  padding: 0 1.5rem 1.5rem;
+  max-width: 1380px;
+  margin: 0 auto;
 }
 
 .loading-container {
@@ -478,8 +476,9 @@ onMounted(() => {
   }
   
   .kanban-hero {
-    padding: 2rem 1rem;
-    margin: 0.5rem 1rem 1rem 1rem;
+    padding: 1.75rem 1.25rem;
+    max-width: 100%;
+    margin: 0;
   }
   
   .hero-title {
@@ -491,8 +490,9 @@ onMounted(() => {
   }
   
   .kanban-actions {
-    padding: 0.75rem 1rem;
-    margin: 0 1rem 1rem 1rem;
+    padding: 1rem 1.25rem;
+    max-width: 100%;
+    margin: 0;
   }
   
   .actions-content {
@@ -514,17 +514,18 @@ onMounted(() => {
   
   .kanban-columns {
     padding: 0;
-    background: transparent !important;
   }
   
   .columns-container {
-    gap: 0.75rem;
-    padding: 0 1rem 0.5rem 1rem;
+    gap: 1rem;
+    padding: 0 0 1rem;
     flex-direction: column;
     height: auto;
     overflow-x: visible;
     overflow-y: auto;
     align-items: stretch;
+    max-width: 100%;
+    margin: 0;
   }
   
   .analytics-fab {
@@ -538,7 +539,6 @@ onMounted(() => {
 @media (max-width: 480px) {
   .kanban-hero {
     padding: 1.5rem 1rem;
-    margin: 0.5rem 0.75rem 0.75rem 0.75rem;
   }
   
   .hero-title {
@@ -550,8 +550,7 @@ onMounted(() => {
   }
   
   .kanban-actions {
-    padding: 0.5rem 0.75rem;
-    margin: 0 0.75rem 0.75rem 0.75rem;
+    padding: 0.75rem 1rem;
   }
   
   .board-stats {
@@ -575,8 +574,7 @@ onMounted(() => {
   }
   
   .columns-container {
-    gap: 0.5rem;
-    padding: 0 0.75rem 0.25rem 0.75rem;
+    gap: 0.75rem;
   }
   
   .analytics-fab {
@@ -590,8 +588,7 @@ onMounted(() => {
 /* Large screen optimizations */
 @media (min-width: 1440px) {
   .kanban-hero {
-    padding: 4rem 3rem;
-    margin: 1.5rem 3rem;
+    padding: 3.5rem 3rem;
   }
   
   .hero-title {
@@ -599,20 +596,15 @@ onMounted(() => {
   }
   
   .kanban-actions {
-    padding: 1.5rem 3rem;
-    margin: 0 3rem 1.5rem 3rem;
+    padding: 1.5rem 2.5rem;
   }
   
   .kanban-columns {
-    padding: 2.5rem 0;
+    padding: 2rem 0;
   }
   
   .columns-container {
-    gap: 2.5rem;
-    justify-content: flex-start;
-    max-width: 1800px;
-    margin: 0 auto;
-    padding: 0 3rem 2rem 3rem;
+    gap: 2rem;
   }
   
   .actions-right .v-btn {
@@ -624,14 +616,11 @@ onMounted(() => {
 
 @media (min-width: 1920px) {
   .columns-container {
-    gap: 3rem;
-    max-width: 2000px;
-    padding: 0 4rem 2rem 4rem;
+    gap: 2.5rem;
   }
   
   .kanban-hero {
-    padding: 4.5rem 4rem;
-    margin: 2rem 4rem;
+    padding: 4rem 3.5rem;
   }
   
   .hero-title {
@@ -639,12 +628,11 @@ onMounted(() => {
   }
   
   .kanban-actions {
-    padding: 2rem 4rem;
-    margin: 0 4rem 2rem 4rem;
+    padding: 1.75rem 3rem;
   }
   
   .kanban-columns {
-    padding: 3rem 0;
+    padding: 2.5rem 0;
   }
 }
 </style>
