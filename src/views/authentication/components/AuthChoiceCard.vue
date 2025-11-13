@@ -104,7 +104,8 @@ const handleClick = () => {
 .auth-choice-card {
   position: relative;
   width: 100%;
-  max-width: 480px;
+  max-width: min(100%, 420px);
+  min-width: 0;
   height: 520px;
   margin: 2rem auto;
   perspective: 1200px;
@@ -519,7 +520,7 @@ const handleClick = () => {
 
 @media (max-width: 720px) {
   .auth-choice-card {
-    max-width: 320px;
+    max-width: min(100%, 360px);
     min-height: 440px;
     height: auto;
   }
@@ -531,6 +532,26 @@ const handleClick = () => {
   .cta-button {
     width: 100%;
     max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-choice-card {
+    margin: 1rem auto;
+  }
+
+  .card-front__body {
+    padding: 2rem 1.5rem 1.75rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .auth-choice-card {
+    min-height: 400px;
+  }
+
+  .card-front__body {
+    padding: 1.75rem 1.25rem 1.6rem;
   }
 }
 

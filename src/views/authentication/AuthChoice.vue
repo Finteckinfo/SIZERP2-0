@@ -193,17 +193,20 @@ const handleWeb2Choice = () => {
 
 .auth-options {
   margin-top: 3rem;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  justify-items: center;
   gap: 2.5rem;
 }
 
 .auth-options :deep(.v-col) {
+  width: 100%;
+  max-width: min(100%, 420px);
+  padding: 0 !important;
+  margin: 0;
   display: flex;
   justify-content: center;
-  width: 100%;
-  max-width: 400px;
 }
 
 .help-section {
@@ -245,13 +248,8 @@ const handleWeb2Choice = () => {
 
   .auth-options {
     margin-top: 1.5rem;
-    flex-direction: column;
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;
-  }
-
-  .auth-options :deep(.v-col) {
-    max-width: 360px;
   }
 
   .help-section {
@@ -268,13 +266,11 @@ const handleWeb2Choice = () => {
 
 @media (min-width: 960px) {
   .auth-options {
-    flex-direction: row;
-    flex-wrap: nowrap;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .auth-options :deep(.v-col) {
-    flex: 0 0 50%;
-    max-width: 50%;
+    max-width: min(100%, 520px);
   }
 }
 </style>
