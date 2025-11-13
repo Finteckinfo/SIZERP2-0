@@ -255,14 +255,14 @@ onUnmounted(() => {
   margin-top: 3rem;
   display: grid;
   width: 100%;
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
   justify-items: center;
   gap: 2.5rem;
 }
 
 .auth-options :deep(.v-col) {
   width: 100%;
-  max-width: 480px;
+  max-width: 560px;
   padding: 0 !important;
   margin: 0;
   display: flex;
@@ -323,11 +323,11 @@ onUnmounted(() => {
 
 @media (min-width: 960px) {
   .auth-options {
-    grid-template-columns: repeat(2, minmax(420px, 1fr));
+    grid-template-columns: repeat(2, minmax(520px, 1fr));
   }
 
   .auth-options :deep(.v-col) {
-    max-width: 520px;
+    max-width: 580px;
   }
 }
 
