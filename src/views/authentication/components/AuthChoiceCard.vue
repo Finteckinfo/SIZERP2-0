@@ -106,7 +106,7 @@ const handleClick = () => {
   width: 100%;
   max-width: min(100%, 420px);
   min-width: 320px;
-  height: 520px;
+  height: 580px;
   margin: 2rem auto;
   perspective: 1200px;
   cursor: pointer;
@@ -349,7 +349,7 @@ const handleClick = () => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 3rem 2.75rem 2.25rem;
+  padding: 3.1rem 2.85rem 2.4rem;
   backdrop-filter: blur(8px);
 }
 
@@ -526,7 +526,7 @@ const handleClick = () => {
   }
 
   .card-front__body {
-    padding: 2.25rem 1.75rem 1.9rem;
+    padding: 2.4rem 1.9rem 1.95rem;
   }
 
   .cta-button {
@@ -547,7 +547,7 @@ const handleClick = () => {
   }
 
   .card-front__body {
-    padding: 2rem 1.5rem 1.75rem;
+    padding: 2.15rem 1.6rem 1.8rem;
   }
 }
 
@@ -557,7 +557,7 @@ const handleClick = () => {
   }
 
   .card-front__body {
-    padding: 1.75rem 1.25rem 1.6rem;
+    padding: 1.85rem 1.35rem 1.55rem;
   }
 }
 

@@ -3,9 +3,18 @@
     class="mobile-auth-card"
     :class="[`mobile-auth-card--${flavor}`]"
     rounded="xl"
-    elevation="10"
+    elevation="12"
     @click="handleClick"
   >
+    <BorderBeam
+      class="mobile-auth-card__beam"
+      :size="140"
+      :border-width="2"
+      :duration="7"
+      :color-from="flavor === 'web3' ? '#34d399' : '#60a5fa'"
+      :color-to="flavor === 'web3' ? 'rgba(34,197,94,0.1)' : 'rgba(59,130,246,0.1)'"
+    />
+
     <div class="mobile-auth-card__body">
       <div class="mobile-auth-card__header">
         <div class="mobile-auth-card__icon">
@@ -44,6 +53,7 @@
 import { computed } from 'vue';
 import Web3Icon from './icons/Web3Icon.vue';
 import Web2Icon from './icons/Web2Icon.vue';
+import BorderBeam from '@/components/ui/BorderBeam.vue';
 
 interface Props {
   title: string;
@@ -68,22 +78,25 @@ const handleClick = () => {
 
 <style scoped>
 .mobile-auth-card {
+  position: relative;
+  overflow: hidden;
   width: 100%;
   max-width: 420px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
   color: rgba(15, 23, 42, 0.92);
-  padding: 0;
-  display: flex;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(243, 245, 248, 0.92));
+  transition: transform 0.3s ease;
 }
 
 .mobile-auth-card--web3 {
-  background: linear-gradient(135deg, rgba(91, 200, 91, 0.12), rgba(240, 253, 244, 0.92));
-  color: #0f1729;
+  background: linear-gradient(135deg, rgba(91, 200, 91, 0.16), rgba(236, 253, 245, 0.95));
 }
 
 .mobile-auth-card--web2 {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.14), rgba(239, 246, 255, 0.92));
-  color: #0f1729;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.18), rgba(239, 246, 255, 0.95));
+}
+
+.mobile-auth-card__beam {
+  mix-blend-mode: screen;
 }
 
 .mobile-auth-card__body {
@@ -107,6 +120,8 @@ const handleClick = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 14px;
 }
 
 .mobile-auth-card__icon svg {
@@ -163,6 +178,7 @@ const handleClick = () => {
   display: flex;
   align-items: center;
   gap: 0.65rem;
+  color: inherit;
 }
 
 .mobile-auth-card__cta {
@@ -176,11 +192,11 @@ const handleClick = () => {
 }
 
 :global(.dark-theme) .mobile-auth-card--web3 {
-  background: rgba(17, 64, 37, 0.9);
+  background: linear-gradient(135deg, rgba(17, 64, 37, 0.92), rgba(6, 15, 11, 0.92));
 }
 
 :global(.dark-theme) .mobile-auth-card--web2 {
-  background: rgba(29, 52, 97, 0.9);
+  background: linear-gradient(135deg, rgba(29, 52, 97, 0.92), rgba(9, 13, 28, 0.92));
 }
 
 :global(.dark-theme) .mobile-auth-card__badge {
