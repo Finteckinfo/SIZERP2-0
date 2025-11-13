@@ -1,5 +1,5 @@
 <template>
-  <div class="border-beam" :style="rootStyle">
+  <div :class="['border-beam', className]" :style="rootStyle">
     <div
       class="border-beam__beam"
       :style="beamStyle"
@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, type CSSProperties } from 'vue';
 
 interface BorderBeamProps {
   size?: number;
@@ -36,16 +36,16 @@ const props = withDefaults(defineProps<BorderBeamProps>(), {
   style: () => ({}),
 });
 
-const rootStyle = computed(() => ({
+const rootStyle = computed<CSSProperties>(() => ({
   '--border-beam-width': `${props.borderWidth}px`,
   position: 'absolute',
   inset: '0',
   borderRadius: 'inherit',
-  pointerEvents: 'none',
+  pointerEvents: 'none' as const,
   ...props.style,
 }));
 
-const beamStyle = computed(() => ({
+const beamStyle = computed<CSSProperties>(() => ({
   width: `${props.size}px`,
   '--beam-color-from': props.colorFrom,
   '--beam-color-to': props.colorTo,
@@ -56,7 +56,7 @@ const beamStyle = computed(() => ({
   '--beam-direction': props.reverse ? 'reverse' : 'normal',
   offsetPath: `rect(0 auto auto 0 round ${props.size}px)`,
   animationName: props.reverse ? 'border-beam-reverse' : 'border-beam-forward',
-}));
+} as CSSProperties));
 </script>
 
 <style scoped>
