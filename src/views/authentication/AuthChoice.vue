@@ -61,7 +61,7 @@
 
     <!-- Help Dialog -->
     <v-dialog v-model="showHelp" max-width="600">
-      <v-card>
+      <v-card :style="helpDialogCardStyle">
         <v-card-title class="headline">
           <v-icon class="mr-2" color="primary">mdi-help-circle</v-icon>
           Authentication Methods Explained
@@ -112,14 +112,35 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import LandingBackground from '@/components/ui/LandingBackground.vue';
 import AuthChoiceCard from './components/AuthChoiceCard.vue';
+import { useTheme } from '@/composables/useTheme';
 
 const router = useRouter();
 
 const showHelp = ref(false);
+
+const { isDark } = useTheme();
+
+const helpDialogCardStyle = computed(() => {
+  if (isDark.value) {
+    return {
+      '--v-theme-surface': '#101827',
+      '--v-theme-surface-variant': '#1d283a',
+      'background-color': '#101827',
+      color: '#e2e8f0',
+    } as const;
+  }
+
+  return {
+    '--v-theme-surface': '#ffffff',
+    '--v-theme-surface-variant': '#f5f7fa',
+    'background-color': '#ffffff',
+    color: '#0f172a',
+  } as const;
+});
 
 const web3Features = [
   'Wallet-first authentication',
