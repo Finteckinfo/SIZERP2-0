@@ -255,14 +255,14 @@ onUnmounted(() => {
   margin-top: 3rem;
   display: grid;
   width: 100%;
-  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
   justify-items: center;
   gap: 2.5rem;
 }
 
 .auth-options :deep(.v-col) {
   width: 100%;
-  max-width: min(100%, 420px);
+  max-width: 480px;
   padding: 0 !important;
   margin: 0;
   display: flex;
@@ -312,8 +312,22 @@ onUnmounted(() => {
     gap: 1.5rem;
   }
 
+  .auth-options :deep(.v-col) {
+    max-width: 100%;
+  }
+
   .help-section {
     margin-bottom: 4.5rem;
+  }
+}
+
+@media (min-width: 960px) {
+  .auth-options {
+    grid-template-columns: repeat(2, minmax(420px, 1fr));
+  }
+
+  .auth-options :deep(.v-col) {
+    max-width: 520px;
   }
 }
 
@@ -321,16 +335,6 @@ onUnmounted(() => {
   .auth-logo {
     width: 80px;
     height: 80px;
-  }
-}
-
-@media (min-width: 960px) {
-  .auth-options {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .auth-options :deep(.v-col) {
-    max-width: min(100%, 520px);
   }
 }
 </style>

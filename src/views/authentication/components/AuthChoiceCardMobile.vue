@@ -3,40 +3,40 @@
     class="mobile-auth-card"
     :class="[`mobile-auth-card--${flavor}`]"
     rounded="xl"
-    elevation="8"
+    elevation="10"
     @click="handleClick"
   >
-    <div class="mobile-auth-card__header">
-      <div class="mobile-auth-card__icon">
-        <component :is="iconComponent" />
+    <div class="mobile-auth-card__body">
+      <div class="mobile-auth-card__header">
+        <div class="mobile-auth-card__icon">
+          <component :is="iconComponent" />
+        </div>
+        <div class="mobile-auth-card__text">
+          <span class="mobile-auth-card__badge">{{ badge }}</span>
+          <h3 class="mobile-auth-card__title">{{ title }}</h3>
+        </div>
       </div>
-      <div class="mobile-auth-card__text">
-        <span class="mobile-auth-card__badge">{{ badge }}</span>
-        <h3>{{ title }}</h3>
-      </div>
+
+      <ul class="mobile-auth-card__features">
+        <li v-for="feature in features" :key="feature">
+          <v-icon size="18" :color="featureIconColor">mdi-check-circle</v-icon>
+          <span>{{ feature }}</span>
+        </li>
+      </ul>
+
+      <v-btn
+        :color="flavor === 'web3' ? 'success' : 'primary'"
+        block
+        size="large"
+        class="mobile-auth-card__cta"
+        @click.stop="handleClick"
+      >
+        <v-icon start size="18">
+          {{ flavor === 'web3' ? 'mdi-wallet-plus' : 'mdi-login' }}
+        </v-icon>
+        {{ ctaLabel }}
+      </v-btn>
     </div>
-
-    <v-divider class="my-4" />
-
-    <ul class="mobile-auth-card__features">
-      <li v-for="feature in features" :key="feature">
-        <v-icon size="18" :color="featureIconColor">mdi-check-circle</v-icon>
-        <span>{{ feature }}</span>
-      </li>
-    </ul>
-
-    <v-btn
-      :color="flavor === 'web3' ? 'success' : 'primary'"
-      block
-      size="large"
-      class="mobile-auth-card__cta"
-      @click.stop="handleClick"
-    >
-      <v-icon start size="18">
-        {{ flavor === 'web3' ? 'mdi-wallet-plus' : 'mdi-login' }}
-      </v-icon>
-      {{ ctaLabel }}
-    </v-btn>
   </v-card>
 </template>
 
@@ -69,26 +69,36 @@ const handleClick = () => {
 <style scoped>
 .mobile-auth-card {
   width: 100%;
-  background: var(--v-theme-surface);
-  color: inherit;
-  padding: 1.5rem;
+  max-width: 420px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
+  color: rgba(15, 23, 42, 0.92);
+  padding: 0;
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
 }
 
 .mobile-auth-card--web3 {
-  border: 1px solid rgba(34, 197, 94, 0.35);
+  background: linear-gradient(135deg, rgba(91, 200, 91, 0.12), rgba(240, 253, 244, 0.92));
+  color: #0f1729;
 }
 
 .mobile-auth-card--web2 {
-  border: 1px solid rgba(59, 130, 246, 0.35);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.14), rgba(239, 246, 255, 0.92));
+  color: #0f1729;
+}
+
+.mobile-auth-card__body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.75rem;
+  padding: 2.25rem 1.9rem 1.9rem;
+  min-height: 460px;
 }
 
 .mobile-auth-card__header {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.1rem;
 }
 
 .mobile-auth-card__icon {
@@ -104,10 +114,17 @@ const handleClick = () => {
   height: 100%;
 }
 
-.mobile-auth-card__text h3 {
-  margin: 0.2rem 0 0;
-  font-size: 1.25rem;
-  font-weight: 600;
+.mobile-auth-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.mobile-auth-card__title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .mobile-auth-card__badge {
@@ -138,8 +155,8 @@ const handleClick = () => {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  font-size: 0.95rem;
+  gap: 1rem;
+  font-size: 1rem;
 }
 
 .mobile-auth-card__features li {
@@ -154,20 +171,54 @@ const handleClick = () => {
 }
 
 :global(.dark-theme) .mobile-auth-card {
-  background: rgba(15, 23, 42, 0.92);
-  border-color: rgba(148, 163, 184, 0.18);
-}
-
-:global(.dark-theme) .mobile-auth-card__badge {
-  background: rgba(226, 232, 240, 0.12);
-  color: rgba(226, 232, 240, 0.9);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e2e8f0;
 }
 
 :global(.dark-theme) .mobile-auth-card--web3 {
-  border-color: rgba(34, 197, 94, 0.32);
+  background: rgba(17, 64, 37, 0.9);
 }
 
 :global(.dark-theme) .mobile-auth-card--web2 {
-  border-color: rgba(96, 165, 250, 0.28);
+  background: rgba(29, 52, 97, 0.9);
+}
+
+:global(.dark-theme) .mobile-auth-card__badge {
+  background: rgba(226, 232, 240, 0.14);
+  color: rgba(226, 232, 240, 0.92);
+}
+
+:global(.dark-theme) .mobile-auth-card__features li {
+  color: rgba(226, 232, 240, 0.9);
+}
+
+:global(.dark-theme) .mobile-auth-card__icon svg {
+  color: inherit;
+}
+
+@media (max-width: 420px) {
+  .mobile-auth-card {
+    margin: 0 auto;
+  }
+
+  .mobile-auth-card__header {
+    align-items: flex-start;
+  }
+
+  .mobile-auth-card__body {
+    padding: 2rem 1.4rem 1.75rem;
+    min-height: 420px;
+  }
+}
+
+@media (max-width: 380px) {
+  .mobile-auth-card__icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .mobile-auth-card__body {
+    gap: 1.4rem;
+  }
 }
 </style>

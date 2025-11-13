@@ -105,7 +105,7 @@ const handleClick = () => {
   position: relative;
   width: 100%;
   max-width: min(100%, 420px);
-  min-width: 0;
+  min-width: 320px;
   height: 520px;
   margin: 2rem auto;
   perspective: 1200px;
