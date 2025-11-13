@@ -13,6 +13,7 @@
               density="compact"
               hide-details
               clearable
+              class="kanban-filter-input"
               @input="debouncedUpdate"
             />
           </v-col>
@@ -29,6 +30,8 @@
               hide-details
               multiple
               clearable
+              class="kanban-filter-select"
+              :menu-props="{ contentClass: 'kanban-select-menu', scrim: false }"
               @update:model-value="updateFilters"
             >
               <template #selection="{ item, index }">
@@ -61,6 +64,8 @@
               density="compact"
               hide-details
               clearable
+              class="kanban-filter-select"
+              :menu-props="{ contentClass: 'kanban-select-menu', scrim: false }"
               @update:model-value="updateFilters"
             />
           </v-col>
@@ -77,6 +82,8 @@
               hide-details
               multiple
               clearable
+              class="kanban-filter-select"
+              :menu-props="{ contentClass: 'kanban-select-menu', scrim: false }"
               @update:model-value="updateFilters"
             >
               <template #selection="{ item, index }">
@@ -111,6 +118,8 @@
               hide-details
               multiple
               clearable
+              class="kanban-filter-select"
+              :menu-props="{ contentClass: 'kanban-select-menu', scrim: false }"
               @update:model-value="updateFilters"
             >
               <template #selection="{ item, index }">
@@ -173,6 +182,7 @@
                     variant="outlined"
                     density="compact"
                     hide-details
+                    class="kanban-filter-input"
                     @update:model-value="(value) => updateDateRangeStart(value)"
                   />
                 </v-col>
@@ -183,6 +193,7 @@
                     variant="outlined"
                     density="compact"
                     hide-details
+                    class="kanban-filter-input"
                     @update:model-value="(value) => updateDateRangeEnd(value)"
                   />
                 </v-col>
@@ -472,13 +483,13 @@ onMounted(() => {
 }
 
 .filter-card {
-  background: rgba(255, 255, 255, 0.9);
+  background: color-mix(in srgb, var(--erp-surface) 90%, transparent);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(226, 232, 240, 0.6);
+  border: 1px solid color-mix(in srgb, var(--erp-border) 80%, transparent);
   border-radius: 16px;
   box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.05),
-    0 2px 4px rgba(0, 0, 0, 0.03);
+    0 4px 12px rgba(15, 23, 42, 0.06),
+    0 2px 4px rgba(15, 23, 42, 0.03);
 }
 
 .filter-section {
@@ -605,5 +616,96 @@ onMounted(() => {
   .filter-label {
     font-size: 1rem;
   }
+}
+
+.kanban-filters :deep(.v-text-field),
+.kanban-filters :deep(.v-select) {
+  font-size: 0.875rem;
+  background: transparent;
+}
+
+.kanban-filter-input :deep(.v-field),
+.kanban-filter-select :deep(.v-field) {
+  background: color-mix(in srgb, var(--erp-surface) 95%, transparent);
+  border: 1px solid color-mix(in srgb, var(--erp-border) 80%, transparent);
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kanban-filter-input :deep(.v-field--focused),
+.kanban-filter-select :deep(.v-field--focused) {
+  border-color: var(--erp-accent-blue);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--erp-accent-blue) 20%, transparent);
+}
+
+.kanban-filter-input :deep(.v-label),
+.kanban-filter-select :deep(.v-label),
+.kanban-filter-input :deep(.v-field__input),
+.kanban-filter-select :deep(.v-field__input) {
+  color: var(--erp-text);
+}
+
+:global(.kanban-select-menu) {
+  background: color-mix(in srgb, var(--erp-surface) 96%, transparent) !important;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--erp-border) 85%, transparent);
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.28) !important;
+}
+
+:global(.kanban-select-menu .v-list) {
+  background: transparent !important;
+  color: var(--erp-text);
+}
+
+:global(.kanban-select-menu .v-list-item) {
+  color: var(--erp-text);
+}
+
+:global(.kanban-select-menu .v-list-item--active) {
+  background: color-mix(in srgb, var(--erp-accent-blue) 18%, transparent) !important;
+}
+
+:global(.kanban-select-menu .v-overlay__scrim) {
+  background: transparent !important;
+}
+
+.kanban-filters :deep(.v-field) {
+  background: color-mix(in srgb, var(--erp-surface) 95%, transparent);
+  border: 1px solid color-mix(in srgb, var(--erp-border) 80%, transparent);
+  border-radius: 12px;
+}
+
+.kanban-filters :deep(.v-field__outline) {
+  display: none;
+}
+
+.kanban-filters :deep(.v-label),
+.kanban-filters :deep(.v-field__input) {
+  color: var(--erp-text);
+}
+
+.kanban-filters :deep(.v-select .v-field) {
+  cursor: pointer;
+}
+
+.kanban-filters :deep(.v-field--focused) {
+  border-color: var(--erp-accent-blue);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--erp-accent-blue) 20%, transparent);
+}
+
+.kanban-filters :deep(.v-overlay__content) {
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+}
+
+.kanban-filters :deep(.v-list) {
+  background: color-mix(in srgb, var(--erp-surface) 96%, transparent);
+}
+
+.kanban-filters :deep(.v-list-item) {
+  color: var(--erp-text);
+}
+
+.kanban-filters :deep(.v-list-item--active) {
+  background: color-mix(in srgb, var(--erp-accent-blue) 16%, transparent);
 }
 </style>

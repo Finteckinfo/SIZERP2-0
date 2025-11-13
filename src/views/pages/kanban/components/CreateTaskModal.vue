@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="localValue" max-width="600" persistent>
-    <v-card>
+    <v-card :style="modalCardStyle" class="create-task-card">
       <v-card-title class="d-flex align-center">
         <v-icon class="mr-3" color="primary">mdi-plus</v-icon>
         Create New Task
@@ -18,6 +18,7 @@
                 :rules="[rules.required]"
                 hide-details="auto"
                 autofocus
+                class="kanban-modal-input"
               />
             </v-col>
 
@@ -29,6 +30,7 @@
                 variant="outlined"
                 rows="3"
                 hide-details="auto"
+                class="kanban-modal-input"
               />
             </v-col>
 
@@ -42,6 +44,8 @@
                 :rules="[rules.required]"
                 hide-details="auto"
                 clearable
+                class="kanban-modal-select"
+                :menu-props="{ contentClass: 'kanban-modal-select-menu', scrim: false }"
                 @update:model-value="loadProjectDepartments"
               />
             </v-col>
@@ -56,6 +60,8 @@
                 :rules="[rules.required]"
                 hide-details="auto"
                 :disabled="!newTask.projectId"
+                class="kanban-modal-select"
+                :menu-props="{ contentClass: 'kanban-modal-select-menu', scrim: false }"
               />
             </v-col>
 
@@ -68,6 +74,8 @@
                 variant="outlined"
                 :rules="[rules.required]"
                 hide-details="auto"
+                class="kanban-modal-select"
+                :menu-props="{ contentClass: 'kanban-modal-select-menu', scrim: false }"
               >
                 <template #item="{ props: itemProps, item }">
                   <v-list-item v-bind="itemProps">
@@ -90,6 +98,8 @@
                 variant="outlined"
                 hide-details="auto"
                 clearable
+                class="kanban-modal-select"
+                :menu-props="{ contentClass: 'kanban-modal-select-menu', scrim: false }"
               />
             </v-col>
 
@@ -101,6 +111,8 @@
                 label="Initial Status"
                 variant="outlined"
                 hide-details="auto"
+                class="kanban-modal-select"
+                :menu-props="{ contentClass: 'kanban-modal-select-menu', scrim: false }"
               />
             </v-col>
 
@@ -112,6 +124,7 @@
                 type="date"
                 variant="outlined"
                 hide-details="auto"
+                class="kanban-modal-input"
               />
             </v-col>
 
@@ -125,6 +138,7 @@
                 :step="0.5"
                 variant="outlined"
                 hide-details="auto"
+                class="kanban-modal-input"
               />
             </v-col>
 
@@ -140,6 +154,7 @@
                 suffix="SIZ"
                 hide-details="auto"
                 hint="Amount to pay when task is completed"
+                class="kanban-modal-input"
               >
                 <template v-slot:prepend-inner>
                   <v-icon color="success" size="20">mdi-cash</v-icon>
@@ -169,7 +184,7 @@
                     variant="outlined"
                     density="compact"
                     hide-details="auto"
-                    class="ml-4"
+                    class="kanban-modal-input ml-4"
                     style="width: 100px;"
                   />
                 </div>
@@ -193,6 +208,7 @@
                           type="date"
                           variant="outlined"
                           hide-details="auto"
+                          class="kanban-modal-input"
                         />
                       </v-col>
                       <v-col cols="12" md="6">
@@ -202,6 +218,7 @@
                           type="date"
                           variant="outlined"
                           hide-details="auto"
+                          class="kanban-modal-input"
                         />
                       </v-col>
                       <v-col cols="12">
@@ -280,7 +297,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { computed, ref, watch, nextTick } from 'vue';
+import { useTheme } from '@/composables/useTheme';
 import { taskApi } from '@/services/projectApi';
 import type { CreateTaskData, KanbanTask } from '../types/kanban';
 
@@ -337,11 +355,11 @@ const rules = {
 
 // Options
 const statusOptions = [
-  { title: 'To Do', value: 'PENDING' },
+  { title: 'Pending', value: 'PENDING' },
   { title: 'In Progress', value: 'IN_PROGRESS' },
   { title: 'Completed', value: 'COMPLETED' },
   { title: 'Approved', value: 'APPROVED' }
-];
+] satisfies SelectOption[];
 
 const priorityOptions = [
   { title: 'Critical', value: 'CRITICAL' },
@@ -362,6 +380,25 @@ const assigneeOptions = ref([
   { title: 'Unassigned', value: null }
   // Will be loaded from project's team members
 ]);
+
+const { isDark } = useTheme();
+
+const modalCardStyle = computed(() => {
+  if (isDark.value) {
+    return {
+      '--v-theme-surface': '#101827',
+      '--v-theme-surface-variant': '#182337',
+      backgroundColor: '#101827',
+      color: '#e2e8f0'
+    } as const;
+  }
+  return {
+    '--v-theme-surface': '#ffffff',
+    '--v-theme-surface-variant': '#f5f7fa',
+    backgroundColor: '#ffffff',
+    color: '#0f172a'
+  } as const;
+});
 
 // Load project departments when project is selected
 const loadProjectDepartments = async (projectId: string) => {
@@ -588,5 +625,67 @@ watch(() => props.modelValue, (isOpen) => {
   .v-card-actions {
     padding: 2rem 2.5rem 2.5rem;
   }
+}
+
+.create-task-card {
+  background: color-mix(in srgb, var(--erp-surface) 96%, transparent);
+  border: 1px solid color-mix(in srgb, var(--erp-border) 80%, transparent);
+  border-radius: 20px;
+  box-shadow:
+    0 18px 36px rgba(15, 23, 42, 0.16),
+    0 8px 16px rgba(15, 23, 42, 0.08);
+}
+
+.kanban-modal-input :deep(.v-field),
+.kanban-modal-select :deep(.v-field) {
+  background: color-mix(in srgb, var(--erp-surface) 95%, transparent);
+  border: 1px solid color-mix(in srgb, var(--erp-border) 82%, transparent);
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kanban-modal-input :deep(.v-field--focused),
+.kanban-modal-select :deep(.v-field--focused) {
+  border-color: var(--erp-accent-blue);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--erp-accent-blue) 22%, transparent);
+}
+
+.kanban-modal-input :deep(.v-field__input),
+.kanban-modal-select :deep(.v-field__input),
+.kanban-modal-input :deep(.v-label),
+.kanban-modal-select :deep(.v-label) {
+  color: var(--erp-text);
+}
+
+:global(.kanban-modal-select-menu) {
+  background: color-mix(in srgb, var(--erp-surface) 96%, transparent) !important;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--erp-border) 85%, transparent);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.28) !important;
+}
+
+:global(.kanban-modal-select-menu .v-list) {
+  background: transparent !important;
+  color: var(--erp-text);
+}
+
+:global(.kanban-modal-select-menu .v-list-item) {
+  color: var(--erp-text);
+}
+
+:global(.kanban-modal-select-menu .v-list-item--active) {
+  background: color-mix(in srgb, var(--erp-accent-blue) 18%, transparent) !important;
+}
+
+:global(.kanban-modal-select-menu .v-overlay__scrim) {
+  background: transparent !important;
+}
+
+:global(.dark-theme) .create-task-card {
+  background: color-mix(in srgb, var(--erp-surface) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--erp-border) 65%, transparent);
+  box-shadow:
+    0 24px 48px rgba(8, 15, 33, 0.38),
+    0 10px 24px rgba(8, 15, 33, 0.2);
 }
 </style>

@@ -629,4 +629,38 @@ const handleDrop = (event: DragEvent) => {
   background: var(--erp-text);
   opacity: 0.3;
 }
+
+:global(.dark-theme) .kanban-column {
+  background: color-mix(in srgb, var(--erp-surface) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--erp-border) 70%, transparent);
+  box-shadow:
+    0 12px 28px rgba(8, 15, 33, 0.35),
+    0 4px 10px rgba(8, 15, 33, 0.22);
+}
+
+:global(.dark-theme) .kanban-column::before {
+  opacity: 0.8;
+}
+
+:global(.dark-theme) .column-header {
+  background: color-mix(in srgb, var(--erp-surface) 92%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--erp-border) 65%, transparent);
+}
+
+:global(.dark-theme) .column-title {
+  color: var(--erp-text);
+}
+
+:global(.dark-theme) .column-info .v-icon {
+  color: inherit;
+}
+
+:global(.dark-theme) .column-content {
+  background: color-mix(in srgb, var(--erp-surface) 96%, transparent);
+}
+
+:global(.dark-theme) .empty-drop-zone {
+  border-color: color-mix(in srgb, var(--erp-border) 65%, transparent);
+  background: color-mix(in srgb, var(--erp-surface) 88%, transparent);
+}
 </style>
