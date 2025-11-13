@@ -329,22 +329,22 @@ const { isDark } = useTheme();
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding: 1.5rem 1.75rem 3rem;
+  padding: clamp(1.5rem, 2vw, 2.5rem) clamp(1.25rem, 2vw, 2.25rem) 3rem;
   background: var(--erp-page-bg);
 }
 
 /* Hero Section */
 .kanban-hero {
   position: relative;
-  padding: 2.5rem 2rem;
+  width: 100%;
+  padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 3vw, 2.5rem);
   text-align: center;
   border-radius: 20px;
   border: 1px solid var(--erp-border);
   background: var(--erp-surface);
   box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
   overflow: hidden;
-  max-width: 1380px;
-  margin: 0 auto;
+  margin: 0;
 }
 
 .kanban-hero-grid {
@@ -391,17 +391,19 @@ const { isDark } = useTheme();
   background: var(--erp-surface);
   border: 1px solid var(--erp-border);
   border-radius: 16px;
-  padding: 1.25rem 1.75rem;
+  padding: 1.5rem clamp(1.5rem, 2.5vw, 2.5rem);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-  max-width: 1380px;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
 }
 
 .actions-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 100%;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .actions-left {
@@ -409,7 +411,7 @@ const { isDark } = useTheme();
   align-items: center;
   gap: 1rem;
   flex: 1;
-  min-width: 0;
+  min-width: 240px;
 }
 
 .board-stats {
@@ -422,8 +424,9 @@ const { isDark } = useTheme();
 .actions-right {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .kanban-columns {
@@ -434,14 +437,17 @@ const { isDark } = useTheme();
 
 .columns-container {
   display: flex;
-  gap: 1.5rem;
+  gap: clamp(1rem, 1.5vw, 1.75rem);
   align-items: flex-start;
   width: 100%;
   box-sizing: border-box;
   overflow-x: auto;
-  padding: 0 1.5rem 1.5rem;
-  max-width: 1380px;
-  margin: 0 auto;
+  padding: 0 clamp(0.5rem, 2vw, 1.5rem) 1.5rem;
+  scroll-snap-type: x proximity;
+}
+
+.kanban-column {
+  flex: 1;
 }
 
 .loading-container {
@@ -476,9 +482,7 @@ const { isDark } = useTheme();
   }
   
   .kanban-hero {
-    padding: 1.75rem 1.25rem;
-    max-width: 100%;
-    margin: 0;
+    padding: 1.5rem 1rem;
   }
   
   .hero-title {
@@ -491,8 +495,7 @@ const { isDark } = useTheme();
   
   .kanban-actions {
     padding: 1rem 1.25rem;
-    max-width: 100%;
-    margin: 0;
+    gap: 1rem;
   }
   
   .actions-content {
@@ -509,7 +512,7 @@ const { isDark } = useTheme();
     width: 100%;
     justify-content: flex-start;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
   
   .kanban-columns {
@@ -596,7 +599,7 @@ const { isDark } = useTheme();
   }
   
   .kanban-actions {
-    padding: 1.5rem 2.5rem;
+    padding: 1.75rem 3rem;
   }
   
   .kanban-columns {
@@ -604,7 +607,9 @@ const { isDark } = useTheme();
   }
   
   .columns-container {
-    gap: 2rem;
+    gap: 2.25rem;
+    max-width: 2000px;
+    padding: 0 2.5rem 2rem;
   }
   
   .actions-right .v-btn {
@@ -616,7 +621,9 @@ const { isDark } = useTheme();
 
 @media (min-width: 1920px) {
   .columns-container {
-    gap: 2.5rem;
+    gap: 2.75rem;
+    max-width: 2000px;
+    padding: 0 2.5rem 2rem;
   }
   
   .kanban-hero {
@@ -628,7 +635,7 @@ const { isDark } = useTheme();
   }
   
   .kanban-actions {
-    padding: 1.75rem 3rem;
+    padding: 2rem 3.25rem;
   }
   
   .kanban-columns {

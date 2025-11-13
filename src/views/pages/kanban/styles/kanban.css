@@ -690,3 +690,29 @@
 .dark-theme .kanban-task-card .task-meta {
   color: color-mix(in srgb, var(--erp-text) 70%, transparent);
 }
+
+::global(.kanban-menu) {
+  background: var(--erp-surface) !important;
+  border: 1px solid var(--erp-border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.16) !important;
+  overflow: hidden;
+}
+
+::global(.kanban-menu .v-list) {
+  background: transparent !important;
+  color: var(--erp-text) !important;
+}
+
+::global(.kanban-menu .v-list-item) {
+  color: var(--erp-text) !important;
+}
+
+::global(.kanban-menu .v-list-item--active) {
+  background: color-mix(in srgb, var(--erp-primary) 18%, transparent) !important;
+  color: var(--erp-primary) !important;
+}
+
+::global(.kanban-menu .v-overlay__scrim) {
+  background: transparent !important;
+}

@@ -193,7 +193,7 @@
 
             <!-- Time Tracking -->
             <v-col cols="12">
-              <v-expansion-panels variant="accordion">
+              <v-expansion-panels class="kanban-modal-expansion" variant="accordion">
                 <v-expansion-panel>
                   <v-expansion-panel-title>
                     <v-icon class="mr-2">mdi-clock-outline</v-icon>
@@ -237,7 +237,7 @@
 
             <!-- Checklist -->
             <v-col cols="12">
-              <v-expansion-panels variant="accordion">
+              <v-expansion-panels class="kanban-modal-expansion" variant="accordion">
                 <v-expansion-panel>
                   <v-expansion-panel-title>
                     <v-icon class="mr-2">mdi-format-list-checks</v-icon>
@@ -682,4 +682,41 @@ watch(() => props.modelValue, (isOpen) => {
 :global(.dark-theme) .create-task-card {
   box-shadow: 0 24px 42px rgba(8, 15, 33, 0.32);
 }
+
+.kanban-modal-expansion :deep(.v-expansion-panel) {
+  background: var(--erp-surface);
+  border: 1px solid var(--erp-border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kanban-modal-expansion :deep(.v-expansion-panel:not(:last-of-type)) {
+  margin-bottom: 0.85rem;
+}
+
+.kanban-modal-expansion :deep(.v-expansion-panel-title) {
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  color: var(--erp-text);
+}
+
+.kanban-modal-expansion :deep(.v-expansion-panel-text) {
+  background: var(--erp-surface);
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.kanban-modal-expansion :deep(.v-expansion-panel-text .v-row) {
+  gap: 0.75rem 0;
+}
+
+.kanban-modal-expansion :deep(.v-expansion-panel--active) {
+  border-color: color-mix(in srgb, var(--erp-primary) 32%, var(--erp-border));
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+.kanban-modal-expansion :deep(.v-expansion-panel__shadow) {
+  display: none;
+}
+
 </style>
