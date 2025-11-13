@@ -331,7 +331,7 @@
                        />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-select v-model="newDepartment.type" :items="departmentTypeOptions" label="Type" variant="outlined" :rules="[v=>!!v||'Required']" class="workspace-select" :menu-props="{ class: 'workspace-select-menu' }" />
+                      <v-select v-model="newDepartment.type" :items="departmentTypeOptions" label="Type" variant="outlined" :rules="[v=>!!v||'Required']" class="workspace-select" :menu-props="{ class: 'workspace-select-menu', scrim: false }" />
                     </v-col>
                     <v-col cols="12">
                       <v-textarea v-model="newDepartment.description" label="Description" variant="outlined" rows="3" />
@@ -362,16 +362,16 @@
                       />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-select v-model="newTask.priority" :items="priorityOptions" label="Priority" variant="outlined" :rules="[v=>!!v||'Required']" class="workspace-select" :menu-props="{ class: 'workspace-select-menu' }" />
+                      <v-select v-model="newTask.priority" :items="priorityOptions" label="Priority" variant="outlined" :rules="[v=>!!v||'Required']" class="workspace-select" :menu-props="{ class: 'workspace-select-menu', scrim: false }" />
                     </v-col>
                     <v-col cols="12">
                       <v-textarea v-model="newTask.description" label="Description" variant="outlined" rows="3" />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-select v-model="newTask.departmentId" :items="departmentSelectItems" item-title="name" item-value="id" label="Department" variant="outlined" :rules="[v=>!!v||'Required']" class="workspace-select" :menu-props="{ class: 'workspace-select-menu' }" />
+                      <v-select v-model="newTask.departmentId" :items="departmentSelectItems" item-title="name" item-value="id" label="Department" variant="outlined" :rules="[v=>!!v||'Required']" class="workspace-select" :menu-props="{ class: 'workspace-select-menu', scrim: false }" />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-select v-model="newTask.assignedRoleId" :items="roleSelectItems" item-title="label" item-value="id" label="Assign To (optional)" variant="outlined" class="workspace-select" :menu-props="{ class: 'workspace-select-menu' }" />
+                      <v-select v-model="newTask.assignedRoleId" :items="roleSelectItems" item-title="label" item-value="id" label="Assign To (optional)" variant="outlined" class="workspace-select" :menu-props="{ class: 'workspace-select-menu', scrim: false }" />
                     </v-col>
                     <v-col cols="12" md="6">
                       <v-text-field
@@ -405,7 +405,7 @@
                       <v-text-field v-model="invite.email" label="Invitee Email" variant="outlined" :rules="emailRules" />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-select v-model="invite.role" :items="inviteRoleOptions" label="Role" variant="outlined" :rules="[v=>!!v||'Required']" class="workspace-select" :menu-props="{ class: 'workspace-select-menu' }" />
+                      <v-select v-model="invite.role" :items="inviteRoleOptions" label="Role" variant="outlined" :rules="[v=>!!v||'Required']" class="workspace-select" :menu-props="{ class: 'workspace-select-menu', scrim: false }" />
                     </v-col>
                     <v-col cols="12" md="6">
                       <v-text-field
@@ -436,7 +436,7 @@
                         variant="outlined"
                         :rules="[v=>!!v||'Required']"
                         class="workspace-select"
-                        :menu-props="{ class: 'workspace-select-menu' }"
+                        :menu-props="{ class: 'workspace-select-menu', scrim: false }"
                       >
                         <template #item="{ props, item }">
                           <v-list-item v-bind="props">
@@ -480,7 +480,7 @@
                           variant="outlined" 
                           :rules="[v=>!!v||'Required']"
                           class="workspace-select"
-                          :menu-props="{ class: 'workspace-select-menu' }"
+                          :menu-props="{ class: 'workspace-select-menu', scrim: false }"
                         />
                       </v-col>
                     </template>
