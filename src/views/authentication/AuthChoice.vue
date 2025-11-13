@@ -21,7 +21,8 @@
           <v-row class="auth-options">
             <!-- Web3 Wallet Authentication -->
         <v-col cols="12" md="6">
-          <AuthChoiceCard
+          <component
+            :is="selectedCardComponent"
             title="Web3 Mode"
             badge="Crypto Friendly"
             :features="web3Features"
@@ -33,7 +34,8 @@
 
         <!-- Web2 Traditional Authentication -->
         <v-col cols="12" md="6">
-          <AuthChoiceCard
+          <component
+            :is="selectedCardComponent"
             title="Web2 Mode"
             badge="Traditional Login"
             :features="web2Features"
@@ -112,15 +114,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import LandingBackground from '@/components/ui/LandingBackground.vue';
 import AuthChoiceCard from './components/AuthChoiceCard.vue';
+import AuthChoiceCardMobile from './components/AuthChoiceCardMobile.vue';
 import { useTheme } from '@/composables/useTheme';
 
 const router = useRouter();
 
 const showHelp = ref(false);
+const isMobile = ref(false);
 
 const { isDark } = useTheme();
 
@@ -158,6 +162,10 @@ const web2Features = [
   'Multi-device access',
 ];
 
+const selectedCardComponent = computed(() =>
+  isMobile.value ? AuthChoiceCardMobile : AuthChoiceCard
+);
+
 const handleWeb3Choice = () => {
   // Store preference
   localStorage.setItem('auth_mode', 'web3');
@@ -169,6 +177,37 @@ const handleWeb2Choice = () => {
   localStorage.setItem('auth_mode', 'web2');
   router.push('/login');
 };
+
+let mediaQuery: MediaQueryList | null = null;
+
+const evaluateViewport = () => {
+  if (typeof window === 'undefined') {
+    isMobile.value = false;
+    return;
+  }
+
+  if (!mediaQuery) {
+    mediaQuery = window.matchMedia('(max-width: 768px)');
+  }
+  isMobile.value = mediaQuery.matches;
+};
+
+const handleMediaChange = (event: MediaQueryListEvent) => {
+  isMobile.value = event.matches;
+};
+
+onMounted(() => {
+  evaluateViewport();
+  if (mediaQuery) {
+    mediaQuery.addEventListener('change', handleMediaChange);
+  }
+});
+
+onUnmounted(() => {
+  if (mediaQuery) {
+    mediaQuery.removeEventListener('change', handleMediaChange);
+  }
+});
 </script>
 
 <style lang="scss" scoped>

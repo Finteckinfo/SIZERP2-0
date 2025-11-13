@@ -535,6 +535,12 @@ const handleClick = () => {
   }
 }
 
+@media (min-width: 960px) {
+  .auth-choice-card {
+    max-width: 480px;
+  }
+}
+
 @media (max-width: 480px) {
   .auth-choice-card {
     margin: 1rem auto;
