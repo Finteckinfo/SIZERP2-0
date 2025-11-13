@@ -443,30 +443,7 @@ onMounted(() => {
   /* Add padding to ensure first and last columns are fully visible */
   padding-left: 2rem;
   padding-right: 2rem;
-  /* Add scroll indicators */
   position: relative;
-}
-
-/* Scroll indicators */
-.columns-container::before,
-.columns-container::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 20px;
-  pointer-events: none;
-  z-index: 10;
-}
-
-.columns-container::before {
-  left: 0;
-  background: linear-gradient(to right, rgba(248, 250, 252, 0.9), transparent);
-}
-
-.columns-container::after {
-  right: 0;
-  background: linear-gradient(to left, rgba(248, 250, 252, 0.9), transparent);
 }
 
 .loading-container {
@@ -548,11 +525,6 @@ onMounted(() => {
     overflow-x: visible;
     overflow-y: auto;
     align-items: stretch;
-  }
-  
-  .columns-container::before,
-  .columns-container::after {
-    display: none;
   }
   
   .analytics-fab {
