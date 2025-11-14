@@ -29,7 +29,7 @@
 
       <!-- Quick Actions -->
       <v-col cols="12" lg="4">
-        <v-card elevation="0">
+        <v-card elevation="0" class="payments-card quick-actions-card">
           <v-card-title>
             <v-icon class="mr-2" color="primary">mdi-lightning-bolt</v-icon>
             Quick Actions
@@ -83,7 +83,7 @@
     <!-- Recent Transactions -->
     <v-row class="mt-4">
       <v-col cols="12">
-        <v-card elevation="0">
+        <v-card elevation="0" class="payments-card transactions-card">
           <v-card-title class="d-flex align-items-center">
             <v-icon class="mr-2" color="primary">mdi-history</v-icon>
             Recent Transactions
@@ -324,6 +324,44 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.payments-card {
+  border: 1px solid color-mix(in srgb, var(--erp-border) 80%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--erp-surface) 95%, #ffffff);
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.payments-card:hover {
+  border-color: color-mix(in srgb, var(--erp-primary) 35%, transparent);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+}
+
+:global(.dark-theme) .payments-card {
+  background: rgba(9, 13, 24, 0.9);
+  border-color: rgba(148, 163, 184, 0.25);
+  box-shadow: 0 24px 45px rgba(0, 0, 0, 0.65);
+}
+
+:global(.dark-theme) .payments-card:hover {
+  border-color: color-mix(in srgb, var(--erp-primary) 45%, transparent);
+}
+
+.quick-actions-card .v-btn {
+  border-radius: 12px;
+  border-color: color-mix(in srgb, currentColor 40%, transparent);
+}
+
+:global(.dark-theme) .quick-actions-card .v-btn {
+  background: rgba(148, 163, 184, 0.1);
+  color: #f8fafc;
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+.transactions-card .v-table {
+  background: transparent;
 }
 
 /* Responsive */
