@@ -611,11 +611,8 @@
   }
 }
 
-/* Focus indicators for interactive elements */
-.v-btn:focus,
-.v-chip:focus,
-.v-text-field:focus-within,
-.v-select:focus-within {
+/* Focus indicators for interactive elements (scoped to Kanban view) */
+.kanban-board :is(.v-btn:focus, .v-chip:focus, .v-text-field:focus-within, .v-select:focus-within) {
   outline: 2px solid var(--erp-primary, #3b82f6);
   outline-offset: 2px;
 }
