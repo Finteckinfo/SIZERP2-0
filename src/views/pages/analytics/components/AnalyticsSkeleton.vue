@@ -124,11 +124,18 @@ defineProps<Props>();
 
 <style scoped>
 .analytics-skeleton {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--erp-surface, #ffffff) 90%, #ffffff);
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
   padding: 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--erp-border, #cbd5f5) 70%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+:global(.dark-theme) .analytics-skeleton {
+  background: rgba(13, 20, 36, 0.88);
+  border-color: rgba(148, 163, 184, 0.25);
+  box-shadow: 0 18px 45px rgba(2, 6, 23, 0.8);
 }
 
 /* Overview Skeleton */
@@ -157,9 +164,14 @@ defineProps<Props>();
   align-items: center;
   gap: 1rem;
   padding: 1.5rem;
-  background: rgba(248, 250, 252, 0.8);
+  background: color-mix(in srgb, var(--erp-surface, #f8fafc) 85%, #ffffff);
   border-radius: 12px;
   border: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+:global(.dark-theme) .skeleton-stat-card {
+  background: rgba(22, 32, 53, 0.8);
+  border-color: rgba(148, 163, 184, 0.25);
 }
 
 .skeleton-stat-content {
@@ -170,9 +182,14 @@ defineProps<Props>();
 }
 
 .skeleton-scores {
-  background: rgba(248, 250, 252, 0.5);
+  background: color-mix(in srgb, var(--erp-surface, #f8fafc) 75%, transparent);
   border-radius: 12px;
   padding: 1.5rem;
+}
+
+:global(.dark-theme) .skeleton-scores {
+  background: rgba(15, 24, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .skeleton-score-cards {
@@ -183,13 +200,18 @@ defineProps<Props>();
 }
 
 .skeleton-score-card {
-  background: white;
+  background: color-mix(in srgb, var(--erp-surface, #ffffff) 90%, #ffffff);
   border-radius: 12px;
   padding: 1.5rem;
   border: 1px solid rgba(226, 232, 240, 0.5);
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+:global(.dark-theme) .skeleton-score-card {
+  background: rgba(25, 33, 55, 0.9);
+  border-color: rgba(148, 163, 184, 0.25);
 }
 
 /* Widget Skeleton */
@@ -217,8 +239,12 @@ defineProps<Props>();
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: rgba(248, 250, 252, 0.5);
+  background: color-mix(in srgb, var(--erp-surface, #f8fafc) 70%, #ffffff);
   border-radius: 8px;
+}
+
+:global(.dark-theme) .skeleton-widget-item {
+  background: rgba(24, 34, 56, 0.85);
 }
 
 .skeleton-widget-item-content {
@@ -253,8 +279,12 @@ defineProps<Props>();
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: rgba(248, 250, 252, 0.5);
+  background: color-mix(in srgb, var(--erp-surface, #f8fafc) 70%, #ffffff);
   border-radius: 8px;
+}
+
+:global(.dark-theme) .skeleton-activity-item {
+  background: rgba(24, 34, 56, 0.85);
 }
 
 .skeleton-activity-content {
@@ -289,8 +319,12 @@ defineProps<Props>();
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: rgba(248, 250, 252, 0.5);
+  background: color-mix(in srgb, var(--erp-surface, #f8fafc) 70%, #ffffff);
   border-radius: 8px;
+}
+
+:global(.dark-theme) .skeleton-alert-item {
+  background: rgba(24, 34, 56, 0.85);
 }
 
 .skeleton-alert-content {

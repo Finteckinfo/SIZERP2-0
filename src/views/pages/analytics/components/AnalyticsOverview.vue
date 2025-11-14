@@ -363,17 +363,24 @@ const hasData = computed(() => {
 }
 
 .performance-scores {
-  background: color-mix(in srgb, var(--v-theme-surface) 60%, transparent);
+  background: color-mix(in srgb, var(--erp-surface, var(--v-theme-surface)) 75%, transparent);
   border-radius: 12px;
   padding: 1.5rem;
 }
 
 .score-card {
-  background: white;
+  background: color-mix(in srgb, var(--erp-surface, #ffffff) 94%, #ffffff);
   border-radius: 12px;
   padding: 1.5rem;
-  border: 1px solid rgba(226, 232, 240, 0.5);
+  border: 1px solid color-mix(in srgb, var(--erp-border, #d4d9e8) 70%, transparent);
   height: 100%;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.score-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--erp-primary, #22d3ee) 50%, transparent);
 }
 
 .score-header {
@@ -384,21 +391,44 @@ const hasData = computed(() => {
 
 .score-title {
   font-weight: 600;
-  color: #374151;
+  color: color-mix(in srgb, var(--erp-text, #0f172a) 85%, #1f2937);
 }
 
 .score-value {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1e293b;
+  color: color-mix(in srgb, var(--erp-text, #0f172a) 95%, #020617);
   margin-bottom: 0.5rem;
 }
 
 .score-description {
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: color-mix(in srgb, var(--erp-text, #0f172a) 65%, #64748b);
   margin-top: 0.75rem;
   line-height: 1.4;
+}
+
+:global(.dark-theme) .analytics-overview .performance-scores {
+  background: rgba(10, 18, 32, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+:global(.dark-theme) .analytics-overview .score-card {
+  background: rgba(18, 26, 42, 0.92);
+  border-color: rgba(148, 163, 184, 0.28);
+  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.75);
+}
+
+:global(.dark-theme) .analytics-overview .score-title {
+  color: rgba(226, 232, 240, 0.9);
+}
+
+:global(.dark-theme) .analytics-overview .score-value {
+  color: #f8fafc;
+}
+
+:global(.dark-theme) .analytics-overview .score-description {
+  color: rgba(226, 232, 240, 0.7);
 }
 
 .quick-insights {
