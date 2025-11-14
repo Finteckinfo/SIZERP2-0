@@ -190,11 +190,26 @@ html body.dark-theme .erp-card-bg {
   color: #ffffff !important;
 }
 
-/* Ensure sidebar buttons never inherit elevated shadows from feature pages */
-.leftSidebar .v-list-item,
+/* Ensure sidebar headers + items keep consistent styling even when feature pages inject CSS */
+.leftSidebar :is(.sidebar-header, .v-list-subheader) {
+  background: transparent !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--erp-border, #283141) 90%, transparent) !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.leftSidebar .v-list-item {
+  box-shadow: none !important;
+  background-image: none !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+}
+
 .leftSidebar .v-btn {
   box-shadow: none !important;
   background-image: none !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
 }
 
 /* Dropdown surfaces use sidebar bg for both modes */
