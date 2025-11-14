@@ -196,20 +196,30 @@ html body.dark-theme .erp-card-bg {
   border-bottom: 1px solid color-mix(in srgb, var(--erp-border, #283141) 90%, transparent) !important;
   box-shadow: none !important;
   border-radius: 0 !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
 }
 
 .leftSidebar .v-list-item {
   box-shadow: none !important;
   background-image: none !important;
-  border: 1px solid transparent !important;
+  border: none !important;
   border-radius: 10px !important;
 }
 
 .leftSidebar .v-btn {
   box-shadow: none !important;
   background-image: none !important;
-  border: 1px solid transparent !important;
+  border: none !important;
   border-radius: 10px !important;
+}
+
+.leftSidebar :is(.v-avatar, .v-icon, .icon-wrapper, .iconClass, .v-list-item__prepend) {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 12px !important;
 }
 
 /* Dropdown surfaces use sidebar bg for both modes */
