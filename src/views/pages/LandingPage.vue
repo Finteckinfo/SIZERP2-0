@@ -3,7 +3,7 @@
     <!-- Main Content -->
     <div class="landing-content">
       <!-- Hero Section -->
-      <section class="hero-section">
+      <section class="hero-section" ref="heroSection">
         <div class="hero-container">
           <div class="hero-text">
             <div class="hero-logo">
@@ -60,10 +60,10 @@
             size="x-large"
             variant="elevated"
             class="cta-button-large"
-            @click="goToCreateProject"
+            @click="scrollToHero"
           >
             <v-icon class="mr-2">mdi-rocket-launch</v-icon>
-            Start Your Journey
+            Back to Top
           </v-btn>
         </div>
       </section>
@@ -129,6 +129,7 @@ import ZigZagButton from '@/components/ui/ZigZagButton.vue'
 import FeatureBentoGrid from '@/views/pages/landing/components/FeatureBentoGrid.vue'
 
 const router = useRouter()
+const heroSection = ref<HTMLElement | null>(null)
 const featuresSection = ref<HTMLElement | null>(null)
 
 const goToCreateProject = () => {
@@ -154,6 +155,17 @@ const goToJoinProject = () => {
     // Store intent to join project after authentication
     localStorage.setItem('post_auth_action', 'join_project')
     router.push('/auth-choice')
+  }
+}
+
+const scrollToHero = () => {
+  if (heroSection.value) {
+    heroSection.value.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    })
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 }
 
