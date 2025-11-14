@@ -454,6 +454,28 @@ const { isDark } = useTheme();
   padding: 2rem;
 }
 
+.loading-container :deep(.v-skeleton-loader) {
+  border-radius: 18px;
+  border: 1px solid var(--erp-border);
+  background: color-mix(in srgb, var(--erp-surface) 85%, #f8fafc);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.14);
+  padding: 1.25rem;
+}
+
+.loading-container :deep(.v-skeleton-loader__bone) {
+  background: color-mix(in srgb, var(--erp-surface) 70%, #ffffff);
+}
+
+:global(.dark-theme) .loading-container :deep(.v-skeleton-loader) {
+  background: rgba(15, 23, 42, 0.75);
+  border-color: rgba(148, 163, 184, 0.25);
+  box-shadow: 0 16px 36px rgba(2, 6, 23, 0.65);
+}
+
+:global(.dark-theme) .loading-container :deep(.v-skeleton-loader__bone) {
+  background: rgba(248, 250, 252, 0.08);
+}
+
 .empty-state {
   flex: 1;
   display: flex;

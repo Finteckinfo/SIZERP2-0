@@ -685,6 +685,10 @@ onMounted(() => {
   cursor: pointer;
 }
 
+.kanban-filters :deep(.v-select__selection-text) {
+  color: var(--erp-text);
+}
+
 .kanban-filters :deep(.v-field--focused) {
   border-color: var(--erp-primary);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--erp-primary) 20%, transparent);
@@ -704,5 +708,38 @@ onMounted(() => {
 
 ::global(.kanban-select-menu .v-list-item--active) {
   background: color-mix(in srgb, var(--erp-primary) 16%, transparent);
+}
+:global(.dark-theme) .kanban-filter-input :deep(.v-field),
+:global(.dark-theme) .kanban-filter-select :deep(.v-field),
+:global(.dark-theme) .kanban-filters :deep(.v-field) {
+  background: rgba(15, 23, 42, 0.85);
+  border-color: rgba(148, 163, 184, 0.32);
+  color: #e2e8f0;
+}
+
+:global(.dark-theme) .kanban-filters :deep(.v-label),
+:global(.dark-theme) .kanban-filters :deep(.v-field__input),
+:global(.dark-theme) .kanban-filters :deep(.v-select__selection-text),
+:global(.dark-theme) .kanban-filters :deep(.v-select__selection) {
+  color: #e2e8f0;
+}
+
+:global(.dark-theme) .kanban-filters :deep(.v-field--focused) {
+  border-color: color-mix(in srgb, var(--erp-primary) 65%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--erp-primary) 35%, transparent);
+}
+
+:global(.dark-theme) .kanban-select-menu {
+  background: rgba(15, 23, 42, 0.94) !important;
+  border-color: rgba(148, 163, 184, 0.3) !important;
+  box-shadow: 0 22px 38px rgba(2, 6, 23, 0.7) !important;
+}
+
+:global(.dark-theme) .kanban-select-menu .v-list-item {
+  color: #f1f5f9;
+}
+
+:global(.dark-theme) .kanban-select-menu .v-list-item--active {
+  background: color-mix(in srgb, var(--erp-primary) 30%, transparent) !important;
 }
 </style>
