@@ -78,14 +78,14 @@ async function handleLogout() {
       <v-divider></v-divider>
 
       <v-list class="mt-3">
-        <v-list-item rounded="md" class="erp-hover" :style="{ background: 'var(--erp-surface)', color: 'var(--erp-text)' }">
+        <v-list-item rounded="md" class="erp-hover" :style="{ background: 'var(--erp-sidebar-bg)', color: 'var(--erp-text)' }">
           <template v-slot:prepend>
             <SettingsIcon size="20" class="mr-2" />
           </template>
           <v-list-item-title class="text-subtitle-2"> Account Settings </v-list-item-title>
         </v-list-item>
 
-        <v-list-item rounded="md" class="erp-hover" :style="{ background: 'var(--erp-surface)', color: 'var(--erp-text)' }">
+        <v-list-item rounded="md" class="erp-hover" :style="{ background: 'var(--erp-sidebar-bg)', color: 'var(--erp-text)' }">
           <template v-slot:prepend>
             <UserIcon size="20" class="mr-2" />
           </template>
@@ -95,7 +95,7 @@ async function handleLogout() {
           </template>
         </v-list-item>
 
-        <v-list-item @click="handleLogout()" rounded="md" class="erp-hover" :style="{ background: 'var(--erp-surface)', color: 'var(--erp-text)' }">
+        <v-list-item @click="handleLogout()" rounded="md" class="erp-hover" :style="{ background: 'var(--erp-sidebar-bg)', color: 'var(--erp-text)' }">
           <template v-slot:prepend>
             <LogoutIcon size="20" class="mr-2" />
           </template>
