@@ -51,6 +51,11 @@ router.beforeEach(async (to, from, next) => {
     }
     
     // Clerk not ready, show loading screen
+    try {
+      sessionStorage.setItem('post_auth_redirect', to.fullPath || to.path);
+    } catch (error) {
+      console.warn('Unable to cache post-auth redirect', error);
+    }
     next('/auth-loading');
     return;
   } else if (clerk.user?.id && (to.path === '/login' || to.path === '/login1')) {

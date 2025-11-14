@@ -21,13 +21,34 @@ const router = useRouter();
 const status = ref(clerkReadinessService.getStatus());
 const retrying = ref(false);
 
+const redirectAfterAuth = () => {
+  try {
+    const target = sessionStorage.getItem('post_auth_redirect');
+    if (target && target !== '/auth-loading') {
+      sessionStorage.removeItem('post_auth_redirect');
+      router.replace(target);
+      return;
+    }
+  } catch (error) {
+    console.warn('Unable to read post-auth redirect target', error);
+  }
+  router.replace('/dashboard');
+};
+
+const clearRedirectHint = () => {
+  try {
+    sessionStorage.removeItem('post_auth_redirect');
+  } catch (error) {
+    console.warn('Unable to clear post-auth redirect', error);
+  }
+};
+
 const handleRetry = async () => {
   retrying.value = true;
   try {
     const success = await clerkReadinessService.retry();
     if (success) {
-      // Redirect to dashboard on success
-      router.push('/dashboard');
+      redirectAfterAuth();
     }
   } catch (error) {
     console.error('Retry failed:', error);
@@ -43,14 +64,15 @@ const checkAuthentication = async () => {
     if (success) {
       // Clerk is ready, check if user is authenticated
       if (window.Clerk?.user?.id) {
-        // User is authenticated, redirect to dashboard
-        router.push('/dashboard');
+        // User is authenticated, redirect to intended destination
+        redirectAfterAuth();
       } else {
         // User not authenticated - redirect to main site for satellite domains
         if (import.meta.env.VITE_CLERK_IS_SATELLITE === 'true' && import.meta.env.VITE_CLERK_SIGN_IN_URL) {
           console.log('🔄 Redirecting to main site - user not authenticated');
           window.location.href = import.meta.env.VITE_CLERK_SIGN_IN_URL;
         } else {
+          clearRedirectHint();
           router.push('/login');
         }
       }
@@ -60,11 +82,13 @@ const checkAuthentication = async () => {
         console.log('🔄 Redirecting to main site due to authentication failure');
         window.location.href = import.meta.env.VITE_CLERK_SIGN_IN_URL;
       } else {
+        clearRedirectHint();
         router.push('/login');
       }
     }
   } catch (error) {
     console.error('Authentication check failed:', error);
+    clearRedirectHint();
     router.push('/login');
   }
 };
