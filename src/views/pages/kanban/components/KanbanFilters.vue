@@ -666,6 +666,32 @@ onMounted(() => {
   background: transparent !important;
 }
 
+/* Force dark-mode dropdown overlays to match palette */
+::global(.dark-theme .kanban-select-menu) {
+  background: rgba(16, 24, 40, 0.95) !important;
+  border-color: rgba(148, 163, 184, 0.35) !important;
+  box-shadow: 0 28px 48px rgba(2, 6, 23, 0.75) !important;
+  backdrop-filter: blur(10px);
+}
+
+::global(.dark-theme .kanban-select-menu .v-list) {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+::global(.dark-theme .kanban-select-menu .v-list-item) {
+  color: #f1f5f9 !important;
+}
+
+::global(.dark-theme .kanban-select-menu .v-list-item--active) {
+  background: color-mix(in srgb, var(--erp-primary) 32%, transparent) !important;
+  color: #f8fafc !important;
+}
+
+::global(.dark-theme .kanban-select-menu .v-overlay__scrim) {
+  background: transparent !important;
+}
+
 .kanban-filters :deep(.v-field) {
   background: var(--erp-surface);
   border: 1px solid var(--erp-border);
