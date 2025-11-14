@@ -94,8 +94,8 @@
             <div class="footer-contact">
               <h4 class="footer-links-title">Contact</h4>
               <ul class="footer-links-list">
-                <li><a href="#!" @click.prevent>Support</a></li>
-                <li><a href="#!" @click.prevent>About Us</a></li>
+                <li><RouterLink to="/support">Support</RouterLink></li>
+                <li><a href="https://siz.land" target="_blank" rel="noopener">About Us</a></li>
                 <li><a href="#!" @click.prevent>Privacy Policy</a></li>
                 <li><a href="#!" @click.prevent>Terms of Service</a></li>
               </ul>

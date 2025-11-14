@@ -11,6 +11,11 @@ const PublicRoutes = {
       component: () => import('@/views/pages/LandingPage.vue')
     },
     {
+      name: 'Support',
+      path: '/support',
+      component: () => import('@/views/pages/SupportPage.vue')
+    },
+    {
       name: 'AuthChoice',
       path: '/auth-choice',
       component: () => import('@/views/authentication/AuthChoice.vue')
