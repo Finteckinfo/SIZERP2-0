@@ -1,8 +1,8 @@
 // ===============================|| Blank Layout ||=============================== //
 <template>
-  <v-app :class="['blank-layout', { 'dark-theme': isDark }]">
+  <div :class="['blank-layout', { 'dark-theme': isDark }]">
     <RouterView />
-  </v-app>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -14,18 +14,8 @@ const { isDark } = useTheme();
 
 <style scoped>
 .blank-layout {
-  background: transparent !important;
-  background-color: transparent !important;
-}
-
-/* Ensure no Vuetify default backgrounds interfere */
-.blank-layout .v-application {
-  background: transparent !important;
-  background-color: transparent !important;
-}
-
-/* Let child components handle their own backgrounds */
-.blank-layout .v-main {
+  min-height: 100vh;
+  width: 100%;
   background: transparent !important;
   background-color: transparent !important;
 }

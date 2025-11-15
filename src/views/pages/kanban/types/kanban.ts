@@ -45,6 +45,7 @@ export interface KanbanTask {
   canEdit?: boolean;
   canAssign?: boolean;
   canDelete?: boolean;
+  canApprove?: boolean; // Only project owner can approve tasks (move from COMPLETED to APPROVED)
 }
 
 export interface KanbanColumn {
@@ -262,6 +263,6 @@ export const DEFAULT_COLUMNS: ColumnConfig[] = [
     status: 'APPROVED',
     color: '#3b82f6',
     icon: 'mdi-check-all',
-    description: 'Tasks reviewed and approved'
+    description: 'Tasks reviewed and approved by project owner (triggers escrow payment release)'
   }
 ];

@@ -76,11 +76,18 @@ app.config.globalProperties.$clerkReady = false;
 // Wait for Clerk to be ready before allowing API calls
 window.addEventListener('load', () => {
   const checkClerkReady = () => {
-    if (window.Clerk?.session && window.Clerk?.user) {
-      console.log('[main.ts] Clerk is ready, allowing API calls');
+    if (window.Clerk) {
+      console.log('[main.ts] Clerk is ready');
       app.config.globalProperties.$clerkReady = true;
       // Dispatch custom event for components to listen to
       window.dispatchEvent(new CustomEvent('clerk-ready'));
+      
+      // Log auth status
+      if (window.Clerk.session && window.Clerk.user) {
+        console.log('[main.ts] User is authenticated:', window.Clerk.user.id);
+      } else {
+        console.log('[main.ts] No active session - user needs to sign in');
+      }
     } else {
       console.log('[main.ts] Clerk not ready yet, retrying...');
       setTimeout(checkClerkReady, 100);
