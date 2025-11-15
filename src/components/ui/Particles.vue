@@ -5,12 +5,13 @@
     aria-hidden="true"
     :class="className"
   >
-    <canvas ref="canvasRef" class="size-full" />
+    <canvas v-if="!animationDisabled" ref="canvasRef" class="size-full" />
+    <div v-else class="particles-fallback" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 
 interface MousePosition {
@@ -66,6 +67,12 @@ const canvasSize = ref<{ w: number; h: number }>({ w: 0, h: 0 })
 const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
 const rafID = ref<number | null>(null)
 const resizeTimeout = ref<NodeJS.Timeout | null>(null)
+const animationDisabled = ref(false)
+const isTouchDevice = ref(false)
+const prefersReducedMotionQuery =
+  typeof window !== 'undefined'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)')
+    : null
 
 // Get theme-aware color
 const getThemeColor = () => {
@@ -78,6 +85,46 @@ const getThemeColor = () => {
 
 const handleMouseMove = (event: MouseEvent) => {
   mousePosition.value = { x: event.clientX, y: event.clientY }
+}
+
+const effectiveQuantity = computed(() => {
+  if (animationDisabled.value) {
+    return 0
+  }
+
+  const cappedQuantity = isTouchDevice.value
+    ? Math.min(props.quantity, 80)
+    : props.quantity
+
+  return Math.max(0, cappedQuantity)
+})
+
+const detectEnvironment = () => {
+  if (typeof navigator === 'undefined') {
+    animationDisabled.value = false
+    return
+  }
+
+  const ua = navigator.userAgent
+  const isIOSDevice = /iP(ad|hone|od)/.test(ua)
+  const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua)
+  const prefersReducedMotion = prefersReducedMotionQuery?.matches ?? false
+
+  isTouchDevice.value = /Mobi|Android|iP(ad|hone|od)/.test(ua)
+  animationDisabled.value = Boolean(prefersReducedMotion || (isIOSDevice && isSafari))
+}
+
+const stopAnimation = () => {
+  if (rafID.value != null) {
+    window.cancelAnimationFrame(rafID.value)
+    rafID.value = null
+  }
+}
+
+const cleanupCanvas = () => {
+  stopAnimation()
+  clearContext()
+  circles.value = []
 }
 
 const hexToRgb = (hex: string): number[] => {
@@ -98,36 +145,43 @@ const hexToRgb = (hex: string): number[] => {
 }
 
 const onMouseMove = () => {
-  if (canvasRef.value) {
-    const rect = canvasRef.value.getBoundingClientRect()
-    const { w, h } = canvasSize.value
-    const x = mousePosition.value.x - rect.left - w / 2
-    const y = mousePosition.value.y - rect.top - h / 2
-    const inside = x < w / 2 && x > -w / 2 && y < h / 2 && y > -h / 2
-    if (inside) {
-      mouse.value.x = x
-      mouse.value.y = y
-    }
+  if (animationDisabled.value || !canvasRef.value) return
+
+  const rect = canvasRef.value.getBoundingClientRect()
+  const { w, h } = canvasSize.value
+  const x = mousePosition.value.x - rect.left - w / 2
+  const y = mousePosition.value.y - rect.top - h / 2
+  const inside = x < w / 2 && x > -w / 2 && y < h / 2 && y > -h / 2
+  if (inside) {
+    mouse.value.x = x
+    mouse.value.y = y
   }
 }
 
 const resizeCanvas = () => {
-  if (canvasContainerRef.value && canvasRef.value && context.value) {
-    canvasSize.value.w = canvasContainerRef.value.offsetWidth
-    canvasSize.value.h = canvasContainerRef.value.offsetHeight
+  if (
+    animationDisabled.value ||
+    !canvasContainerRef.value ||
+    !canvasRef.value ||
+    !context.value
+  ) {
+    return
+  }
 
-    canvasRef.value.width = canvasSize.value.w * dpr
-    canvasRef.value.height = canvasSize.value.h * dpr
-    canvasRef.value.style.width = `${canvasSize.value.w}px`
-    canvasRef.value.style.height = `${canvasSize.value.h}px`
-    context.value.scale(dpr, dpr)
+  canvasSize.value.w = canvasContainerRef.value.offsetWidth
+  canvasSize.value.h = canvasContainerRef.value.offsetHeight
 
-    // Clear existing particles and create new ones with exact quantity
-    circles.value = []
-    for (let i = 0; i < props.quantity; i++) {
-      const circle = circleParams()
-      drawCircle(circle)
-    }
+  canvasRef.value.width = canvasSize.value.w * dpr
+  canvasRef.value.height = canvasSize.value.h * dpr
+  canvasRef.value.style.width = `${canvasSize.value.w}px`
+  canvasRef.value.style.height = `${canvasSize.value.h}px`
+  context.value.scale(dpr, dpr)
+
+  // Clear existing particles and create new ones with exact quantity
+  circles.value = []
+  for (let i = 0; i < effectiveQuantity.value; i++) {
+    const circle = circleParams()
+    drawCircle(circle)
   }
 }
 
@@ -175,19 +229,22 @@ const drawCircle = (circle: Circle, update = false) => {
 }
 
 const clearContext = () => {
-  if (context.value) {
-    context.value.clearRect(
-      0,
-      0,
-      canvasSize.value.w,
-      canvasSize.value.h
-    )
+  if (animationDisabled.value || !context.value) {
+    return
   }
+
+  context.value.clearRect(
+    0,
+    0,
+    canvasSize.value.w,
+    canvasSize.value.h
+  )
 }
 
 const drawParticles = () => {
+  if (animationDisabled.value) return
   clearContext()
-  const particleCount = props.quantity
+  const particleCount = effectiveQuantity.value
   for (let i = 0; i < particleCount; i++) {
     const circle = circleParams()
     drawCircle(circle)
@@ -207,6 +264,8 @@ const remapValue = (
 }
 
 const animate = () => {
+  if (animationDisabled.value) return
+
   clearContext()
   circles.value.forEach((circle: Circle, i: number) => {
     // Handle the alpha value
@@ -257,11 +316,14 @@ const animate = () => {
 }
 
 const initCanvas = () => {
+  if (animationDisabled.value) return
   resizeCanvas()
   drawParticles()
+  animate()
 }
 
 const handleResize = () => {
+  if (animationDisabled.value) return
   if (resizeTimeout.value) {
     clearTimeout(resizeTimeout.value)
   }
@@ -270,34 +332,103 @@ const handleResize = () => {
   }, 200)
 }
 
-onMounted(async () => {
-  await nextTick()
-  
-  if (canvasRef.value) {
-    context.value = canvasRef.value.getContext('2d')
+const handleVisibilityChange = () => {
+  if (document.hidden) {
+    stopAnimation()
+  } else if (!animationDisabled.value) {
+    animate()
   }
-  
-  initCanvas()
-  animate()
+}
 
-  window.addEventListener('resize', handleResize)
-  window.addEventListener('mousemove', handleMouseMove)
+const registerMotionListener = () => {
+  if (!prefersReducedMotionQuery) return
+
+  const handler = () => detectEnvironment()
+
+  if (typeof prefersReducedMotionQuery.addEventListener === 'function') {
+    prefersReducedMotionQuery.addEventListener('change', handler)
+  } else if (typeof prefersReducedMotionQuery.addListener === 'function') {
+    prefersReducedMotionQuery.addListener(handler)
+  }
+
+  return () => {
+    if (typeof prefersReducedMotionQuery.removeEventListener === 'function') {
+      prefersReducedMotionQuery.removeEventListener('change', handler)
+    } else if (typeof prefersReducedMotionQuery.removeListener === 'function') {
+      prefersReducedMotionQuery.removeListener(handler)
+    }
+  }
+}
+
+let removeMotionListener: (() => void) | undefined
+
+onMounted(async () => {
+  detectEnvironment()
+  removeMotionListener = registerMotionListener()
+
+  await nextTick()
+
+  if (!animationDisabled.value) {
+    if (canvasRef.value) {
+      context.value = canvasRef.value.getContext('2d')
+    }
+
+    initCanvas()
+  }
+
+  window.addEventListener('resize', handleResize, { passive: true })
+  window.addEventListener('mousemove', handleMouseMove, { passive: true })
+  document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
 onUnmounted(() => {
-  if (rafID.value != null) {
-    window.cancelAnimationFrame(rafID.value)
-  }
+  cleanupCanvas()
   if (resizeTimeout.value) {
     clearTimeout(resizeTimeout.value)
   }
   window.removeEventListener('resize', handleResize)
   window.removeEventListener('mousemove', handleMouseMove)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  if (removeMotionListener) {
+    removeMotionListener()
+  }
 })
 
-watch(() => mousePosition.value, onMouseMove)
-watch(() => props.refresh, initCanvas)
+watch(() => mousePosition.value, () => {
+  if (!animationDisabled.value) {
+    onMouseMove()
+  }
+})
+watch(() => props.refresh, () => {
+  if (!animationDisabled.value) {
+    initCanvas()
+  }
+})
 watch(() => getThemeColor(), () => {
-  initCanvas()
+  if (!animationDisabled.value) {
+    initCanvas()
+  }
+})
+watch(animationDisabled, async (disabled) => {
+  if (disabled) {
+    cleanupCanvas()
+  } else {
+    await nextTick()
+    if (canvasRef.value) {
+      context.value = canvasRef.value.getContext('2d')
+    }
+    initCanvas()
+  }
 })
 </script>
+
+<style scoped>
+.particles-fallback {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.3), transparent 65%),
+    radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.2), transparent 55%),
+    radial-gradient(circle at 0% 50%, rgba(255, 255, 255, 0.25), transparent 60%);
+  opacity: 0.35;
+}
+</style>

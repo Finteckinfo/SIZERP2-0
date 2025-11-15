@@ -262,7 +262,8 @@ html body.dark-theme :not(.landing-page):not(.landing-page *) div {
   color: var(--erp-text) !important;
 }
 
-/* Landing page should use its own styling */
-.landing-page, .landing-page * {
-  color: inherit !important;
+/* Landing page should use its own styling without breaking gradient text */
+.landing-page,
+.landing-page * {
+  color: inherit;
 }
