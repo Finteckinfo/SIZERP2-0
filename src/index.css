@@ -249,15 +249,20 @@ html body.dark-theme .stat-card {
   border-color: var(--erp-border) !important;
 }
 
-/* Ensure all text elements inherit the correct color immediately */
-html body.dark-theme h1,
-html body.dark-theme h2,
-html body.dark-theme h3,
-html body.dark-theme h4,
-html body.dark-theme h5,
-html body.dark-theme h6,
-html body.dark-theme p,
-html body.dark-theme span,
-html body.dark-theme div {
+/* Ensure all text elements inherit the correct color immediately - EXCEPT landing page */
+html body.dark-theme :not(.landing-page):not(.landing-page *) h1,
+html body.dark-theme :not(.landing-page):not(.landing-page *) h2,
+html body.dark-theme :not(.landing-page):not(.landing-page *) h3,
+html body.dark-theme :not(.landing-page):not(.landing-page *) h4,
+html body.dark-theme :not(.landing-page):not(.landing-page *) h5,
+html body.dark-theme :not(.landing-page):not(.landing-page *) h6,
+html body.dark-theme :not(.landing-page):not(.landing-page *) p,
+html body.dark-theme :not(.landing-page):not(.landing-page *) span,
+html body.dark-theme :not(.landing-page):not(.landing-page *) div {
   color: var(--erp-text) !important;
+}
+
+/* Landing page should use its own styling */
+.landing-page, .landing-page * {
+  color: inherit !important;
 }

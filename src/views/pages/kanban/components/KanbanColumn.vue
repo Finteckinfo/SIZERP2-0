@@ -305,6 +305,42 @@ const handleDrop = (event: DragEvent) => {
     return;
   }
   
+  // Find the task being moved to check permissions
+  let sourceTask: any = null;
+  Object.keys(props.column).forEach(() => {
+    const task = props.tasks.find(t => t.id === taskId);
+    if (task) {
+      sourceTask = task;
+    }
+  });
+  
+  // Check if moving to APPROVED column - only project owner can approve tasks
+  if (props.column.status === 'APPROVED') {
+    // Check if user has permission to approve (only project owners)
+    if (!sourceTask?.canApprove && !props.userPermissions.canEditAllTasks) {
+      console.warn('[KanbanColumn] Only project owner can approve tasks - ignoring drop');
+      // Show a visual feedback that the action was denied
+      const toast = document.createElement('div');
+      toast.textContent = '⚠️ Only the project owner can approve tasks';
+      toast.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: #ef4444;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 9999;
+        font-size: 14px;
+        font-weight: 500;
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+      return;
+    }
+  }
+  
   // Calculate new position (append to end of column)
   const newPosition: TaskPosition = {
     taskId,

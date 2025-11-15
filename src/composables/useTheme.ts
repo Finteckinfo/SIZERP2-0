@@ -1,4 +1,4 @@
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 
 // Theme storage key
 const THEME_STORAGE_KEY = 'siz-erp-theme';
@@ -32,66 +32,13 @@ const storeTheme = (isDarkMode: boolean): void => {
   }
 };
 
-// Global theme state - singleton pattern
-let globalThemeState: ReturnType<typeof createThemeState> | null = null;
-
-function createThemeState() {
-  const isDark = ref<boolean>(false);
-
-  // Toggle theme - optimized for performance
-  const toggle = () => {
-    isDark.value = !isDark.value;
-    storeTheme(isDark.value);
-    applyTheme(isDark.value);
-  };
-
-  // Set specific theme
-  const setTheme = (darkMode: boolean) => {
-    isDark.value = darkMode;
-    storeTheme(isDark.value);
-    applyTheme(darkMode);
-  };
-
-  // Apply theme to DOM - optimized function
-  const applyTheme = (darkMode: boolean) => {
-    // Use requestAnimationFrame for smoother transitions
-    requestAnimationFrame(() => {
-      if (darkMode) {
-        document.body.classList.add('dark-theme');
-        document.documentElement.classList.add('dark-theme');
-      } else {
-        document.body.classList.remove('dark-theme');
-        document.documentElement.classList.remove('dark-theme');
-      }
-    });
-  };
-
-  // Reset to system preference
-  const resetToSystem = () => {
-    const systemPrefersDark = getSystemPreference();
-    setTheme(systemPrefersDark);
-    localStorage.removeItem(THEME_STORAGE_KEY);
-  };
-
-  // Initialize theme
-  onMounted(() => {
-    const storedTheme = getStoredTheme();
-    const systemPrefersDark = getSystemPreference();
-    
-    let initialTheme: boolean;
-    
-    if (storedTheme !== null) {
-      // Use stored preference
-      initialTheme = storedTheme;
-    } else {
-      // Use system preference
-      initialTheme = systemPrefersDark;
-    }
-    
-    isDark.value = initialTheme;
-    
-    // Apply theme immediately to DOM
-    if (isDark.value) {
+// Apply theme to DOM - optimized function
+const applyTheme = (darkMode: boolean) => {
+  if (typeof window === 'undefined') return;
+  
+  // Use requestAnimationFrame for smoother transitions
+  requestAnimationFrame(() => {
+    if (darkMode) {
       document.body.classList.add('dark-theme');
       document.documentElement.classList.add('dark-theme');
     } else {
@@ -99,18 +46,69 @@ function createThemeState() {
       document.documentElement.classList.remove('dark-theme');
     }
   });
+};
 
+// Initialize theme - check storage/system preference
+const getInitialTheme = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  
+  const storedTheme = getStoredTheme();
+  if (storedTheme !== null) {
+    return storedTheme;
+  }
+  
+  return getSystemPreference();
+};
+
+// Global theme state
+const isDark = ref<boolean>(getInitialTheme());
+
+// Apply theme to DOM immediately on initialization
+if (typeof window !== 'undefined') {
+  const applyInitialTheme = () => {
+    if (isDark.value) {
+      document.body.classList.add('dark-theme');
+      document.documentElement.classList.add('dark-theme');
+    } else {
+      document.body.classList.remove('dark-theme');
+      document.documentElement.classList.remove('dark-theme');
+    }
+  };
+  
+  // Apply immediately if DOM is ready, otherwise wait
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyInitialTheme);
+  } else {
+    applyInitialTheme();
+  }
+}
+
+// Toggle theme - optimized for performance
+const toggle = () => {
+  isDark.value = !isDark.value;
+  storeTheme(isDark.value);
+  applyTheme(isDark.value);
+};
+
+// Set specific theme
+const setTheme = (darkMode: boolean) => {
+  isDark.value = darkMode;
+  storeTheme(darkMode);
+  applyTheme(darkMode);
+};
+
+// Reset to system preference
+const resetToSystem = () => {
+  const systemPrefersDark = getSystemPreference();
+  setTheme(systemPrefersDark);
+  localStorage.removeItem(THEME_STORAGE_KEY);
+};
+
+export const useTheme = () => {
   return {
     isDark,
     toggle,
     setTheme,
     resetToSystem
   };
-}
-
-export const useTheme = () => {
-  if (!globalThemeState) {
-    globalThemeState = createThemeState();
-  }
-  return globalThemeState;
 };

@@ -1,7 +1,9 @@
 <template>
-  <div :class="{ 'dark-theme': isDark }" :style="{ background: 'var(--erp-header-bg)' }">
-    <RouterView></RouterView>
-  </div>
+  <v-app :class="{ 'dark-theme': isDark }">
+    <v-main>
+      <RouterView></RouterView>
+    </v-main>
+  </v-app>
 </template>
 
 <script setup lang="ts">
@@ -10,3 +12,14 @@ import { useTheme } from '@/composables/useTheme';
 
 const { isDark } = useTheme();
 </script>
+
+<style>
+.v-application {
+  background-color: var(--theme-page-bg) !important;
+  color: var(--theme-text-color) !important;
+}
+
+.v-main {
+  background-color: transparent !important;
+}
+</style>
