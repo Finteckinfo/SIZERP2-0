@@ -1,17 +1,20 @@
 <!-- src/components/AuthGuard.vue -->
 <script setup lang="ts">
-import { useAuth } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTheme } from '@/composables/useTheme';
 
 const router = useRouter();
-const { isLoaded, isSignedIn } = useAuth();
+const { isLoaded, isSignedIn } = useNextAuth();
 const { isDark } = useTheme();
 
 onMounted(() => {
   if (isLoaded.value && !isSignedIn.value) {
-    router.replace('/login');
+    // Redirect to primary domain for authentication
+    const ssoUrl = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://siz.land';
+    const redirectUrl = encodeURIComponent(window.location.href);
+    window.location.href = `${ssoUrl}/login?redirect=${redirectUrl}`;
   }
 });
 </script>

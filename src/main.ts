@@ -11,8 +11,6 @@ import { PerfectScrollbarPlugin } from 'vue3-perfect-scrollbar';
 import VueTablerIcons from 'vue-tabler-icons';
 import print from 'vue3-print-nb';
 import VueApexCharts from 'vue3-apexcharts';
-import { clerkPlugin } from '@clerk/vue';
-import { dark } from '@clerk/themes';
 
 // ---- Node.js polyfills for browser ----
 import { Buffer } from 'buffer';
@@ -39,63 +37,8 @@ import type { NetworkConfig } from '@txnlab/use-wallet';
 
 const app = createApp(App);
 
-// ---- Clerk Authentication ----
-console.log('[main.ts] Initializing Clerk plugin');
-
-// Satellite domain configuration
-const clerkConfig: any = {
-  publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
-  appearance: {
-    baseTheme: dark,
-    variables: {
-      colorPrimary: '#5BC85B',
-      colorBackground: 'transparent',
-      colorInputBackground: 'transparent',
-    },
-  },
-};
-
-// Add satellite domain configuration if enabled
-if (import.meta.env.VITE_CLERK_IS_SATELLITE === 'true') {
-  console.log('[main.ts] Configuring as Clerk satellite domain');
-  console.log('[main.ts] Satellite domain:', import.meta.env.VITE_CLERK_DOMAIN);
-  console.log('[main.ts] Primary sign-in URL:', import.meta.env.VITE_CLERK_SIGN_IN_URL);
-  console.log('[main.ts] Primary sign-up URL:', import.meta.env.VITE_CLERK_SIGN_UP_URL);
-  
-  clerkConfig.isSatellite = true;
-  clerkConfig.domain = import.meta.env.VITE_CLERK_DOMAIN;
-  clerkConfig.signInUrl = import.meta.env.VITE_CLERK_SIGN_IN_URL;
-  clerkConfig.signUpUrl = import.meta.env.VITE_CLERK_SIGN_UP_URL;
-}
-
-app.use(clerkPlugin, clerkConfig);
-
-// Add global Clerk readiness check
-app.config.globalProperties.$clerkReady = false;
-
-// Wait for Clerk to be ready before allowing API calls
-window.addEventListener('load', () => {
-  const checkClerkReady = () => {
-    if (window.Clerk) {
-      console.log('[main.ts] Clerk is ready');
-      app.config.globalProperties.$clerkReady = true;
-      // Dispatch custom event for components to listen to
-      window.dispatchEvent(new CustomEvent('clerk-ready'));
-      
-      // Log auth status
-      if (window.Clerk.session && window.Clerk.user) {
-        console.log('[main.ts] User is authenticated:', window.Clerk.user.id);
-      } else {
-        console.log('[main.ts] No active session - user needs to sign in');
-      }
-    } else {
-      console.log('[main.ts] Clerk not ready yet, retrying...');
-      setTimeout(checkClerkReady, 100);
-    }
-  };
-  
-  checkClerkReady();
-});
+// ---- NextAuth Session Management ----
+console.log('[main.ts] NextAuth session will be managed via SSO cookies from siz.land');
 
 // ---- Standard Plugins ----
 console.log('[main.ts] Registering router, pinia, and other plugins');
