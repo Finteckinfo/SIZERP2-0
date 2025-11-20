@@ -337,30 +337,24 @@ const formatDate = (dateString: string) => {
 // Lifecycle
 onMounted(() => {
   // Wait for Clerk to be ready before checking access
-  if (window.Clerk?.session && user.value) {
+  if (user.value) {
     checkProjectAccess();
   }
 });
 
 // Watch for user changes and load data when ready
 watch(user, (newUser) => {
-  if (newUser && window.Clerk?.session && props.projectId) {
+  if (newUser && props.projectId) {
     console.log('User authenticated, checking project access...');
     checkProjectAccess();
   }
 }, { immediate: true });
 
-// Watch for Clerk session changes
-watch(() => window.Clerk?.session, (session) => {
-  if (session && user.value && props.projectId) {
-    console.log('Clerk session ready, checking project access...');
-    checkProjectAccess();
-  }
 }, { immediate: true });
 
 // Watch for projectId changes
 watch(() => props.projectId, () => {
-  if (props.projectId && user.value && window.Clerk?.session) {
+  if (props.projectId && user.value) {
     checkProjectAccess();
   }
 });
