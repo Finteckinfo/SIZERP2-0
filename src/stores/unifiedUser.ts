@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
-import { useUser } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 
 /**
  * Unified User Store
@@ -8,13 +8,13 @@ import { useUser } from '@clerk/vue';
  * Uses Clerk's session which is shared across both domains
  */
 export const useUnifiedUser = defineStore('unifiedUser', () => {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { user, isLoaded, isSignedIn } = useNextAuth();
   
   // Unified user data that works across all domains
   const userId = computed(() => user.value?.id || null);
   
   const userEmail = computed(() => 
-    user.value?.primaryEmailAddress?.emailAddress || null
+    user.value?.email || null
   );
   
   const userName = computed(() => {
@@ -24,20 +24,20 @@ export const useUnifiedUser = defineStore('unifiedUser', () => {
     return fullName || userEmail.value || 'User';
   });
   
-  const userAvatar = computed(() => user.value?.imageUrl || null);
+  const userAvatar = computed(() => user.value?.image || null);
   
-  // Check if user has Web3 wallet connected
+  // Check if user has Web3 wallet connected (stored in backend)
   const hasWeb3Wallet = computed(() => {
-    return user.value?.unsafeMetadata?.walletAddress ? true : false;
+    return user.value?.walletAddress ? true : false;
   });
   
   const walletAddress = computed(() => {
-    return user.value?.unsafeMetadata?.walletAddress as string | null;
+    return user.value?.walletAddress as string | null;
   });
 
   // Auth method (web2 or web3)
   const authMethod = computed(() => {
-    return user.value?.unsafeMetadata?.authMethod as string | null;
+    return user.value?.authMethod as string | null;
   });
 
   // Full name components

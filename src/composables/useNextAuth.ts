@@ -7,6 +7,9 @@ export interface NextAuthUser {
   name?: string;
   firstName?: string;
   lastName?: string;
+  image?: string;
+  walletAddress?: string;
+  authMethod?: string;
 }
 
 export interface NextAuthSession {

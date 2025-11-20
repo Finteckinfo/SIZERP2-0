@@ -279,13 +279,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { useUser } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 import { ProjectStats } from './components';
 import { projectApi, taskApi, userRoleApi, type Project, type Task, type UserRole } from '@/services/projectApi';
 import { RetroGrid } from '@/components/ui/retro-grid';
 
 const router = useRouter();
-const { user } = useUser();
+const { user } = useNextAuth();
 
 // Real project data from API
 const projects = ref<Project[]>([]);
@@ -330,7 +330,7 @@ const loadProjectData = async () => {
     loading.value = true;
     
     // Wait for Clerk to be ready before making API calls
-    if (!user.value || !window.Clerk?.session) {
+    if (!user.value || !null?.session) {
       console.log('Waiting for Clerk to be ready...');
       return;
     }
@@ -409,14 +409,14 @@ onMounted(() => {
 
 // Watch for user changes and load data when ready
 watch(user, (newUser) => {
-  if (newUser && window.Clerk?.session) {
+  if (newUser && null?.session) {
     console.log('User authenticated, loading project data...');
     loadProjectData();
   }
 }, { immediate: true });
 
 // Watch for Clerk session changes
-watch(() => window.Clerk?.session, (session) => {
+watch(() => null?.session, (session) => {
   if (session && user.value) {
     console.log('Clerk session ready, loading project data...');
     loadProjectData();

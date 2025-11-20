@@ -181,14 +181,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
-import { useUser } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 import { NetworkId } from '@txnlab/use-wallet-vue';
 import { getUserEarnings, type BlockchainTransaction } from '@/services/paymentService';
 import { getSizTokenBalance, type SizTokenBalance } from '@/services/sizTokenService';
 import { connectedWallet, isWalletConnected } from '@/stores/walletStore';
 
 // Composables
-const { user } = useUser();
+const { user } = useNextAuth();
 
 // Reactive data
 const loading = ref(true);

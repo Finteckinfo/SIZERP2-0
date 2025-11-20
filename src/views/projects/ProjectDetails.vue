@@ -400,13 +400,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { useUser } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 import { projectApi, taskApi, userRoleApi, departmentApi, projectAccessApi, type Project, type Task, type UserRole, type Department } from '@/services/projectApi';
 import { RetroGrid } from '@/components/ui/retro-grid';
 
 const router = useRouter();
 const route = useRoute();
-const { user } = useUser();
+const { user } = useNextAuth();
 
 // Reactive data
 const project = ref<Project | null>(null);

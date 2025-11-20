@@ -136,7 +136,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { useUser } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 import { projectInviteApi, type ProjectInvite } from '@/services/projectApi';
 import { useTheme } from '@/composables/useTheme';
 
@@ -154,7 +154,7 @@ const emit = defineEmits<{
 }>();
 
 // Composables
-const { user } = useUser();
+const { user } = useNextAuth();
 const { isDark } = useTheme();
 
 // Reactive data

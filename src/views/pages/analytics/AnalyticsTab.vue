@@ -90,7 +90,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useUser } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 
 // Import all analytics components
 import AnalyticsOverview from './components/AnalyticsOverview.vue';
@@ -116,7 +116,7 @@ import LiveDashboard from './components/LiveDashboard.vue';
 import TimelineAnalysis from './components/TimelineAnalysis.vue';
 import CollaborationMetrics from './components/CollaborationMetrics.vue';
 
-const { user } = useUser();
+const { user } = useNextAuth();
 
 interface Section {
   id: string;

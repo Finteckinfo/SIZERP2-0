@@ -458,7 +458,6 @@
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { useTheme } from 'vuetify';
 import { useRouter } from 'vue-router';
-import { UserProfile } from '@clerk/vue';
 import { RetroGrid } from '@/components/ui/retro-grid';
 import { connectedWallet, isWalletConnected, isWalletModalOpen } from '@/stores/walletStore';
 import { removeManualWallet, activeAccount, clearWalletConnection } from '@/lib/walletManager';
