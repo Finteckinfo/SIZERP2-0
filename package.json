@@ -17,9 +17,6 @@
   "dependencies": {
     "@agoralabs-sh/avm-web-provider": "^1.7.0",
     "@blockshake/defly-connect": "^1.2.1",
-    "@clerk/clerk-js": "^5.82.0",
-    "@clerk/themes": "^2.4.13",
-    "@clerk/vue": "^1.10.0",
     "@mdi/font": "^7.4.47",
     "@mdi/js": "^7.4.47",
     "@perawallet/connect": "^1.4.2",

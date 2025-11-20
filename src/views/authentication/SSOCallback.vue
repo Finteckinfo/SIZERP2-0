@@ -1,21 +1,32 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { useClerk } from "@clerk/vue";
+import { useNextAuth } from '@/composables/useNextAuth';
 import { useTheme } from '@/composables/useTheme';
+import { useRouter } from 'vue-router';
 
-const clerk = useClerk();
 const loading = ref(true);
 const errorMsg = ref("");
 const { isDark } = useTheme();
+const { validateSession } = useNextAuth();
+const router = useRouter();
 
 onMounted(async () => {
   try {
-    // Clerk expects at least an empty object for params
-    await clerk.value?.handleRedirectCallback({});
-    window.location.href = "/";
+    console.log('[SSO Callback] Validating NextAuth session from siz.land...');
+    
+    // Validate NextAuth session (cookie should be shared from siz.land)
+    await validateSession();
+    
+    // Check if we have a redirect URL from session storage
+    const redirectUrl = sessionStorage.getItem('post_auth_redirect');
+    sessionStorage.removeItem('post_auth_redirect');
+    
+    // Redirect to intended destination or dashboard
+    console.log('[SSO Callback] Authentication successful, redirecting...');
+    window.location.href = redirectUrl || "/dashboard";
   } catch (err: any) {
-    console.error("Redirect callback error:", err);
-    errorMsg.value = err.errors?.[0]?.message || "Authentication failed. Please try again.";
+    console.error("[SSO Callback] Authentication error:", err);
+    errorMsg.value = err.message || "Authentication failed. Please try again.";
     loading.value = false;
   }
 });

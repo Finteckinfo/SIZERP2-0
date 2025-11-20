@@ -1,20 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import MainRoutes from './MainRoutes';
 import PublicRoutes from './PublicRoutes';
-import { Clerk } from '@clerk/clerk-js';
-import { clerkReadinessService } from '@/services/clerkReadinessService';
+import { getCookie } from '@/utils/cookies';
 
-// Initialize Clerk with satellite domain configuration if needed
-const clerkOptions: any = {};
+// SSO Configuration - Receive auth from primary domain (siz.land)
+const SSO_PRIMARY_DOMAIN = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://siz.land';
 
-if (import.meta.env.VITE_CLERK_IS_SATELLITE === 'true') {
-  clerkOptions.isSatellite = true;
-  clerkOptions.domain = import.meta.env.VITE_CLERK_DOMAIN;
-  clerkOptions.signInUrl = import.meta.env.VITE_CLERK_SIGN_IN_URL;
-  clerkOptions.signUpUrl = import.meta.env.VITE_CLERK_SIGN_UP_URL;
+function hasNextAuthSession(): boolean {
+  const sessionToken = getCookie('next-auth.session-token') || 
+                      getCookie('__Secure-next-auth.session-token');
+  return !!sessionToken;
 }
-
-const clerk = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY, clerkOptions);
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,64 +25,32 @@ export const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   // Skip loading page to avoid infinite loop
-  if (to.path === '/auth-loading') {
+  if (to.path === '/auth-loading' || to.path === '/sso-callback') {
     next();
     return;
   }
 
-  // Load Clerk first
-  await clerk.load();
-  
-  const publicPages = ['/login', '/register', '/login1', '/error', '/sso-callback', '/auth-choice', '/wallet-auth'];
+  const publicPages = ['/login', '/register', '/login1', '/error'];
   const isPublicPage = publicPages.includes(to.path);
   const authRequired = !isPublicPage && to.matched.some((record) => record.meta.requiresAuth);
-  
-  // Check if in satellite mode
-  const isSatelliteMode = import.meta.env.VITE_CLERK_IS_SATELLITE === 'true';
 
-  // If authentication is required, show loading screen first
+  // Check for NextAuth session (shared via .siz.land domain)
+  const hasSession = hasNextAuthSession();
+
   if (authRequired) {
-    // Check if Clerk is already ready
-    if (window.Clerk?.session && window.Clerk?.user?.id) {
-      // Clerk is ready, proceed
+    if (hasSession) {
+      // Session exists, proceed
+      console.log('[Router] NextAuth session found, allowing access');
       next();
-      return;
-    }
-    
-    // User not authenticated
-    if (isSatelliteMode) {
-      // In satellite mode, redirect to primary domain for authentication
-      console.log('Redirecting to primary domain for authentication');
-      try {
-        sessionStorage.setItem('post_auth_redirect', to.fullPath || to.path);
-      } catch (error) {
-        console.warn('Unable to cache post-auth redirect', error);
-      }
-      // Redirect to primary domain sign-in
-      const signInUrl = import.meta.env.VITE_CLERK_SIGN_IN_URL || 'https://siz.land/login';
-      window.location.href = signInUrl;
-      return;
     } else {
-      // Not in satellite mode, show loading screen
-      try {
-        sessionStorage.setItem('post_auth_redirect', to.fullPath || to.path);
-      } catch (error) {
-        console.warn('Unable to cache post-auth redirect', error);
-      }
-      next('/auth-loading');
-      return;
+      // No session, redirect to SSO login
+      console.log('[Router] No NextAuth session, redirecting to SSO');
+      const redirectUrl = encodeURIComponent(window.location.href);
+      window.location.href = `${SSO_PRIMARY_DOMAIN}/login?redirect=${redirectUrl}`;
     }
-  } else if (clerk.user?.id && (to.path === '/login' || to.path === '/login1')) {
+  } else if (hasSession && (to.path === '/login' || to.path === '/login1')) {
     // User is already authenticated, redirect to dashboard
     next('/dashboard');
-  } else if (isSatelliteMode && (to.path === '/login' || to.path === '/register' || to.path === '/auth-choice' || to.path === '/wallet-auth')) {
-    // In satellite mode, these auth pages should not be accessible
-    // Redirect to primary domain
-    const targetUrl = to.path === '/register' 
-      ? import.meta.env.VITE_CLERK_SIGN_UP_URL 
-      : import.meta.env.VITE_CLERK_SIGN_IN_URL;
-    window.location.href = targetUrl || 'https://siz.land' + to.path;
-    return;
   } else {
     next();
   }
