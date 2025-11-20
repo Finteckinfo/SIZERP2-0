@@ -70,7 +70,7 @@ const invitesLoading = ref(false);
 // Computed properties
 const userDisplayName = computed(() => {
   if (user.value) {
-    return user.value.firstName || user.value.emailAddresses[0]?.emailAddress || 'User';
+    return user.value.firstName || user.value.email || 'User';
   }
   return 'Guest';
 });
@@ -105,7 +105,7 @@ const getUserRoleInProject = (projectId: string) => {
   if (!user.value?.id) return 'CLIENT';
   
   const userRole = teamMembers.value.find(member => 
-    member.projectId === projectId && member.userId === user.value.id
+    member.projectId === projectId && member.userId === user.value?.id
   );
   return userRole?.role || 'CLIENT';
 };
@@ -383,7 +383,7 @@ const fetchUserProjects = async () => {
               createdAt: '2024-01-01',
               user: {
                 id: user.value?.id || 'sample-user',
-                email: user.value?.emailAddresses?.[0]?.emailAddress || 'user@example.com',
+                email: user.value?.email || 'user@example.com',
                 firstName: user.value?.firstName || 'Sample',
                 lastName: user.value?.lastName || 'User',
                 createdAt: '2024-01-01',
@@ -517,13 +517,13 @@ const fetchDeadlines = async () => {
 // Load all data independently for progressive loading
 const loadAllData = async () => {
   try {
-    // Wait for Clerk to be ready before making API calls
-    if (!user.value || !null?.session) {
-      console.log('Waiting for Clerk to be ready...');
+    // Wait for NextAuth user to be ready
+    if (!user.value) {
+      console.log('Waiting for authentication...');
       return;
     }
 
-    console.log('Loading all data for user:', user.value.id);
+    console.log('Loading all data for user:', user.value?.id);
     
     // First, check backend health
     try {
@@ -748,10 +748,10 @@ watch(() => user.value?.id, (newUserId) => {
   }
 }, { immediate: true });
 
-// Watch for Clerk session changes
-watch(() => null?.session, (session) => {
-  if (session && user.value) {
-    console.log('Clerk session ready, loading data...');
+// Watch for user changes
+watch(() => user.value, (newUser) => {
+  if (newUser) {
+    console.log('User authenticated, loading data...');
     loadAllData();
   }
 }, { immediate: true });

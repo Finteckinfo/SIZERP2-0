@@ -329,13 +329,13 @@ const loadProjectData = async () => {
     error.value = null;
     loading.value = true;
     
-    // Wait for Clerk to be ready before making API calls
-    if (!user.value || !null?.session) {
-      console.log('Waiting for Clerk to be ready...');
+    // Wait for user to be authenticated
+    if (!user.value) {
+      console.log('Waiting for authentication...');
       return;
     }
 
-    console.log('Loading project data for user:', user.value.id);
+    console.log('Loading project data for user:', user.value?.id);
     
     // Fetch projects using the new filtered backend endpoint
     const projectsResponse = await projectApi.getUserProjectsSimple();
@@ -409,19 +409,14 @@ onMounted(() => {
 
 // Watch for user changes and load data when ready
 watch(user, (newUser) => {
-  if (newUser && null?.session) {
+  if (newUser) {
     console.log('User authenticated, loading project data...');
     loadProjectData();
   }
 }, { immediate: true });
 
-// Watch for Clerk session changes
-watch(() => null?.session, (session) => {
-  if (session && user.value) {
-    console.log('Clerk session ready, loading project data...');
-    loadProjectData();
-  }
-}, { immediate: true });
+// Note: Route watching would require importing useRoute from vue-router
+// For now, we rely on component remount when route changes
 
 // Team members for header (mapped from UserRole)
 const headerTeamMembers = computed(() => {
@@ -512,7 +507,7 @@ const getUserRole = (projectId: string) => {
   if (!user.value?.id) return 'CLIENT';
   
   const userRole = teamMembers.value.find(member => 
-    member.projectId === projectId && member.userId === user.value.id
+    member.projectId === projectId && member.userId === user.value?.id
   );
   return userRole?.role || 'CLIENT';
 };
