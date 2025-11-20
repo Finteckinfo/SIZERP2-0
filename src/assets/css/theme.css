@@ -4,7 +4,7 @@
 * {
   font-family: 'Poppins', sans-serif;
 }
-
+ 
 /* Light Mode (Default) - using non-conflicting variable names */
 :root {
   --theme-page-bg: #ffffff;
