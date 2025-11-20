@@ -7,10 +7,10 @@ const notificationDD = ref(['All Notifications', 'New', 'Unread', 'Other']);
 const selectNotify = ref<string>('All Notifications');
 const { user, isLoaded } = useNextAuth();
 
-// User profile image from Clerk
+// User profile image from NextAuth
 const userProfileImage = computed(() => {
-  if (isLoaded.value && user.value?.imageUrl) {
-    return user.value.imageUrl;
+  if (isLoaded.value && user.value?.image) {
+    return user.value.image;
   }
   return '@/assets/images/profile/user-round.svg';
 });

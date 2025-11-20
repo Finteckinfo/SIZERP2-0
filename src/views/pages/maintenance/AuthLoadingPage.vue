@@ -1,24 +1,24 @@
 <template>
   <AuthLoadingScreen
-    :loading-title="status.loadingTitle"
-    :loading-subtitle="status.loadingSubtitle"
-    :progress-value="status.progress"
-    :progress-text="status.progressText"
-    :tip-text="status.tipText"
-    :show-retry="status.hasError"
+    loading-title="Checking authentication..."
+    loading-subtitle="Please wait while we verify your session"
+    :progress-value="50"
+    progress-text="Validating..."
+    tip-text="Connecting to authentication service"
+    :show-retry="false"
     :retrying="retrying"
     @retry="handleRetry"
   />
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { clerkReadinessService } from '@/services/clerkReadinessService';
+import { useNextAuth } from '@/composables/useNextAuth';
 import AuthLoadingScreen from '@/components/AuthLoadingScreen.vue';
 
 const router = useRouter();
-const status = ref(clerkReadinessService.getStatus());
+const { isLoaded, isSignedIn, validateSession } = useNextAuth();
 const retrying = ref(false);
 
 const redirectAfterAuth = () => {
@@ -35,19 +35,11 @@ const redirectAfterAuth = () => {
   router.replace('/dashboard');
 };
 
-const clearRedirectHint = () => {
-  try {
-    sessionStorage.removeItem('post_auth_redirect');
-  } catch (error) {
-    console.warn('Unable to clear post-auth redirect', error);
-  }
-};
-
 const handleRetry = async () => {
   retrying.value = true;
   try {
-    const success = await clerkReadinessService.retry();
-    if (success) {
+    await validateSession();
+    if (isSignedIn.value) {
       redirectAfterAuth();
     }
   } catch (error) {
@@ -59,46 +51,21 @@ const handleRetry = async () => {
 
 const checkAuthentication = async () => {
   try {
-    const success = await clerkReadinessService.waitForClerk();
+    await validateSession();
     
-    if (success) {
-      // Clerk is ready, check if user is authenticated
-      if (null?.user?.id) {
-        // User is authenticated, redirect to intended destination
-        redirectAfterAuth();
-      } else {
-        // User not authenticated - redirect to main site for satellite domains
-        if (import.meta.env.VITE_CLERK_IS_SATELLITE === 'true' && import.meta.env.VITE_CLERK_SIGN_IN_URL) {
-          console.log('🔄 Redirecting to main site - user not authenticated');
-          window.location.href = import.meta.env.VITE_CLERK_SIGN_IN_URL;
-        } else {
-          clearRedirectHint();
-          router.push('/login');
-        }
-      }
+    if (isLoaded.value && isSignedIn.value) {
+      redirectAfterAuth();
     } else {
-      // Clerk failed to load - redirect to main site for satellite domains
-      if (import.meta.env.VITE_CLERK_IS_SATELLITE === 'true' && import.meta.env.VITE_CLERK_SIGN_IN_URL) {
-        console.log('🔄 Redirecting to main site due to authentication failure');
-        window.location.href = import.meta.env.VITE_CLERK_SIGN_IN_URL;
-      } else {
-        clearRedirectHint();
-        router.push('/login');
-      }
+      console.log('Not authenticated, redirecting to login');
+      router.push('/login');
     }
   } catch (error) {
-    console.error('Authentication check failed:', error);
-    clearRedirectHint();
+    console.error('Auth check failed:', error);
     router.push('/login');
   }
 };
 
 onMounted(() => {
-  // Start the authentication process
   checkAuthentication();
-});
-
-onUnmounted(() => {
-  clerkReadinessService.destroy();
 });
 </script>

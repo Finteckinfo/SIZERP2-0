@@ -875,7 +875,7 @@ const handleRoleChange = (index: number, newRole: string) => {
 const ensureOwnerRole = () => {
   const ownerExists = projectData.roles.some(r => r.role === 'PROJECT_OWNER');
   if (!ownerExists && user.value?.id) {
-    const creatorEmail = user.value.emailAddresses?.[0]?.emailAddress || '';
+    const creatorEmail = user.value.email || '';
     projectData.roles.unshift({
       userEmail: creatorEmail,
       userId: user.value.id,

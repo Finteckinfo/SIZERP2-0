@@ -673,12 +673,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useNextAuth } from '@/composables/useNextAuth';
 import { projectApi, taskApi, departmentApi, userRoleApi, projectInviteApi, projectAccessApi, type Project, type Task, type Department, type UserRole } from '@/services/projectApi';
 import ProjectAccessGate from '@/components/ProjectAccessGate.vue';
 import PaymentNotificationBanner from '@/components/PaymentNotificationBanner.vue';
 
 const route = useRoute();
 const router = useRouter();
+const { user } = useNextAuth();
 const projectId = route.params.id as string;
 
 // Panel state
@@ -802,7 +804,7 @@ const loadProjectData = async () => {
       console.warn('Role-aware endpoints not available, using fallback:', error);
       // Fallback: get role from existing endpoint
       try {
-        const roleResponse = await userRoleApi.getUserRoleInProject(projectId, null?.user?.id || '');
+        const roleResponse = await userRoleApi.getUserRoleInProject(projectId, user.value?.id || '');
         myRole.value = roleResponse?.role || null;
         // Compute basic permissions from role
         permissions.value = {

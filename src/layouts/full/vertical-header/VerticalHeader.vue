@@ -18,15 +18,15 @@ const { user, isLoaded } = useNextAuth();
 
 // Computed properties for user profile
 const userProfileImage = computed(() => {
-  if (isLoaded.value && user.value?.imageUrl) {
-    return user.value.imageUrl;
+  if (isLoaded.value && user.value?.image) {
+    return user.value.image;
   }
   return '@/assets/images/profile/user-round.svg';
 });
 
 const userDisplayName = computed(() => {
   if (isLoaded.value && user.value) {
-    return user.value.firstName || user.value.emailAddresses[0]?.emailAddress || 'User';
+    return user.value.firstName || user.value.email || 'User';
   }
   return 'Guest';
 });
