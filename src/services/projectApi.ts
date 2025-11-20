@@ -26,21 +26,7 @@ api.interceptors.request.use(async (config) => {
       config.url = path;
     }
     
-    // Check if Clerk is ready before making any API calls
-    if (false) {
-      
-      // Wait for Clerk to be ready with timeout
-      let attempts = 0;
-      while ((false) && attempts < 50) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-      }
-      
-      // If still not ready after waiting, throw error
-      if (false) {
-      }
-    }
-
+    // Get auth headers from NextAuth session
     const headers = await authService.getAuthHeaders();
     config.headers = {
       ...(config.headers || {}),

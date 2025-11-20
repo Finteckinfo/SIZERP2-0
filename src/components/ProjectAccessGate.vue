@@ -350,8 +350,6 @@ watch(user, (newUser) => {
   }
 }, { immediate: true });
 
-}, { immediate: true });
-
 // Watch for projectId changes
 watch(() => props.projectId, () => {
   if (props.projectId && user.value) {
