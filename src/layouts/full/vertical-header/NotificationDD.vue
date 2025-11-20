@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { BuildingStoreIcon, SendIcon, MailboxIcon, PhotoIcon } from 'vue-tabler-icons';
-import { useUser } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 
 const notificationDD = ref(['All Notifications', 'New', 'Unread', 'Other']);
 const selectNotify = ref<string>('All Notifications');
-const { user, isLoaded } = useUser();
+const { user, isLoaded } = useNextAuth();
 
 // User profile image from Clerk
 const userProfileImage = computed(() => {

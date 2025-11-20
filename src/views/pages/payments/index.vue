@@ -171,7 +171,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { useUser } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 import { RetroGrid } from '@/components/ui/retro-grid';
 import EarningsWidget from '@/views/dashboards/default/components/EarningsWidget.vue';
 import ProjectBudgetWidget from '@/views/dashboards/default/components/ProjectBudgetWidget.vue';
@@ -182,7 +182,7 @@ import {
 
 // Composables
 const router = useRouter();
-const { user } = useUser();
+const { user } = useNextAuth();
 
 // Reactive data
 const currentNetwork = ref<string>('testnet');

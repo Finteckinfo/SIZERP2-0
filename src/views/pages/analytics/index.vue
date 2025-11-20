@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { useUser } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 
 // Import all original analytics components
 import AnalyticsOverview from './components/AnalyticsOverview.vue';
@@ -94,7 +94,7 @@ import AnalyticsTabs from './AnalyticsTabs.vue';
 // Services
 import { analyticsApi } from './services/analyticsApi';
 
-const { user } = useUser();
+const { user } = useNextAuth();
 
 // All the original data states
 const overviewData = ref<any>(null);

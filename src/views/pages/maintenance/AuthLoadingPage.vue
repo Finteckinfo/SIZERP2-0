@@ -63,7 +63,7 @@ const checkAuthentication = async () => {
     
     if (success) {
       // Clerk is ready, check if user is authenticated
-      if (window.Clerk?.user?.id) {
+      if (null?.user?.id) {
         // User is authenticated, redirect to intended destination
         redirectAfterAuth();
       } else {

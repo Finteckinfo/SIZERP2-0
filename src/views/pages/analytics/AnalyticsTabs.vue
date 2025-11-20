@@ -281,7 +281,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, inject } from 'vue';
-import { useUser } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 
 // Import all analytics components
 import AnalyticsOverview from './components/AnalyticsOverview.vue';
@@ -310,7 +310,7 @@ import BottlenecksAnalysis from './components/BottlenecksAnalysis.vue';
 import CollaborationMetrics from './components/CollaborationMetrics.vue';
 import AnalyticsSkeleton from './components/AnalyticsSkeleton.vue';
 
-const { user } = useUser();
+const { user } = useNextAuth();
 
 // Props from parent component
 const props = defineProps<{

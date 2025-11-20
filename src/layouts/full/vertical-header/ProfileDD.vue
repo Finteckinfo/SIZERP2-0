@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { LogoutIcon, SettingsIcon, UserIcon, SearchIcon } from 'vue-tabler-icons'
-import { useUser, useClerk } from '@clerk/vue'
+import { useNextAuth } from '@/composables/useNextAuth'
 import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue'
 
 // wallet modal state & active wallet
@@ -10,8 +10,7 @@ import { activeAccount } from '@/lib/walletManager'
 
 const swt1 = ref(true)
 const swt2 = ref(false)
-const { user } = useUser()
-const clerk = useClerk()
+const { user } = useNextAuth()
 
 // fallback if no name
 const firstName = computed(() => user.value?.firstName || 'Guest')
@@ -28,15 +27,15 @@ function handleOpenWallet() {
   openWalletModal()
 }
 
-// Handle Clerk logout
+// Handle NextAuth logout
 async function handleLogout() {
   try {
-    if (clerk.value) {
-      await clerk.value.signOut()
-      console.log('User logged out successfully')
-    }
+    // Redirect to main domain for NextAuth logout
+    const ssoUrl = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'http://localhost:3000'
+    window.location.href = `${ssoUrl}/api/auth/signout?callbackUrl=${encodeURIComponent(ssoUrl)}`
+    console.log('User logged out successfully')
   } catch (error) {
-    console.error('Logout failed:', error)
+    console.error('Logout error:', error)
   }
 }
 </script>

@@ -4,7 +4,7 @@ import { useWallet, WalletId } from '@txnlab/use-wallet-vue';
 import { addManualWallet, removeManualWallet } from '@/lib/walletManager';
 import { activeAccount as walletManagerAccount } from '@/lib/walletManager';
 import { isWalletModalOpen as storeWalletModalOpen } from '@/stores/walletStore';
-import { useUser } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 import { generateAlgorandWallet, storeWallet } from '@/lib/algorand/walletGenerator';
 import { useRouter } from 'vue-router';
 import { useTheme } from '@/composables/useTheme';
@@ -25,7 +25,7 @@ if (typeof window !== 'undefined') {
 }
 
 // Get Clerk user
-const { user } = useUser();
+const { user } = useNextAuth();
 
 // Modal visibility - use the store ref directly
 const isWalletModalOpen = storeWalletModalOpen;

@@ -1,26 +1,25 @@
 <script setup lang="ts">
 import Logo from '@/assets/images/logos/Logo.vue';
-import { SignIn, SignUp } from '@clerk/vue';
 import { useTheme } from '@/composables/useTheme';
-import { useClerkTheme } from '@/composables/useClerkTheme';
 import ThemeToggle from '@/components/shared/ThemeToggle.vue';
-import { ref, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 const { isDark } = useTheme();
-const { clerkAppearance } = useClerkTheme();
 const route = useRoute();
 
 // Determine if we're in login or register mode based on route
 const isLoginMode = ref(route.path === '/login');
 
-// Watch for route changes to switch between forms
-watch(() => route.path, (newPath) => {
-  isLoginMode.value = newPath === '/login';
+// Redirect to main SSO domain for authentication
+onMounted(() => {
+  const ssoUrl = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'http://localhost:3000';
+  const currentUrl = window.location.href;
+  const authPath = isLoginMode.value ? 'login' : 'signup';
+  window.location.href = `${ssoUrl}/${authPath}?redirect=${encodeURIComponent(currentUrl)}`;
 });
 
-console.log('🔍 LoginPage mounted, route:', route.path, 'isLoginMode:', isLoginMode.value);
-console.log('🔍 Theme state:', isDark.value);
+console.log('🔍 LoginPage redirecting to SSO, route:', route.path);
 </script>
 
 <template>
@@ -58,27 +57,14 @@ console.log('🔍 Theme state:', isDark.value);
             {{ isLoginMode ? 'Login to continue' : 'Create your account' }}
           </h1>
           
-          <!-- Clerk Components - Dynamic Switching -->
-          <div class="clerk-container">
-            <!-- SignIn Component -->
-            <SignIn 
-              v-if="isLoginMode"
-              :redirect-url="'/dashboard/default'"
-              :sign-up-url="'/register'"
-              :routing="'path'"
-              path="/login"
-              :appearance="clerkAppearance"
-            />
-            
-            <!-- SignUp Component -->
-            <SignUp 
-              v-else
-              :redirect-url="'/dashboard/default'"
-              :sign-in-url="'/login'"
-              :routing="'path'"
-              path="/register"
-              :appearance="clerkAppearance"
-            />
+          <!-- SSO Redirect Message -->
+          <div class="redirect-container">
+            <p class="redirect-message">
+              Redirecting to {{ isLoginMode ? 'login' : 'signup' }}...
+            </p>
+            <p class="redirect-note">
+              You will be redirected to the main authentication page.
+            </p>
           </div>
         </div>
       </div>

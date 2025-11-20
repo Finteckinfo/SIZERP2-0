@@ -8,7 +8,7 @@ import EarningsWidget from './components/EarningsWidget.vue';
 import ProjectBudgetWidget from './components/ProjectBudgetWidget.vue';
 import SizTokenBalance from './components/SizTokenBalance.vue';
 import { ref, onMounted, computed, watch } from 'vue';
-import { useUser } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 import { useRouter } from 'vue-router';
 
 // Import components
@@ -23,7 +23,7 @@ import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue';
 import { projectApi, taskApi, userRoleApi, projectInviteApi, type Project, type Task, type UserRole } from '@/services/projectApi';
 
 // Get Clerk user and router
-const { user } = useUser();
+const { user } = useNextAuth();
 const router = useRouter();
 
 // Reactive data with individual loading states
@@ -518,7 +518,7 @@ const fetchDeadlines = async () => {
 const loadAllData = async () => {
   try {
     // Wait for Clerk to be ready before making API calls
-    if (!user.value || !window.Clerk?.session) {
+    if (!user.value || !null?.session) {
       console.log('Waiting for Clerk to be ready...');
       return;
     }
@@ -749,7 +749,7 @@ watch(() => user.value?.id, (newUserId) => {
 }, { immediate: true });
 
 // Watch for Clerk session changes
-watch(() => window.Clerk?.session, (session) => {
+watch(() => null?.session, (session) => {
   if (session && user.value) {
     console.log('Clerk session ready, loading data...');
     loadAllData();

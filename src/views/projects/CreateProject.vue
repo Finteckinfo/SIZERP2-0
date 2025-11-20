@@ -504,7 +504,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { useUser } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 import { connectedWallet, isWalletConnected as walletConnectedComputed, openWalletModal } from '@/stores/walletStore';
 import { projectApi } from '@/services/projectApi';
 import { RetroGrid } from '@/components/ui/retro-grid';
@@ -513,7 +513,7 @@ import { NetworkId } from '@txnlab/use-wallet-vue';
 import { getSizTokenBalance } from '@/services/sizTokenService';
 
 const router = useRouter();
-const { user } = useUser();
+const { user } = useNextAuth();
 
 // Type definitions for better TypeScript support
 interface Department {

@@ -802,7 +802,7 @@ const loadProjectData = async () => {
       console.warn('Role-aware endpoints not available, using fallback:', error);
       // Fallback: get role from existing endpoint
       try {
-        const roleResponse = await userRoleApi.getUserRoleInProject(projectId, window.Clerk?.user?.id || '');
+        const roleResponse = await userRoleApi.getUserRoleInProject(projectId, null?.user?.id || '');
         myRole.value = roleResponse?.role || null;
         // Compute basic permissions from role
         permissions.value = {

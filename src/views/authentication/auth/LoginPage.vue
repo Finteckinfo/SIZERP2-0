@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { SignIn } from '@clerk/vue';
-import { useClerkTheme } from '@/composables/useClerkTheme';
+import { onMounted } from 'vue';
 import Logo from '@/assets/images/logos/Logo.vue';
 
-const { clerkAppearance } = useClerkTheme();
+// Redirect to main SSO domain for authentication
+onMounted(() => {
+  const ssoUrl = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'http://localhost:3000';
+  const currentUrl = window.location.href;
+  window.location.href = `${ssoUrl}/login?redirect=${encodeURIComponent(currentUrl)}`;
+});
 </script>
 
 <template>
@@ -11,13 +15,9 @@ const { clerkAppearance } = useClerkTheme();
     <div class="logo-section">
       <Logo />
     </div>
-    <SignIn 
-      :redirect-url="'/'"
-      :sign-up-url="'/register'"
-      :routing="'path'"
-      path="/login"
-      :appearance="clerkAppearance"
-    />
+    <div class="redirect-message">
+      <p>Redirecting to login...</p>
+    </div>
   </div>
 </template>
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useCustomizerStore } from '../../../stores/customizer';
-import { useUser } from '@clerk/vue';
+import { useNextAuth } from '@/composables/useNextAuth';
 // Icon Imports
 import { BellIcon, SettingsIcon, SearchIcon, Menu2Icon } from 'vue-tabler-icons';
 
@@ -14,7 +14,7 @@ import NetworkSelector from '@/components/shared/NetworkSelector.vue';
 
 const customizer = useCustomizerStore();
 const showSearch = ref(false);
-const { user, isLoaded } = useUser();
+const { user, isLoaded } = useNextAuth();
 
 // Computed properties for user profile
 const userProfileImage = computed(() => {
