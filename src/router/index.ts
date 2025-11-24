@@ -7,8 +7,17 @@ import { getCookie } from '@/utils/cookies';
 const SSO_PRIMARY_DOMAIN = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://siz.land';
 
 function hasNextAuthSession(): boolean {
+  // Debug: Log all cookies
+  console.log('[Router Debug] All cookies:', document.cookie);
+  
   const sessionToken = getCookie('next-auth.session-token') || 
                       getCookie('__Secure-next-auth.session-token');
+  
+  console.log('[Router Debug] Session token found:', !!sessionToken);
+  if (sessionToken) {
+    console.log('[Router Debug] Session token value (first 20 chars):', sessionToken.substring(0, 20));
+  }
+  
   return !!sessionToken;
 }
 
