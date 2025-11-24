@@ -49,8 +49,8 @@ export async function authGuard(
     console.error('[AuthGuard] Error checking session:', error);
   }
   
-  // User not authenticated - redirect to primary domain (siz.land) auth-choice page
-  console.log('[AuthGuard] User not authenticated - redirecting to primary domain (siz.land) auth-choice page');
+  // User not authenticated - redirect to primary domain (siz.land) login page
+  console.log('[AuthGuard] User not authenticated - redirecting to primary domain login');
   
   // Store intended destination for post-auth redirect (full URL for cross-domain)
   try {
@@ -59,11 +59,12 @@ export async function authGuard(
     console.warn('[AuthGuard] Unable to save redirect destination:', error);
   }
   
-  // Redirect to primary domain's auth-choice page for centralized authentication
-  const authChoiceUrl = 'https://siz.land/auth-choice';
+  // Redirect to primary domain's login page for centralized authentication
+  const ssoUrl = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://siz.land';
+  const redirectUrl = encodeURIComponent(window.location.href);
   
   // Use window.location to navigate to primary domain
-  window.location.href = authChoiceUrl;
+  window.location.href = `${ssoUrl}/login?redirect=${redirectUrl}`;
 }
 
 /**
