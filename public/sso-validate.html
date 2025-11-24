@@ -70,7 +70,7 @@
             document.getElementById('error').textContent = 'No authentication token provided. Redirecting to login...';
             document.getElementById('error').style.display = 'block';
             setTimeout(() => {
-                window.location.href = 'https://siz.land/login';
+                window.location.href = 'https://www.siz.land/login';
             }, 2000);
         } else {
             // Validate token with backend
@@ -82,7 +82,8 @@
                 console.log('[SSO Validate Page] Starting token validation...');
                 console.log('[SSO Validate Page] Token length:', token.length);
                 
-                const backendUrl = 'https://siz.land'; // Use main domain backend
+                // Try both siz.land and www.siz.land for compatibility
+                const backendUrl = 'https://www.siz.land';
                 const validateUrl = `${backendUrl}/api/auth/validate-sso-token`;
                 
                 console.log('[SSO Validate Page] Calling:', validateUrl);
@@ -126,7 +127,7 @@
                 document.getElementById('error').textContent = `${errorMessage}. Redirecting to login...`;
                 document.getElementById('error').style.display = 'block';
                 setTimeout(() => {
-                    window.location.href = 'https://siz.land/login';
+                    window.location.href = 'https://www.siz.land/login';
                 }, 3000);
             }
         }
