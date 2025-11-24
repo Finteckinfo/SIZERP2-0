@@ -79,9 +79,15 @@
 
         async function validateSSOToken(token) {
             try {
-                const backendUrl = 'https://siz.land'; // Use main domain backend
+                console.log('[SSO Validate Page] Starting token validation...');
+                console.log('[SSO Validate Page] Token length:', token.length);
                 
-                const response = await fetch(`${backendUrl}/api/auth/validate-sso-token`, {
+                const backendUrl = 'https://siz.land'; // Use main domain backend
+                const validateUrl = `${backendUrl}/api/auth/validate-sso-token`;
+                
+                console.log('[SSO Validate Page] Calling:', validateUrl);
+                
+                const response = await fetch(validateUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -89,25 +95,35 @@
                     body: JSON.stringify({ ssoToken: token })
                 });
 
+                console.log('[SSO Validate Page] Response status:', response.status);
+
                 if (!response.ok) {
-                    throw new Error('Token validation failed');
+                    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                    console.error('[SSO Validate Page] Validation failed:', errorData);
+                    throw new Error(errorData.details || errorData.error || 'Token validation failed');
                 }
 
                 const data = await response.json();
+                
+                console.log('[SSO Validate Page] Validation successful:', {
+                    userId: data.user?.id,
+                    email: data.user?.email
+                });
                 
                 // Store user info in session storage for ERP to use
                 sessionStorage.setItem('erp_user', JSON.stringify(data.user));
                 sessionStorage.setItem('erp_session_token', data.sessionToken || token);
                 sessionStorage.setItem('erp_auth_timestamp', Date.now().toString());
                 
-                console.log('[SSO] Authentication successful, redirecting to dashboard');
+                console.log('[SSO Validate Page] Session data stored, redirecting to dashboard');
                 
                 // Redirect to dashboard
                 window.location.href = '/dashboard';
                 
             } catch (error) {
-                console.error('[SSO] Validation error:', error);
-                document.getElementById('error').textContent = 'Authentication failed. Redirecting to login...';
+                console.error('[SSO Validate Page] Validation error:', error);
+                const errorMessage = error.message || 'Authentication failed';
+                document.getElementById('error').textContent = `${errorMessage}. Redirecting to login...`;
                 document.getElementById('error').style.display = 'block';
                 setTimeout(() => {
                     window.location.href = 'https://siz.land/login';
