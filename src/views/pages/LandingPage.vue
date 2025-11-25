@@ -124,36 +124,40 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useNextAuth } from '@/composables/useNextAuth'
 import LandingBackground from '@/components/ui/LandingBackground.vue'
 import ZigZagButton from '@/components/ui/ZigZagButton.vue'
 import FeatureBentoGrid from '@/views/pages/landing/components/FeatureBentoGrid.vue'
 
 const router = useRouter()
 const featuresSection = ref<HTMLElement | null>(null)
+const { user, isLoaded } = useNextAuth()
 
 const goToCreateProject = () => {
-  // Check if user is authenticated
-  const isAuthenticated = localStorage.getItem('web3_authenticated') || localStorage.getItem('clerk_session')
+  // Check if user is authenticated via SSO
+  const isAuthenticated = !!user.value?.id
   
   if (isAuthenticated) {
     router.push('/projects/create')
   } else {
     // Store intent to create project after authentication
-    localStorage.setItem('post_auth_action', 'create_project')
-    router.push('/auth-choice')
+    sessionStorage.setItem('post_auth_redirect', '/projects/create')
+    // Redirect to SSO login
+    window.location.href = 'https://www.siz.land/login'
   }
 }
 
 const goToJoinProject = () => {
-  // Check if user is authenticated
-  const isAuthenticated = localStorage.getItem('web3_authenticated') || localStorage.getItem('clerk_session')
+  // Check if user is authenticated via SSO
+  const isAuthenticated = !!user.value?.id
   
   if (isAuthenticated) {
     router.push('/invitations')
   } else {
     // Store intent to join project after authentication
-    localStorage.setItem('post_auth_action', 'join_project')
-    router.push('/auth-choice')
+    sessionStorage.setItem('post_auth_redirect', '/invitations')
+    // Redirect to SSO login
+    window.location.href = 'https://www.siz.land/login'
   }
 }
 
