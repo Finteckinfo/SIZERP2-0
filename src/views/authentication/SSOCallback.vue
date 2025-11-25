@@ -12,18 +12,50 @@ const router = useRouter();
 
 onMounted(async () => {
   try {
-    console.log('[SSO Callback] Validating NextAuth session from siz.land...');
-    
-    // Validate NextAuth session (cookie should be shared from siz.land)
-    await validateSession();
-    
-    // Check if we have a redirect URL from session storage
-    const redirectUrl = sessionStorage.getItem('post_auth_redirect');
+    console.log('[SSO Callback] Starting SSO validation...');
+
+    // Get SSO token from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const ssoToken = urlParams.get('ssoToken');
+
+    if (!ssoToken) {
+      throw new Error('No SSO token provided in URL');
+    }
+
+    console.log('[SSO Callback] Validating SSO token...');
+
+    // Validate SSO token with backend
+    const backendUrl = 'https://siz.land';
+    const response = await fetch(`${backendUrl}/api/auth/validate-sso-token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ssoToken })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.details || errorData.error || 'SSO validation failed');
+    }
+
+    const data = await response.json();
+    console.log('[SSO Callback] SSO validation successful');
+
+    // Store user data in sessionStorage for ERP to use
+    sessionStorage.setItem('erp_user', JSON.stringify(data.user));
+    sessionStorage.setItem('erp_session_token', data.sessionToken);
+    sessionStorage.setItem('erp_auth_timestamp', Date.now().toString());
+
+    console.log('[SSO Callback] User data stored, redirecting to dashboard');
+
+    // Check if we have a redirect URL from session storage or URL
+    const redirectUrl = urlParams.get('redirect') || sessionStorage.getItem('post_auth_redirect') || '/dashboard/default';
     sessionStorage.removeItem('post_auth_redirect');
-    
-    // Redirect to intended destination or dashboard
-    console.log('[SSO Callback] Authentication successful, redirecting...');
-    window.location.href = redirectUrl || "/dashboard";
+
+    // Redirect to intended destination
+    window.location.href = redirectUrl;
+
   } catch (err: any) {
     console.error("[SSO Callback] Authentication error:", err);
     errorMsg.value = err.message || "Authentication failed. Please try again.";
