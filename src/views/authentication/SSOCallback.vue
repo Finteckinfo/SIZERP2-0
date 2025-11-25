@@ -14,12 +14,25 @@ onMounted(async () => {
   try {
     console.log('[SSO Callback] Starting SSO validation...');
 
-    // Get SSO token from URL parameters
+    // Get SSO token from URL parameters or cookie
     const urlParams = new URLSearchParams(window.location.search);
-    const ssoToken = urlParams.get('ssoToken');
+    let ssoToken = urlParams.get('ssoToken');
+    
+    // If no token in URL, check cookie
+    if (!ssoToken) {
+      const cookieMatch = document.cookie.match(/(?:^|;\s*)siz_sso_token=([^;]+)/);
+      if (cookieMatch) {
+        ssoToken = cookieMatch[1];
+        console.log('[SSO Callback] SSO token found in cookie');
+        // Clear the cookie immediately after reading
+        document.cookie = 'siz_sso_token=; Domain=.siz.land; Path=/; Max-Age=0';
+      }
+    } else {
+      console.log('[SSO Callback] SSO token found in URL');
+    }
 
     if (!ssoToken) {
-      throw new Error('No SSO token provided in URL');
+      throw new Error('No SSO token provided in URL or cookie');
     }
 
     console.log('[SSO Callback] Validating SSO token...');

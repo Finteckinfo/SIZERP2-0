@@ -9,15 +9,15 @@ const SSO_PRIMARY_DOMAIN = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://w
 function hasNextAuthSession(): boolean {
   // Debug: Log all cookies
   console.log('[Router Debug] All cookies:', document.cookie);
-  
-  const sessionToken = getCookie('next-auth.session-token') || 
-                      getCookie('__Secure-next-auth.session-token');
-  
+
+  const sessionToken = getCookie('next-auth.session-token') ||
+    getCookie('__Secure-next-auth.session-token');
+
   console.log('[Router Debug] Session token found:', !!sessionToken);
   if (sessionToken) {
     console.log('[Router Debug] Session token value (first 20 chars):', sessionToken.substring(0, 20));
   }
-  
+
   return !!sessionToken;
 }
 
@@ -26,15 +26,15 @@ function hasSessionStorageAuth(): boolean {
     const user = sessionStorage.getItem('erp_user');
     const sessionToken = sessionStorage.getItem('erp_session_token');
     const timestamp = sessionStorage.getItem('erp_auth_timestamp');
-    
+
     if (!user || !sessionToken || !timestamp) {
       return false;
     }
-    
+
     // Check if session is still valid (24 hours)
     const age = Date.now() - parseInt(timestamp);
     const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-    
+
     if (age > maxAge) {
       // Session expired, clear storage
       sessionStorage.removeItem('erp_user');
@@ -42,7 +42,7 @@ function hasSessionStorageAuth(): boolean {
       sessionStorage.removeItem('erp_auth_timestamp');
       return false;
     }
-    
+
     return true;
   } catch (error) {
     console.error('[Router] Error checking sessionStorage auth:', error);
@@ -68,13 +68,24 @@ router.beforeEach(async (to, from, next) => {
     return;
   }
 
-  // Check for SSO token in URL (from siz.land)
+  // Check for SSO token in URL or cookie
   const urlParams = new URLSearchParams(window.location.search);
-  const ssoToken = urlParams.get('ssoToken');
-  
+  let ssoToken = urlParams.get('ssoToken');
+
+  // If no token in URL, check cookie
+  if (!ssoToken) {
+    const cookieMatch = document.cookie.match(/(?:^|;\s*)siz_sso_token=([^;]+)/);
+    if (cookieMatch) {
+      ssoToken = cookieMatch[1];
+      console.log('[Router] SSO token found in cookie');
+    }
+  } else {
+    console.log('[Router] SSO token found in URL');
+  }
+
   if (ssoToken) {
-    console.log('[Router] SSO token detected, redirecting to validation page');
-    // Redirect to validation page with token
+    console.log('[Router] SSO token detected, redirecting to validation...');
+    // Clear URL parameter and redirect to SSO validation
     window.location.href = `/sso-validate.html?ssoToken=${ssoToken}`;
     return;
   }
