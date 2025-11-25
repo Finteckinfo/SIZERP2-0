@@ -9,8 +9,12 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
 import { useTheme } from '@/composables/useTheme';
+import { useSSOWallet } from '@/composables/useSSOWallet';
 
 const { isDark } = useTheme();
+
+// Auto-connect wallet from SSO session
+useSSOWallet();
 </script>
 
 <style>
