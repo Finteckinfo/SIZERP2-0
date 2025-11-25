@@ -44,7 +44,9 @@ const copied = ref(false);
 onMounted(() => {
   window.addEventListener('show-create-wallet', () => {
     // Instead of showing modal, redirect to unified wallet auth flow
-    router.push('/wallet-auth');
+    // router.push('/wallet-auth');
+    // isWalletModalOpen.value = false;
+    showCreateWallet.value = true;
     isWalletModalOpen.value = false;
   });
 });
@@ -476,7 +478,7 @@ const shortenAddress = (address: string) => {
               color="success"
               variant="tonal"
               :style="walletPrimaryButtonStyle"
-              @click="router.push('/wallet-auth'); isWalletModalOpen = false"
+              @click="showCreateWallet = true; isWalletModalOpen = false"
             >
               <div class="wallet-action-btn__icon" :style="walletIconStyle">
                 <v-img src="/wallets/siz.png" alt="Siz Wallet logo" />
@@ -562,7 +564,7 @@ const shortenAddress = (address: string) => {
             <v-btn
               variant="text"
               color="primary"
-              @click="router.push('/wallet-auth'); isWalletModalOpen = false"
+              @click="showCreateWallet = true; isWalletModalOpen = false"
             >
               Create New Wallet
             </v-btn>

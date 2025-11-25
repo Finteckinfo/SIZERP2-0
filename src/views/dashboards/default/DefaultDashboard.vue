@@ -23,7 +23,7 @@ import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue';
 import { projectApi, taskApi, userRoleApi, projectInviteApi, type Project, type Task, type UserRole } from '@/services/projectApi';
 
 // Get SSO user and router
-const { user } = useNextAuth();
+const { user, isLoaded } = useNextAuth();
 const router = useRouter();
 
 // Reactive data with individual loading states
@@ -221,7 +221,10 @@ const copyInviteLink = (inviteId: string) => {
 
 // Individual fetch functions using centralized API services
 const fetchDashboardStats = async () => {
-  if (!user.value?.id) return;
+  if (!user.value?.id) {
+    statsLoading.value = false;
+    return;
+  }
   
   try {
     // Calculate stats from loaded data
@@ -256,7 +259,10 @@ const fetchDashboardStats = async () => {
 };
 
 const fetchUserProjects = async () => {
-  if (!user.value?.id) return;
+  if (!user.value?.id) {
+    projectsLoading.value = false;
+    return;
+  }
   
   try {
     // Load user's projects using new filtered backend endpoint
@@ -408,7 +414,10 @@ const fetchUserProjects = async () => {
 };
 
 const fetchRecentActivities = async () => {
-  if (!user.value?.id) return;
+  if (!user.value?.id) {
+    activitiesLoading.value = false;
+    return;
+  }
   
   try {
     // Generate recent activities from project and task data
@@ -457,7 +466,10 @@ const fetchRecentActivities = async () => {
 };
 
 const fetchWeeklyProgress = async () => {
-  if (!user.value?.id) return;
+  if (!user.value?.id) {
+    weeklyProgressLoading.value = false;
+    return;
+  }
   
   try {
     // Calculate weekly progress from task data
@@ -484,7 +496,10 @@ const fetchWeeklyProgress = async () => {
 };
 
 const fetchDeadlines = async () => {
-  if (!user.value?.id) return;
+  if (!user.value?.id) {
+    deadlinesLoading.value = false;
+    return;
+  }
   
   try {
     // Generate deadlines from project end dates
@@ -757,11 +772,23 @@ watch(projects, () => {
   }
 }, { immediate: true });
 
+// Watch for auth loaded state
+watch(isLoaded, (loaded) => {
+  if (loaded && !user.value) {
+    // If loaded but no user, redirect to login
+    console.log('Auth loaded but no user found, redirecting to login...');
+    window.location.href = 'https://www.siz.land/login';
+  }
+}, { immediate: true });
+
 // Load data when component mounts
 onMounted(() => {
   if (user.value?.id) {
     loadAllData();
     loadPendingInvites();
+  } else if (isLoaded.value && !user.value) {
+    // Already loaded and no user
+    window.location.href = 'https://www.siz.land/login';
   }
 });
 </script>
