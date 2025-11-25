@@ -24,8 +24,41 @@ onMounted(async () => {
 
     console.log('[SSO Callback] Validating SSO token...');
 
-    // Validate SSO token with backend
+    // First, try to get user data from the main site via NextAuth session
     const backendUrl = 'https://siz.land';
+
+    try {
+      console.log('[SSO Callback] Trying to get session from main site...');
+      const sessionResponse = await fetch(`${backendUrl}/api/auth/session`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      if (sessionResponse.ok) {
+        const sessionData = await sessionResponse.json();
+        console.log('[SSO Callback] Got session from main site:', sessionData.user?.email);
+
+        // Store user data in sessionStorage for ERP to use
+        sessionStorage.setItem('erp_user', JSON.stringify(sessionData.user));
+        sessionStorage.setItem('erp_session_token', ssoToken);
+        sessionStorage.setItem('erp_auth_timestamp', Date.now().toString());
+
+        console.log('[SSO Callback] User data stored from session, redirecting to dashboard');
+
+        // Check if we have a redirect URL from session storage or URL
+        const redirectUrl = urlParams.get('redirect') || sessionStorage.getItem('post_auth_redirect') || '/dashboard/default';
+        sessionStorage.removeItem('post_auth_redirect');
+
+        // Redirect to intended destination
+        window.location.href = redirectUrl;
+        return;
+      }
+    } catch (sessionError) {
+      console.warn('[SSO Callback] Could not get session from main site:', sessionError);
+    }
+
+    // Fallback: Validate SSO token with backend
+    console.log('[SSO Callback] Trying fallback SSO token validation...');
     const response = await fetch(`${backendUrl}/api/auth/validate-sso-token`, {
       method: 'POST',
       headers: {

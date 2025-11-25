@@ -82,11 +82,37 @@
                 console.log('[SSO Validate Page] Starting token validation...');
                 console.log('[SSO Validate Page] Token length:', token.length);
                 
-                // Try both siz.land and www.siz.land for compatibility
+                // First, try to get user data from the main site via NextAuth
                 const backendUrl = 'https://siz.land';
+                
+                try {
+                    // Try to get session data from the main site
+                    const sessionResponse = await fetch(`${backendUrl}/api/auth/session`, {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    
+                    if (sessionResponse.ok) {
+                        const sessionData = await sessionResponse.json();
+                        console.log('[SSO Validate Page] Got session from main site:', sessionData.user?.email);
+                        
+                        // Store user info in session storage for ERP to use
+                        sessionStorage.setItem('erp_user', JSON.stringify(sessionData.user));
+                        sessionStorage.setItem('erp_session_token', token);
+                        sessionStorage.setItem('erp_auth_timestamp', Date.now().toString());
+                        
+                        console.log('[SSO Validate Page] Session data stored, redirecting to dashboard');
+                        window.location.href = '/dashboard';
+                        return;
+                    }
+                } catch (sessionError) {
+                    console.warn('[SSO Validate Page] Could not get session from main site:', sessionError);
+                }
+                
+                // Fallback: Try the original validation endpoint
                 const validateUrl = `${backendUrl}/api/auth/validate-sso-token`;
                 
-                console.log('[SSO Validate Page] Calling:', validateUrl);
+                console.log('[SSO Validate Page] Trying fallback validation:', validateUrl);
                 
                 const response = await fetch(validateUrl, {
                     method: 'POST',
