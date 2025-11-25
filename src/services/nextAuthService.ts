@@ -204,7 +204,7 @@ export class NextAuthService {
         };
       }
     } catch (error) {
-      logger.warn('[NextAuth] SSO session validation failed:', error);
+      logger.warn('[NextAuth] SSO session validation failed:', { error });
     }
 
     throw new Error('No NextAuth session available');
