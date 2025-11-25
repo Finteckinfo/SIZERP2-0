@@ -24,8 +24,19 @@ onMounted(async () => {
 
     console.log('[SSO Callback] Validating SSO token...');
 
-    // First, try to get user data from the main site via NextAuth session
-    const backendUrl = 'https://siz.land';
+    // Determine backend URL based on current domain
+    let backendUrl = 'https://siz.land'; // Default for production
+    
+    // If we're on localhost or a dev environment, use localhost
+    if (window.location.hostname === 'localhost' || 
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname.includes('vercel-preview') ||
+        window.location.hostname.includes('vercel-stage')) {
+        backendUrl = 'http://localhost:3000';
+        console.log('[SSO Callback] Using localhost backend for development');
+    }
+    
+    console.log('[SSO Callback] Using backend URL:', backendUrl);
 
     try {
       console.log('[SSO Callback] Trying to get session from main site...');

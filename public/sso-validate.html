@@ -82,11 +82,22 @@
                 console.log('[SSO Validate Page] Starting token validation...');
                 console.log('[SSO Validate Page] Token length:', token.length);
                 
-                // First, try to get user data from the main site via NextAuth
-                const backendUrl = 'https://siz.land';
+                // Determine backend URL based on current domain
+                let backendUrl = 'https://siz.land'; // Default for production
+                
+                // If we're on localhost or a dev environment, use localhost
+                if (window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.hostname.includes('vercel-preview') ||
+                    window.location.hostname.includes('vercel-stage')) {
+                    backendUrl = 'http://localhost:3000';
+                    console.log('[SSO Validate Page] Using localhost backend for development');
+                }
+                
+                console.log('[SSO Validate Page] Using backend URL:', backendUrl);
                 
                 try {
-                    // Try to get session data from the main site
+                    // Try to get session data from the main site via NextAuth
                     const sessionResponse = await fetch(`${backendUrl}/api/auth/session`, {
                         method: 'GET',
                         credentials: 'include'
@@ -102,7 +113,7 @@
                         sessionStorage.setItem('erp_auth_timestamp', Date.now().toString());
                         
                         console.log('[SSO Validate Page] Session data stored, redirecting to dashboard');
-                        window.location.href = '/dashboard';
+                        window.location.href = '/dashboard/default';
                         return;
                     }
                 } catch (sessionError) {
@@ -145,15 +156,25 @@
                 console.log('[SSO Validate Page] Session data stored, redirecting to dashboard');
                 
                 // Redirect to dashboard
-                window.location.href = '/dashboard';
+                window.location.href = '/dashboard/default';
                 
             } catch (error) {
                 console.error('[SSO Validate Page] Validation error:', error);
                 const errorMessage = error.message || 'Authentication failed';
                 document.getElementById('error').textContent = `${errorMessage}. Redirecting to login...`;
                 document.getElementById('error').style.display = 'block';
+                
+                // Redirect to appropriate login URL based on environment
+                let loginUrl = 'https://www.siz.land/login';
+                if (window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.hostname.includes('vercel-preview') ||
+                    window.location.hostname.includes('vercel-stage')) {
+                    loginUrl = 'http://localhost:3000/login';
+                }
+                
                 setTimeout(() => {
-                    window.location.href = 'https://www.siz.land/login';
+                    window.location.href = loginUrl;
                 }, 3000);
             }
         }
