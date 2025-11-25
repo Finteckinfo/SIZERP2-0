@@ -37,7 +37,39 @@ export function useNextAuth() {
                           getCookie('__Secure-next-auth.session-token');
       
       if (!sessionToken) {
-        console.log('[NextAuth] No session token found');
+        console.log('[NextAuth] No session token found, checking SSO sessionStorage...');
+        
+        // Fallback: Check SSO sessionStorage for ERP users
+        const ssoUserJson = sessionStorage.getItem('erp_user');
+        const ssoToken = sessionStorage.getItem('erp_session_token');
+        
+        if (ssoUserJson && ssoToken) {
+          try {
+            const ssoUser = JSON.parse(ssoUserJson);
+            console.log('[NextAuth] SSO session found:', ssoUser.email);
+            
+            // Convert SSO user to NextAuth format
+            sessionCache.value = {
+              user: {
+                id: ssoUser.id,
+                email: ssoUser.email,
+                name: ssoUser.name,
+                firstName: ssoUser.name?.split(' ')[0] || ssoUser.email.split('@')[0],
+                lastName: ssoUser.name?.split(' ').slice(1).join(' ') || '',
+                walletAddress: ssoUser.walletAddress || '',
+                authMethod: ssoUser.authMethod || 'sso'
+              },
+              expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+            };
+            
+            isLoaded.value = true;
+            isValidating.value = false;
+            return;
+          } catch (err) {
+            console.error('[NextAuth] Failed to parse SSO user:', err);
+          }
+        }
+        
         sessionCache.value = null;
         isLoaded.value = true;
         isValidating.value = false;
@@ -78,9 +110,32 @@ export function useNextAuth() {
     validateSession();
   });
 
-  // Watch for cookie changes
+  // Watch for cookie changes and SSO sessionStorage updates
   if (typeof window !== 'undefined') {
     window.addEventListener('storage', validateSession);
+    
+    // Poll for sessionStorage changes (storage event doesn't fire for same tab)
+    const checkSSOInterval = setInterval(() => {
+      const ssoUser = sessionStorage.getItem('erp_user');
+      const hasSession = !!sessionCache.value;
+      
+      // If we have SSO data but no cached session, validate
+      if (ssoUser && !hasSession) {
+        console.log('[NextAuth] SSO session detected, revalidating...');
+        validateSession();
+      }
+      
+      // If we have a cached session but SSO data is gone, clear cache
+      if (!ssoUser && hasSession && sessionCache.value?.user?.authMethod === 'sso') {
+        console.log('[NextAuth] SSO session cleared, invalidating...');
+        sessionCache.value = null;
+      }
+    }, 1000); // Check every second
+    
+    // Cleanup on unmount
+    window.addEventListener('beforeunload', () => {
+      clearInterval(checkSSOInterval);
+    });
   }
 
   const isSignedIn = computed(() => !!sessionCache.value);
