@@ -4,7 +4,7 @@ import PublicRoutes from './PublicRoutes';
 import { getCookie } from '@/utils/cookies';
 
 // SSO Configuration - Receive auth from primary domain (siz.land)
-const SSO_PRIMARY_DOMAIN = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://siz.land';
+const SSO_PRIMARY_DOMAIN = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land';
 
 function hasNextAuthSession(): boolean {
   // Debug: Log all cookies

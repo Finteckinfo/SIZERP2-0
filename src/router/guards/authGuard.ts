@@ -60,7 +60,7 @@ export async function authGuard(
   }
   
   // Redirect to primary domain's login page for centralized authentication
-  const ssoUrl = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://siz.land';
+  const ssoUrl = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land';
   const redirectUrl = encodeURIComponent(window.location.href);
   
   // Use window.location to navigate to primary domain
