@@ -1,6 +1,21 @@
 <template>
+  <!-- Show loading while auth state is being determined -->
+  <div v-if="!isLoaded" class="wallet-guard-loading">
+    <v-container fluid class="fill-height">
+      <v-row align="center" justify="center">
+        <v-col cols="12" sm="8" md="6" lg="4">
+          <v-card elevation="0" class="text-center pa-8">
+            <v-progress-circular indeterminate color="primary" size="64" />
+            <p class="mt-4 text-h6">Loading...</p>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
+  </div>
+  
+  <!-- Show wallet requirement only if loaded and no wallet -->
   <div 
-    v-if="!walletConnected" 
+    v-else-if="!walletConnected" 
     class="wallet-guard"
     :class="{ 'dark-theme': isDark }"
   >
@@ -76,6 +91,7 @@
     <ConnectWallet />
   </div>
   
+  <!-- Show content if wallet is connected -->
   <div 
     v-else
     :class="{ 'dark-theme': isDark }"
