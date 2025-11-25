@@ -225,18 +225,18 @@ const fetchDashboardStats = async () => {
   
   try {
     // Calculate stats from loaded data
-    const total = projects.value.length;
-    const active = projects.value.filter(p => getProjectStatus(p) === 'ACTIVE').length;
-    const completed = projects.value.filter(p => getProjectStatus(p) === 'COMPLETED').length;
-    const pending = projects.value.filter(p => getProjectStatus(p) === 'PENDING').length;
+    const total = projects.value?.length || 0;
+    const active = projects.value?.filter(p => getProjectStatus(p) === 'ACTIVE').length || 0;
+    const completed = projects.value?.filter(p => getProjectStatus(p) === 'COMPLETED').length || 0;
+    const pending = projects.value?.filter(p => getProjectStatus(p) === 'PENDING').length || 0;
     
-    const totalTasks = tasks.value.length;
-    const completedTasks = tasks.value.filter(t => t.status === 'COMPLETED' || t.status === 'APPROVED').length;
+    const totalTasks = tasks.value?.length || 0;
+    const completedTasks = tasks.value?.filter(t => t.status === 'COMPLETED' || t.status === 'APPROVED').length || 0;
     const pendingTasks = totalTasks - completedTasks;
     
-    const projectIds = new Set(projects.value.map(p => p.id));
-    const teamMembersCount = teamMembers.value.filter(m => projectIds.has(m.projectId)).length;
-    const totalDepartments = projects.value.length; // Simplified for now
+    const projectIds = new Set(projects.value?.map(p => p.id) || []);
+    const teamMembersCount = teamMembers.value?.filter(m => projectIds.has(m.projectId)).length || 0;
+    const totalDepartments = projects.value?.length || 0; // Simplified for now
     
     projectStats.value = {
       totalProjects: total,
@@ -383,7 +383,7 @@ const fetchUserProjects = async () => {
               createdAt: '2024-01-01',
               user: {
                 id: user.value?.id || 'sample-user',
-                email: user.value?.emailAddresses?.[0]?.emailAddress || 'user@example.com',
+                email: user.value?.email || 'user@example.com',
                 firstName: user.value?.firstName || 'Sample',
                 lastName: user.value?.lastName || 'User',
                 createdAt: '2024-01-01',
@@ -517,13 +517,7 @@ const fetchDeadlines = async () => {
 // Load all data independently for progressive loading
 const loadAllData = async () => {
   try {
-    // Wait for Clerk to be ready before making API calls
-    if (!user.value || !window.Clerk?.session) {
-      console.log('Waiting for Clerk to be ready...');
-      return;
-    }
-
-    console.log('Loading all data for user:', user.value.id);
+    console.log('Loading all data for user:', user.value?.id);
     
     // First, check backend health
     try {

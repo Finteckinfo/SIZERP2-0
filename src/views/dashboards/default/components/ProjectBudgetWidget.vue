@@ -83,14 +83,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useUser } from '@clerk/vue';
-import { getProjectPaymentSummary } from '@/services/paymentService';
+import { ref, onMounted, computed, watch } from 'vue';
+import { useNextAuth } from '@/composables/useNextAuth';
+import { NetworkId } from '@txnlab/use-wallet-vue';
+import { getProjectBudget, type ProjectPayoutSummary } from '@/services/paymentService';
+import { getSizTokenBalance, type SizTokenBalance } from '@/services/sizTokenService';
+import { connectedWallet, isWalletConnected } from '@/stores/walletStore';
 
 // Composables
-const router = useRouter();
-const { user } = useUser();
+const { user } = useNextAuth();
 
 // Props
 interface Props {
@@ -128,11 +129,11 @@ const loadBudgets = async () => {
         return {
           projectId,
           projectName: projectId, // This should come from project data
-          totalBudget: summary.budget.total,
-          allocated: summary.budget.allocated,
-          released: summary.budget.released,
-          available: summary.budget.available,
-          utilizationPercent: summary.budget.utilizationPercent
+          totalBudget: summary.total || 0,
+          allocated: summary.allocated || 0,
+          released: summary.released || 0,
+          available: summary.available || 0,
+          utilizationPercent: summary.utilizationPercent || 0
         };
       } catch (error) {
         console.error(`Failed to load budget for project ${projectId}:`, error);
