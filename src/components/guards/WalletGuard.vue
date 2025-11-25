@@ -25,15 +25,15 @@
             </h2>
             
             <p class="text-body-1 text-medium-emphasis mb-6">
-              This page requires a connected wallet to access. Please connect your wallet to continue.
+              You need to be logged in with a wallet-connected account. Please log in at siz.land to continue.
             </p>
             
             <!-- Debug info for development -->
             <div v-if="isDevelopment" class="text-left mb-4 p-3 bg-grey-lighten-4 rounded">
               <p class="text-caption font-weight-medium mb-2">Debug Info:</p>
-              <p class="text-caption">Wallet Address: {{ walletAddress || 'None' }}</p>
-              <p class="text-caption">Connection Status: {{ walletConnected ? 'Connected' : 'Disconnected' }}</p>
-              <p class="text-caption">Active Account: {{ JSON.stringify(activeAccount) }}</p>
+              <p class="text-caption">SSO Wallet Address: {{ walletAddress || 'None' }}</p>
+              <p class="text-caption">User Email: {{ user?.email || 'Not authenticated' }}</p>
+              <p class="text-caption">Loaded: {{ isLoaded ? 'Yes' : 'No' }}</p>
               
               <!-- Test buttons for debugging -->
               <div class="mt-3">
@@ -41,10 +41,10 @@
                   Check Status
                 </v-btn>
                 <v-btn size="small" variant="outlined" @click="forceRefresh" class="mr-2">
-                  Force Refresh
+                  Re-login
                 </v-btn>
                 <v-btn size="small" variant="outlined" @click="clearWallet" color="error">
-                  Clear Wallet
+                  Logout
                 </v-btn>
               </div>
             </div>
@@ -55,7 +55,7 @@
               @click="handleOpenWalletModal"
               class="mb-4"
             >
-              Connect Wallet
+              Go to Login
             </v-btn>
             
             <div class="text-center">
@@ -87,20 +87,20 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { useTheme } from '@/composables/useTheme';
-import { connectedWallet, isWalletConnected, openWalletModal, getWalletStatus } from '@/stores/walletStore';
-import { activeAccount, clearWalletConnection } from '@/lib/walletManager';
+import { useNextAuth } from '@/composables/useNextAuth';
 import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue';
 
 const { isDark } = useTheme();
+const { user, isLoaded } = useNextAuth();
 
-// Check if wallet is connected
+// Check if user has SSO wallet
 const walletConnected = computed(() => {
-  return isWalletConnected.value;
+  return !!user.value?.walletAddress;
 });
 
-// Get wallet address for debugging
+// Get wallet address from SSO for debugging
 const walletAddress = computed(() => {
-  return connectedWallet.value;
+  return user.value?.walletAddress || '';
 });
 
 // Check if we're in development mode
@@ -108,40 +108,41 @@ const isDevelopment = computed(() => {
   return import.meta.env.DEV;
 });
 
-// Open wallet modal
+// Open wallet modal (redirect to login page)
 const handleOpenWalletModal = () => {
-  openWalletModal();
+  window.location.href = 'https://www.siz.land/login';
 };
 
 // Debug logging
 onMounted(() => {
   console.log('[WalletGuard] Component mounted');
-  console.log('[WalletGuard] Initial wallet state:', {
+  console.log('[WalletGuard] Initial SSO wallet state:', {
     connected: walletConnected.value,
     address: walletAddress.value,
-    activeAccount: activeAccount.value
+    userEmail: user.value?.email,
+    isLoaded: isLoaded.value
   });
 });
 
 // Debug functions
 const checkWalletStatus = () => {
-  const status = getWalletStatus();
-  console.log('[WalletGuard] Current wallet status:', status);
-  alert(`Wallet Status:\nConnected: ${status.isWalletConnected}\nAddress: ${status.connectedWallet || 'None'}\nActive Account: ${JSON.stringify(status.activeAccount)}`);
+  console.log('[WalletGuard] Current SSO wallet status:', {
+    connected: walletConnected.value,
+    address: walletAddress.value,
+    userEmail: user.value?.email,
+    isLoaded: isLoaded.value
+  });
+  alert(`SSO Wallet Status:\nConnected: ${walletConnected.value}\nAddress: ${walletAddress.value || 'None'}\nEmail: ${user.value?.email || 'Not authenticated'}`);
 };
 
 const forceRefresh = () => {
-  console.log('[WalletGuard] Force refreshing wallet state');
-  // Force a reactive update by accessing the computed values
-  walletConnected.value;
-  walletAddress.value;
-  alert('Wallet state refreshed. Check console for details.');
+  console.log('[WalletGuard] Redirecting to login');
+  window.location.href = 'https://www.siz.land/login';
 };
 
 const clearWallet = () => {
-  console.log('[WalletGuard] Clearing wallet connection');
-  clearWalletConnection();
-  alert('Wallet connection cleared. You should now see the locked page.');
+  console.log('[WalletGuard] Logging out');
+  window.location.href = 'https://www.siz.land/logout';
 };
 </script>
 
