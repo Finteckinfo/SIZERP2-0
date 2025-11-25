@@ -429,56 +429,41 @@
               
               <div v-if="currentStep === 'settings'" class="d-flex flex-column align-end" style="gap: 8px;">
                 <v-alert
-                  v-if="!walletConnected || sizBalance < 1"
-                  type="warning"
+                  v-if="sizBalance < 1"
+                  type="info"
                   variant="tonal"
                   density="compact"
                   class="mb-2"
                 >
                   <template v-slot:prepend>
-                    <v-icon>mdi-alert</v-icon>
+                    <v-icon>mdi-information</v-icon>
                   </template>
                   <div class="d-flex flex-column" style="gap: 8px;">
-                    <div v-if="!walletConnected">
-                      Connect a wallet to create a project.
-                    </div>
-                    <div v-else>
+                    <div>
                       Minimum 0.00 SIZ required to create a project.
                       <span class="ml-1">Current: {{ sizBalance.toFixed(2) }} SIZ</span>
                     </div>
                     <div v-if="balanceError" class="text-error text-caption">{{ balanceError }}</div>
                     <div class="d-flex align-center" style="gap: 8px;">
                       <v-btn
-                        v-if="!walletConnected"
                         color="primary"
                         variant="elevated"
                         size="small"
-                        @click="openWalletModal()"
+                        :href="'https://www.siz.land/wallet'"
+                        target="_blank"
                       >
-                        <v-icon start>mdi-wallet</v-icon>
-                        Connect Wallet
+                        <v-icon start>mdi-open-in-new</v-icon>
+                        Get SIZ on DEX
                       </v-btn>
-                      <template v-else>
-                        <v-btn
-                          color="primary"
-                          variant="elevated"
-                          size="small"
-                          :href="'https://www.siz.land/wallet'"
-                          target="_blank"
-                        >
-                          <v-icon start>mdi-open-in-new</v-icon>
-                          Get SIZ on DEX
-                        </v-btn>
-                        <v-btn
-                          variant="outlined"
-                          size="small"
-                          :loading="balanceLoading"
-                          @click="loadWalletSIZBalance()"
-                        >
-                          <v-icon start>mdi-refresh</v-icon>
-                          Refresh Balance
-                        </v-btn>
-                      </template>
+                      <v-btn
+                        variant="outlined"
+                        size="small"
+                        :loading="balanceLoading"
+                        @click="loadWalletSIZBalance()"
+                      >
+                        <v-icon start>mdi-refresh</v-icon>
+                        Refresh Balance
+                      </v-btn>
                     </div>
                   </div>
                 </v-alert>
@@ -505,7 +490,6 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useNextAuth } from '@/composables/useNextAuth';
-import { connectedWallet, isWalletConnected as walletConnectedComputed, openWalletModal } from '@/stores/walletStore';
 import { projectApi } from '@/services/projectApi';
 import { RetroGrid } from '@/components/ui/retro-grid';
 import PaymentConfigForm from './components/PaymentConfigForm.vue';
@@ -638,18 +622,21 @@ const canCreateProject = computed(() => {
          projectData.priority;
 });
 
-// Wallet + SIZ balance gating
+// Wallet + SIZ balance gating (using SSO wallet)
 const sizBalance = ref(0);
 const sizBalanceFormatted = ref(0);
 const balanceLoading = ref(false);
 const balanceError = ref('');
-const walletConnected = computed(() => walletConnectedComputed.value);
+
+// Use SSO wallet address from NextAuth instead of manual wallet connection
+const ssoWalletAddress = computed(() => user.value?.walletAddress || '');
+const walletConnected = computed(() => !!ssoWalletAddress.value);
 
 const loadWalletSIZBalance = async () => {
   sizBalance.value = 0;
   sizBalanceFormatted.value = 0;
   balanceError.value = '';
-  if (!connectedWallet.value) return;
+  if (!ssoWalletAddress.value) return;
   try {
     balanceLoading.value = true;
     const network = (localStorage.getItem('algorand_network') || 'testnet').toLowerCase();
@@ -659,7 +646,7 @@ const loadWalletSIZBalance = async () => {
       network === 'fnet' ? NetworkId.FNET :
       network === 'localnet' || network === 'local' ? NetworkId.LOCALNET :
       NetworkId.TESTNET;
-    const balance = await getSizTokenBalance(connectedWallet.value, networkId);
+    const balance = await getSizTokenBalance(ssoWalletAddress.value, networkId);
     if (balance) {
       // amount is base units; formattedAmount is human-readable string
       sizBalance.value = Number(balance.amount) / Math.pow(10, balance.decimals || 0);
@@ -675,7 +662,7 @@ const loadWalletSIZBalance = async () => {
   }
 };
 
-watch(() => connectedWallet.value, async (addr) => {
+watch(() => ssoWalletAddress.value, async (addr) => {
   if (addr) await loadWalletSIZBalance();
   else sizBalance.value = 0;
 }, { immediate: true });
@@ -931,8 +918,8 @@ const createProject = async () => {
     return;
   }
 
-  if (!connectedWallet.value) {
-    error.value = 'Wallet address is required. Please connect your wallet.';
+  if (!ssoWalletAddress.value) {
+    error.value = 'Wallet address is required. Please ensure you are authenticated with a wallet.';
     setTimeout(() => error.value = '', 5000);
     return;
   }
@@ -962,7 +949,7 @@ const createProject = async () => {
       endDate: projectData.endDate,
       ownerId: user.value.id, // Required by backend
       userId: user.value.id, // Required by backend
-      walletAddress: connectedWallet.value, // Required by backend
+      walletAddress: ssoWalletAddress.value, // From SSO authentication
       departments: projectData.departments.map((dept, index) => ({
         name: dept.name,
         type: dept.type as 'MAJOR' | 'MINOR',
