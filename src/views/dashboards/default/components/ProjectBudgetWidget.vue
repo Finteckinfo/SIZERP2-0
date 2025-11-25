@@ -85,13 +85,15 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
 import { useNextAuth } from '@/composables/useNextAuth';
+import { useRouter } from 'vue-router';
 import { NetworkId } from '@txnlab/use-wallet-vue';
-import { getProjectBudget, type ProjectPayoutSummary } from '@/services/paymentService';
+import { getProjectBudget, type ProjectBudgetSummary } from '@/services/paymentService';
 import { getSizTokenBalance, type SizTokenBalance } from '@/services/sizTokenService';
 import { connectedWallet, isWalletConnected } from '@/stores/walletStore';
 
 // Composables
 const { user } = useNextAuth();
+const router = useRouter();
 
 // Props
 interface Props {
@@ -125,7 +127,8 @@ const loadBudgets = async () => {
     // Fetch budget data for each project
     const budgetPromises = props.projectIds.map(async (projectId) => {
       try {
-        const summary = await getProjectPaymentSummary(projectId);
+        // Use getProjectBudget instead of getProjectPaymentSummary
+        const summary = await getProjectBudget(projectId);
         return {
           projectId,
           projectName: projectId, // This should come from project data

@@ -179,6 +179,7 @@
   </v-card>
 </template>
 
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useNextAuth } from '@/composables/useNextAuth';
 import { NetworkId } from '@txnlab/use-wallet-vue';
@@ -262,6 +263,13 @@ const loadEarnings = async () => {
   }
 };
 
+
+// Helper to shorten wallet address for display
+const shortenAddress = (address: string) => {
+  if (!address || address.length < 10) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
+
 // Helper functions
 const formatAmount = (amount: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -270,31 +278,28 @@ const formatAmount = (amount: number) => {
   }).format(amount);
 };
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
+const viewAllTransactions = () => {
+  router.push('/payments');
+};
+
+const formatDate = (date: string | Date) => {
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
     month: 'short',
     day: 'numeric'
   });
 };
 
-const getExplorerUrl = (txHash: string) => {
-  const network = localStorage.getItem('algorand_network') || 'testnet';
-  const baseUrl = network === 'mainnet' 
-    ? 'https://explorer.perawallet.app/tx/'
-    : 'https://testnet.explorer.perawallet.app/tx/';
-  return baseUrl + txHash;
+const getExplorerUrl = (txId: string) => {
+  const baseUrl = networkId.value === NetworkId.MAINNET 
+    ? 'https://explorer.algorand.org/tx/' 
+    : 'https://testnet.explorer.algorand.org/tx/';
+  return baseUrl + txId;
 };
 
-const viewAllTransactions = () => {
-  // Navigate to transactions page or open a modal
-  console.log('View all transactions');
-};
-
-// Helper to shorten wallet address for display
-const shortenAddress = (address: string) => {
-  if (!address || address.length < 10) return address;
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-};
+// Import router for navigation
+import { useRouter } from 'vue-router';
+const router = useRouter();
 
 // Watch for wallet connection changes
 watch([isWalletConnected, walletAddress, networkId], () => {

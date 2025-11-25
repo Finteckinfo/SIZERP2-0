@@ -672,13 +672,31 @@ export function getAddressExplorerUrl(address: string, network?: 'mainnet' | 'te
 }
 
 /**
- * Gets SIZCOIN asset page on Algorand explorer
+ * Gets project budget summary for dashboard widget
  */
-export function getSIZCOINExplorerUrl(network?: 'mainnet' | 'testnet'): string {
-  const currentNetwork = network || (localStorage.getItem('algorand_network') || 'testnet');
-  const baseUrl = currentNetwork === 'mainnet' 
-    ? 'https://explorer.perawallet.app/asset/'
-    : 'https://testnet.explorer.perawallet.app/asset/';
-  return baseUrl + SIZCOIN_CONFIG.ASSET_ID;
+export interface ProjectBudgetSummary {
+  total: number;
+  allocated: number;
+  released: number;
+  available: number;
+  utilizationPercent: number;
+}
+
+export async function getProjectBudget(projectId: string): Promise<ProjectBudgetSummary> {
+  const escrowBalance = await getEscrowBalance(projectId);
+  
+  const total = escrowBalance.balance;
+  const allocated = escrowBalance.obligations.total;
+  const released = escrowBalance.released;
+  const available = escrowBalance.netAvailable;
+  const utilizationPercent = total > 0 ? (allocated / total) * 100 : 0;
+  
+  return {
+    total,
+    allocated,
+    released,
+    available,
+    utilizationPercent
+  };
 }
 
