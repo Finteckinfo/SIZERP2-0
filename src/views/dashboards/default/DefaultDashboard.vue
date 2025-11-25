@@ -105,7 +105,7 @@ const getUserRoleInProject = (projectId: string) => {
   if (!user.value?.id) return 'CLIENT';
   
   const userRole = teamMembers.value.find(member => 
-    member.projectId === projectId && member.userId === user.value.id
+    member.projectId === projectId && member.userId === user.value?.id
   );
   return userRole?.role || 'CLIENT';
 };

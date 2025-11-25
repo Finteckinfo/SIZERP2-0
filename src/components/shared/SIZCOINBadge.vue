@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { SIZCOIN_CONFIG, formatSIZCOIN, getSIZCOINExplorerUrl } from '@/services/paymentService';
+import { SIZCOIN_CONFIG, formatSIZCOIN, getExplorerUrl } from '@/services/paymentService';
 
 interface Props {
   amount: number; // Amount in SIZ (not micro units)
@@ -91,7 +91,10 @@ const iconSize = computed(() => {
 
 // Open asset page on Algorand explorer
 const openAssetExplorer = () => {
-  const url = getSIZCOINExplorerUrl(currentNetwork.value);
+  const baseUrl = currentNetwork.value === 'mainnet'
+    ? 'https://explorer.perawallet.app/asset/'
+    : 'https://testnet.explorer.perawallet.app/asset/';
+  const url = baseUrl + SIZCOIN_CONFIG.ASSET_ID;
   window.open(url, '_blank');
 };
 </script>
