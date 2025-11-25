@@ -73,7 +73,7 @@ export function useSSOWallet() {
     if (!activeAccount.value) {
       const connected = connectWalletFromSSO();
       if (connected) {
-        logger.success('[useSSOWallet] Successfully auto-connected wallet from SSO');
+        logger.info('[useSSOWallet] Successfully auto-connected wallet from SSO');
       }
     } else {
       logger.debug('[useSSOWallet] Wallet already connected, skipping SSO auto-connect');
