@@ -134,8 +134,18 @@ const featuresSection = ref<HTMLElement | null>(null)
 const { user, isLoaded } = useNextAuth()
 
 const goToCreateProject = () => {
+  // Wait for auth state to load before checking
+  if (!isLoaded.value) {
+    console.log('[Landing] Auth still loading, waiting...')
+    // Wait a moment for auth to load
+    setTimeout(() => goToCreateProject(), 100)
+    return
+  }
+  
   // Check if user is authenticated via SSO
   const isAuthenticated = !!user.value?.id
+  
+  console.log('[Landing] Auth loaded, user authenticated:', isAuthenticated)
   
   if (isAuthenticated) {
     router.push('/projects/create')
@@ -148,8 +158,17 @@ const goToCreateProject = () => {
 }
 
 const goToJoinProject = () => {
+  // Wait for auth state to load before checking
+  if (!isLoaded.value) {
+    console.log('[Landing] Auth still loading, waiting...')
+    setTimeout(() => goToJoinProject(), 100)
+    return
+  }
+  
   // Check if user is authenticated via SSO
   const isAuthenticated = !!user.value?.id
+  
+  console.log('[Landing] Auth loaded, user authenticated:', isAuthenticated)
   
   if (isAuthenticated) {
     router.push('/invitations')
