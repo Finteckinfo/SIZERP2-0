@@ -84,10 +84,19 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (ssoToken) {
-    console.log('[Router] SSO token detected, redirecting to validation...');
-    // Clear URL parameter and redirect to SSO validation
-    window.location.href = `/sso-validate.html?ssoToken=${ssoToken}`;
-    return;
+    console.log('[Router] SSO token detected, handling client‑side');
+    // The backend already set the `siz_sso_token` cookie.
+    // Remove the token from the URL to keep the address clean.
+    const cleanUrl = window.location.pathname + window.location.hash;
+    window.history.replaceState(null, '', cleanUrl);
+    // Verify the cookie is present; if not, force a reload to give useNextAuth another chance.
+    const cookieMatch = document.cookie.match(/(?:^|;\s*)siz_sso_token=([^;]+)/);
+    if (!cookieMatch) {
+      console.warn('[Router] SSO cookie not found after handling token – reloading page');
+      window.location.reload();
+    }
+    // Continue routing – `useNextAuth` will pick up the cookie.
+    // No need to redirect elsewhere.
   }
 
   const publicPages = ['/login', '/register', '/login1', '/error'];
