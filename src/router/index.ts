@@ -11,7 +11,8 @@ function hasNextAuthSession(): boolean {
   console.log('[Router Debug] All cookies:', document.cookie);
 
   const sessionToken = getCookie('next-auth.session-token') ||
-    getCookie('__Secure-next-auth.session-token');
+    getCookie('__Secure-next-auth.session-token') ||
+    getCookie('siz_sso_token'); // Add check for SSO token
 
   console.log('[Router Debug] Session token found:', !!sessionToken);
   if (sessionToken) {
