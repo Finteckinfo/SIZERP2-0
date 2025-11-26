@@ -11,7 +11,7 @@ export class NextAuthService {
   private tokenExpiry: number | null = null;
   private userCache: any = null;
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): NextAuthService {
     if (!NextAuthService.instance) {
@@ -24,8 +24,9 @@ export class NextAuthService {
    * Check if NextAuth session exists
    */
   private hasSession(): boolean {
-    const sessionToken = getCookie('next-auth.session-token') || 
-                        getCookie('__Secure-next-auth.session-token');
+    const sessionToken = getCookie('next-auth.session-token') ||
+      getCookie('__Secure-next-auth.session-token') ||
+      getCookie('siz_sso_token'); // Add check for SSO token
     return !!sessionToken;
   }
 
@@ -43,41 +44,47 @@ export class NextAuthService {
           return this.tokenCache;
         }
 
-        // Validate session with backend and get JWT
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-        const response = await fetch(`${backendUrl}/api/auth/session`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          logger.error('[NextAuth] Session validation failed:', response.status);
-          this.clearTokenCache();
-          return null;
-        }
-
-        const session = await response.json();
-
-        if (!session || !session.user) {
-          logger.error('[NextAuth] Invalid session response');
-          this.clearTokenCache();
-          return null;
-        }
-
-        // Store user data
-        this.userCache = session.user;
-
-        // Get or create JWT token from session cookie
+        // Get token from cookie
         const sessionToken = getCookie('next-auth.session-token') ||
-                            getCookie('__Secure-next-auth.session-token');
+          getCookie('__Secure-next-auth.session-token') ||
+          getCookie('siz_sso_token');
 
         if (sessionToken) {
-          // Cache the token
+          // If it's our SSO token, we can use it directly without backend validation
+          // This bypasses the Vercel firewall issue
+          if (getCookie('siz_sso_token')) {
+            this.tokenCache = sessionToken;
+            this.tokenExpiry = Date.now() + (5 * 60 * 1000); // 5 minutes for SSO token
+            return sessionToken;
+          }
+
+          // For standard NextAuth tokens, validate with backend
+          const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+          const response = await fetch(`${backendUrl}/api/auth/session`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            logger.error('[NextAuth] Session validation failed:', response.status);
+            this.clearTokenCache();
+            return null;
+          }
+
+          const session = await response.json();
+
+          if (!session || !session.user) {
+            logger.error('[NextAuth] Invalid session response');
+            this.clearTokenCache();
+            return null;
+          }
+
+          // Store user data
+          this.userCache = session.user;
           this.tokenCache = sessionToken;
-          // NextAuth tokens typically expire in 30 days
           this.tokenExpiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
 
           logger.security('[NextAuth] JWT Token obtained', {
@@ -167,7 +174,8 @@ export class NextAuthService {
   public async getAuthHeaders(): Promise<Record<string, string>> {
     // First, try to get NextAuth session token
     const sessionToken = getCookie('next-auth.session-token') ||
-                        getCookie('__Secure-next-auth.session-token');
+      getCookie('__Secure-next-auth.session-token') ||
+      getCookie('siz_sso_token'); // Add check for SSO token
 
     if (sessionToken) {
       return {
@@ -242,7 +250,7 @@ export class NextAuthService {
     if (error.response?.status === 401) {
       logger.warn('[NextAuth] Unauthorized - clearing token cache');
       this.clearTokenCache();
-      
+
       // Redirect to SSO login
       const ssoUrl = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://siz.land';
       window.location.href = `${ssoUrl}/login?redirect=${encodeURIComponent(window.location.href)}`;
