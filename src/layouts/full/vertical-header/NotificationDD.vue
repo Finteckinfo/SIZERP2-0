@@ -3,6 +3,9 @@ import { ref, computed } from 'vue';
 import { BuildingStoreIcon, SendIcon, MailboxIcon, PhotoIcon } from 'vue-tabler-icons';
 import { useNextAuth } from '@/composables/useNextAuth';
 
+// Default user profile image
+import defaultUserImage from '@/assets/images/profile/user-round.svg';
+
 const notificationDD = ref(['All Notifications', 'New', 'Unread', 'Other']);
 const selectNotify = ref<string>('All Notifications');
 const { user, isLoaded } = useNextAuth();
@@ -12,7 +15,7 @@ const userProfileImage = computed(() => {
   if (isLoaded.value && user.value?.image) {
     return user.value.image;
   }
-  return '@/assets/images/profile/user-round.svg';
+  return defaultUserImage;
 });
 </script>
 

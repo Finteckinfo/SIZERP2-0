@@ -12,6 +12,9 @@ import Searchbar from './SearchBarPanel.vue';
 import ThemeToggle from '@/components/shared/ThemeToggle.vue';
 import NetworkSelector from '@/components/shared/NetworkSelector.vue';
 
+// Default user profile image
+import defaultUserImage from '@/assets/images/profile/user-round.svg';
+
 const customizer = useCustomizerStore();
 const showSearch = ref(false);
 const { user, isLoaded } = useNextAuth();
@@ -21,7 +24,7 @@ const userProfileImage = computed(() => {
   if (isLoaded.value && user.value?.image) {
     return user.value.image;
   }
-  return '@/assets/images/profile/user-round.svg';
+  return defaultUserImage;
 });
 
 const userDisplayName = computed(() => {
@@ -128,7 +131,7 @@ function searchbox() {
               :alt="userDisplayName"
               @error="(event) => {
                 const target = event.target as HTMLImageElement;
-                if (target) target.src = '@/assets/images/profile/user-round.svg';
+                if (target) target.src = defaultUserImage;
               }"
             />
           </v-avatar>

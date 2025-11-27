@@ -1,14 +1,14 @@
 <template>
   <div :class="{ 'dark-theme': isDark }">
-    <WalletGuard>
+    <AuthGuard>
       <CreateProject />
-    </WalletGuard>
+    </AuthGuard>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useTheme } from '@/composables/useTheme';
-import WalletGuard from '@/components/guards/WalletGuard.vue';
+import AuthGuard from '@/components/shared/AuthGuard.vue';
 import CreateProject from './CreateProject.vue';
 
 const { isDark } = useTheme();

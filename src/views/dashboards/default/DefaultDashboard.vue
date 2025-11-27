@@ -408,6 +408,27 @@ const fetchUserProjects = async () => {
   } catch (err) {
     console.warn('User projects API error:', err);
     projectsError.value = 'Failed to load projects. Please try again.';
+    
+    // Add sample data on error so dashboard isn't empty
+    if (projects.value.length === 0) {
+      projects.value = [
+        {
+          id: 'sample-1',
+          name: 'Website Redesign',
+          description: 'Modernize the company website with improved UX and mobile responsiveness.',
+          type: 'PROGRESSIVE',
+          priority: 'HIGH',
+          startDate: '2024-01-15',
+          endDate: '2024-06-30',
+          ownerId: user.value?.id || 'sample-owner',
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01'
+        }
+      ];
+    }
+    
+    // Still calculate stats even on error
+    await fetchDashboardStats();
   } finally {
     projectsLoading.value = false;
   }
@@ -750,18 +771,12 @@ const declineInvite = async (inviteId: string) => {
   }
 };
 
-// Watch for user availability
-watch(() => user.value?.id, (newUserId) => {
-  if (newUserId) {
+// Watch for user availability - single consolidated watcher
+watch(() => user.value?.id, (newUserId, oldUserId) => {
+  if (newUserId && newUserId !== oldUserId) {
+    console.log('[Dashboard] User ID changed, loading data...', newUserId);
     loadAllData();
-  }
-}, { immediate: true });
-
-// Watch for user changes
-watch(() => user.value, (newUser) => {
-  if (newUser) {
-    console.log('User authenticated, loading data...');
-    loadAllData();
+    loadPendingInvites();
   }
 }, { immediate: true });
 
@@ -778,11 +793,19 @@ watch(isLoaded, (loaded) => {
     // If loaded but no user, redirect to login
     console.log('Auth loaded but no user found, redirecting to login...');
     window.location.href = 'https://www.siz.land/login';
+  } else if (loaded && user.value?.id) {
+    // Auth is loaded and we have a user - ensure data is loaded
+    console.log('[Dashboard] Auth loaded with user, ensuring data is loaded...');
+    if (statsLoading.value && projectsLoading.value) {
+      loadAllData();
+      loadPendingInvites();
+    }
   }
 }, { immediate: true });
 
 // Load data when component mounts
 onMounted(() => {
+  console.log('[Dashboard] Component mounted, isLoaded:', isLoaded.value, 'user:', user.value?.id);
   if (user.value?.id) {
     loadAllData();
     loadPendingInvites();
