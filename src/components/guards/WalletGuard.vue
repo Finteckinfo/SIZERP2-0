@@ -109,14 +109,41 @@ import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue';
 const { isDark } = useTheme();
 const { user, isLoaded } = useNextAuth();
 
-// Check if user has SSO wallet
+// Helper to check if a string looks like an Algorand wallet address
+const isAlgorandAddress = (str: string | undefined): boolean => {
+  if (!str) return false;
+  // Algorand addresses are 58 characters, uppercase letters and numbers (Base32)
+  return /^[A-Z2-7]{58}$/.test(str);
+};
+
+// Check if user has SSO wallet or their ID is a wallet address
 const walletConnected = computed(() => {
-  return !!user.value?.walletAddress;
+  // First check explicit walletAddress field
+  if (user.value?.walletAddress) {
+    return true;
+  }
+  
+  // Also check if user ID is a wallet address (common for wallet-authenticated users)
+  if (isAlgorandAddress(user.value?.id)) {
+    return true;
+  }
+  
+  return false;
 });
 
 // Get wallet address from SSO for debugging
 const walletAddress = computed(() => {
-  return user.value?.walletAddress || '';
+  // Return explicit wallet address if present
+  if (user.value?.walletAddress) {
+    return user.value.walletAddress;
+  }
+  
+  // Return user ID if it looks like a wallet address
+  if (user.value?.id && isAlgorandAddress(user.value.id)) {
+    return user.value.id;
+  }
+  
+  return '';
 });
 
 // Check if we're in development mode
@@ -136,6 +163,9 @@ onMounted(() => {
     connected: walletConnected.value,
     address: walletAddress.value,
     userEmail: user.value?.email,
+    userId: user.value?.id,
+    explicitWallet: user.value?.walletAddress,
+    isUserIdWallet: isAlgorandAddress(user.value?.id),
     isLoaded: isLoaded.value
   });
 });
@@ -146,9 +176,12 @@ const checkWalletStatus = () => {
     connected: walletConnected.value,
     address: walletAddress.value,
     userEmail: user.value?.email,
+    userId: user.value?.id,
+    explicitWallet: user.value?.walletAddress,
+    isUserIdWallet: isAlgorandAddress(user.value?.id),
     isLoaded: isLoaded.value
   });
-  alert(`SSO Wallet Status:\nConnected: ${walletConnected.value}\nAddress: ${walletAddress.value || 'None'}\nEmail: ${user.value?.email || 'Not authenticated'}`);
+  alert(`SSO Wallet Status:\nConnected: ${walletConnected.value}\nAddress: ${walletAddress.value || 'None'}\nUser ID: ${user.value?.id || 'None'}\nEmail: ${user.value?.email || 'Not authenticated'}`);
 };
 
 const forceRefresh = () => {
