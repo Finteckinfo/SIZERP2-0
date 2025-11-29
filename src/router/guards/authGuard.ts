@@ -1,13 +1,56 @@
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
+import { getCookie } from '@/utils/cookies';
 
 /**
  * Authentication Guard for ERP (erp.siz.land)
  * 
- * This guard ensures that:
- * 1. Users are authenticated via NextAuth session from primary domain (siz.land)
- * 2. Unauthenticated users are redirected to siz.land for login
- * 3. The intended destination is preserved for post-auth redirect
+ * PERFORMANCE OPTIMIZED:
+ * - Uses synchronous cookie/storage checks (no network calls)
+ * - Network validation happens in background after page loads
+ * - Instant navigation for authenticated users
  */
+
+// PERFORMANCE: Synchronous session check - no network latency
+function hasValidSession(): boolean {
+  // Check cookies first (fastest)
+  const sessionToken = getCookie('next-auth.session-token') ||
+    getCookie('__Secure-next-auth.session-token') ||
+    getCookie('siz_sso_token');
+  
+  if (sessionToken) return true;
+  
+  // Check sessionStorage (SSO fallback)
+  try {
+    const user = sessionStorage.getItem('erp_user');
+    const token = sessionStorage.getItem('erp_session_token');
+    const timestamp = sessionStorage.getItem('erp_auth_timestamp');
+    
+    if (user && token && timestamp) {
+      const age = Date.now() - parseInt(timestamp);
+      const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+      if (age < maxAge) return true;
+    }
+  } catch (e) {
+    // Ignore storage errors
+  }
+  
+  // Check localStorage cache
+  try {
+    const cached = localStorage.getItem('siz_session_cache');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      const cacheAge = Date.now() - (parsed.timestamp || 0);
+      if (cacheAge < 10 * 60 * 1000 && parsed.session) { // 10 min cache
+        return true;
+      }
+    }
+  } catch (e) {
+    // Ignore storage errors
+  }
+  
+  return false;
+}
+
 export async function authGuard(
   to: RouteLocationNormalized,
   from: RouteLocationNormalized,
@@ -18,7 +61,9 @@ export async function authGuard(
     '/auth-loading',
     '/unauthorized',
     '/error',
-    '/sso-callback'
+    '/sso-callback',
+    '/login',
+    '/register'
   ];
   
   // Check if current route is public
@@ -26,44 +71,24 @@ export async function authGuard(
     return next();
   }
 
-  // Check if user is authenticated via NextAuth session
-  try {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-    const response = await fetch(`${backendUrl}/api/auth/session`, {
-      method: 'GET',
-      credentials: 'include', // Include cookies for cross-origin requests
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (response.ok) {
-      const session = await response.json();
-      if (session && session.user) {
-        // User is authenticated, allow navigation
-        console.log('[AuthGuard] User authenticated, proceeding to:', to.path);
-        return next();
-      }
-    }
-  } catch (error) {
-    console.error('[AuthGuard] Error checking session:', error);
+  // PERFORMANCE: Use synchronous check - no network call
+  if (hasValidSession()) {
+    return next();
   }
   
-  // User not authenticated - redirect to primary domain (siz.land) login page
-  console.log('[AuthGuard] User not authenticated - redirecting to primary domain login');
+  // No session found - redirect to SSO login
+  console.log('[AuthGuard] No session, redirecting to SSO login');
   
-  // Store intended destination for post-auth redirect (full URL for cross-domain)
+  // Store intended destination for post-auth redirect
   try {
     sessionStorage.setItem('post_auth_redirect', window.location.href);
   } catch (error) {
-    console.warn('[AuthGuard] Unable to save redirect destination:', error);
+    // Ignore storage errors
   }
   
-  // Redirect to primary domain's login page for centralized authentication
+  // Redirect to primary domain's login page
   const ssoUrl = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land';
   const redirectUrl = encodeURIComponent(window.location.href);
-  
-  // Use window.location to navigate to primary domain
   window.location.href = `${ssoUrl}/login?redirect=${redirectUrl}`;
 }
 

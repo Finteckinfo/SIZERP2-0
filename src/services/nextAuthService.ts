@@ -31,11 +31,54 @@ export class NextAuthService {
   }
 
   /**
+   * PERFORMANCE: Get JWT token synchronously from cookie/cache
+   * No network calls - instant response
+   */
+  public getJWTTokenSync(): string | null {
+    // Return cached token if still valid
+    if (this.tokenCache && this.tokenExpiry && Date.now() < this.tokenExpiry) {
+      return this.tokenCache;
+    }
+
+    // Get token from cookie (synchronous)
+    const sessionToken = getCookie('next-auth.session-token') ||
+      getCookie('__Secure-next-auth.session-token') ||
+      getCookie('siz_sso_token');
+
+    if (sessionToken) {
+      this.tokenCache = sessionToken;
+      this.tokenExpiry = Date.now() + (10 * 60 * 1000); // 10 minutes cache
+      return sessionToken;
+    }
+
+    // Check SSO sessionStorage
+    const ssoToken = sessionStorage.getItem('erp_session_token');
+    if (ssoToken) {
+      const timestamp = sessionStorage.getItem('erp_auth_timestamp');
+      if (timestamp) {
+        const age = Date.now() - parseInt(timestamp);
+        if (age < 24 * 60 * 60 * 1000) { // 24 hours
+          this.tokenCache = ssoToken;
+          this.tokenExpiry = Date.now() + (10 * 60 * 1000);
+          return ssoToken;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Get JWT token for backend API calls
-   * This validates the NextAuth session and returns a backend-compatible token
-   * Also supports SSO sessions as fallback
+   * PERFORMANCE: Uses sync method first, only falls back to async if needed
    */
   public async getJWTToken(): Promise<string | null> {
+    // PERFORMANCE: Try sync first
+    const syncToken = this.getJWTTokenSync();
+    if (syncToken) {
+      return syncToken;
+    }
+
     try {
       // Check if NextAuth session exists first
       if (this.hasSession()) {
@@ -50,51 +93,10 @@ export class NextAuthService {
           getCookie('siz_sso_token');
 
         if (sessionToken) {
-          // If it's our SSO token, we can use it directly without backend validation
-          // This bypasses the Vercel firewall issue
-          if (getCookie('siz_sso_token')) {
-            this.tokenCache = sessionToken;
-            this.tokenExpiry = Date.now() + (5 * 60 * 1000); // 5 minutes for SSO token
-            return sessionToken;
-          }
-
-          // For standard NextAuth tokens, validate with backend
-          const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-          const response = await fetch(`${backendUrl}/api/auth/session`, {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (!response.ok) {
-            logger.error('[NextAuth] Session validation failed:', response.status);
-            this.clearTokenCache();
-            return null;
-          }
-
-          const session = await response.json();
-
-          if (!session || !session.user) {
-            logger.error('[NextAuth] Invalid session response');
-            this.clearTokenCache();
-            return null;
-          }
-
-          // Store user data
-          this.userCache = session.user;
+          // PERFORMANCE: Use token directly without backend validation
+          // Backend validation happens on actual API calls
           this.tokenCache = sessionToken;
-          this.tokenExpiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
-
-          logger.security('[NextAuth] JWT Token obtained', {
-            userId: session.user.id,
-            email: session.user.email,
-          });
-
-          // Sync user with backend
-          await this.syncUserWithBackend(session.user);
-
+          this.tokenExpiry = Date.now() + (10 * 60 * 1000); // 10 minutes
           return sessionToken;
         }
       }
@@ -122,6 +124,8 @@ export class NextAuthService {
         }
 
         logger.debug('[NextAuth] Using SSO session token');
+        this.tokenCache = ssoToken;
+        this.tokenExpiry = Date.now() + (10 * 60 * 1000);
         return ssoToken;
       }
 
@@ -134,38 +138,6 @@ export class NextAuthService {
     }
   }
 
-  /**
-   * Sync user with backend database
-   */
-  private async syncUserWithBackend(user: any): Promise<void> {
-    try {
-      logger.info('[NextAuth] Syncing user with backend', { userId: user.id });
-
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-      const response = await fetch(`${backendUrl}/api/auth/sync-user`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          email: user.email,
-          firstName: user.firstName || user.name?.split(' ')[0],
-          lastName: user.lastName || user.name?.split(' ').slice(1).join(' '),
-        }),
-      });
-
-      if (response.ok) {
-        logger.info('[NextAuth] User synchronized with backend successfully');
-      } else {
-        logger.warn('[NextAuth] Failed to sync user with backend', { status: response.status });
-      }
-    } catch (error: any) {
-      logger.warn('[NextAuth] Error syncing user with backend:', error.message);
-      // Don't throw - allow authentication to continue
-    }
-  }
 
   /**
    * Get authentication headers for API calls

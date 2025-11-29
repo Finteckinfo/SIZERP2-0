@@ -17,11 +17,36 @@ export interface NextAuthSession {
   expires: string;
 }
 
+// PERFORMANCE: Use module-level cache to persist across component instances
 const sessionCache = ref<NextAuthSession | null>(null);
 const isLoaded = ref(false);
 const isValidating = ref(false);
 const lastValidated = ref<number>(0);
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes - increased for better performance
+const SESSION_STORAGE_KEY = 'siz_session_cache';
+
+// PERFORMANCE: Initialize from localStorage on module load (synchronous)
+function initializeFromStorage(): void {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    const cached = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      // Check if cache is still valid
+      if (parsed.timestamp && (Date.now() - parsed.timestamp < CACHE_TTL)) {
+        sessionCache.value = parsed.session;
+        lastValidated.value = parsed.timestamp;
+        isLoaded.value = true;
+      }
+    }
+  } catch (e) {
+    // Ignore storage errors
+  }
+}
+
+// Run immediately on module load
+initializeFromStorage();
 
 // Helper to parse JWT token client-side
 function parseJwt(token: string) {
@@ -128,17 +153,20 @@ export function useNextAuth() {
 
         lastValidated.value = Date.now();
         isLoaded.value = true;
+        
+        // PERFORMANCE: Persist to localStorage for instant loads on next page
+        persistSession();
 
-        // We can skip backend validation if we successfully decoded the token
-        // But we might want to do it in background just in case (optional)
+        // Skip backend validation - client-side decode is sufficient for display
         return;
       }
 
-      // Fallback to backend validation if client-side decode fails
+      // Fallback to backend validation only if client-side decode fails
+      // This should rarely happen with valid tokens
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
       const response = await fetch(`${backendUrl}/api/auth/session`, {
         method: 'GET',
-        credentials: 'include', // Important: include cookies
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -147,16 +175,15 @@ export function useNextAuth() {
       if (response.ok) {
         const session = await response.json();
         sessionCache.value = session;
+        persistSession();
       } else {
-        // If backend fails (e.g. 403 firewall), but we have a token, 
-        // we should have handled it above. If we reached here, it means
-        // token was invalid OR we couldn't decode it.
         sessionCache.value = null;
+        clearPersistedSession();
       }
       lastValidated.value = Date.now();
     } catch (error) {
       console.error('[NextAuth] Session validation error:', error);
-      // Don't clear cache on error, just keep old data if available
+      // Don't clear cache on error, keep old data for resilience
       if (!sessionCache.value) sessionCache.value = null;
     } finally {
       isLoaded.value = true;
@@ -164,49 +191,66 @@ export function useNextAuth() {
     }
   };
 
-  // Validate on mount
+  // PERFORMANCE: Persist session to localStorage
+  const persistSession = () => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
+        session: sessionCache.value,
+        timestamp: Date.now()
+      }));
+    } catch (e) {
+      // Ignore storage errors
+    }
+  };
+
+  // Clear persisted session
+  const clearPersistedSession = () => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.removeItem(SESSION_STORAGE_KEY);
+    } catch (e) {
+      // Ignore storage errors
+    }
+  };
+
+  // PERFORMANCE: Only validate on mount if not already loaded from storage
   onMounted(() => {
-    validateSession();
+    if (!isLoaded.value) {
+      validateSession();
+    }
   });
 
-  // Watch for cookie changes and SSO sessionStorage updates
+  // PERFORMANCE: Use visibility API instead of polling
   if (typeof window !== 'undefined') {
-    window.addEventListener('storage', () => validateSession(true));
-
-    // Poll for sessionStorage changes (storage event doesn't fire for same tab)
-    // Optimized: Check every 30 seconds instead of 1 second
-    const checkSSOInterval = setInterval(() => {
-      // Only check if page is visible
-      if (document.hidden) return;
-
-      const ssoUser = sessionStorage.getItem('erp_user');
-      const hasSession = !!sessionCache.value;
-
-      // If we have SSO data but no cached session, validate
-      if (ssoUser && !hasSession) {
+    // Listen for storage changes from other tabs
+    window.addEventListener('storage', (e) => {
+      if (e.key === SESSION_STORAGE_KEY || e.key === 'erp_user') {
         validateSession(true);
       }
+    });
 
-      // If we have a cached session but SSO data is gone, clear cache
-      if (!ssoUser && hasSession && sessionCache.value?.user?.authMethod === 'sso') {
-        sessionCache.value = null;
-        lastValidated.value = Date.now();
-      }
-
-      // Revalidate if cache expired
-      if (Date.now() - lastValidated.value > CACHE_TTL) {
+    // Revalidate when tab becomes visible (instead of polling)
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && Date.now() - lastValidated.value > CACHE_TTL) {
         validateSession();
       }
-    }, 30000); // Check every 30 seconds
-
-    // Cleanup on unmount
-    window.addEventListener('beforeunload', () => {
-      clearInterval(checkSSOInterval);
     });
   }
 
   const isSignedIn = computed(() => !!sessionCache.value);
   const user = computed(() => sessionCache.value?.user || null);
+
+  // PERFORMANCE: Expose clearSession for logout
+  const clearSession = () => {
+    sessionCache.value = null;
+    lastValidated.value = 0;
+    isLoaded.value = true;
+    clearPersistedSession();
+    sessionStorage.removeItem('erp_user');
+    sessionStorage.removeItem('erp_session_token');
+    sessionStorage.removeItem('erp_auth_timestamp');
+  };
 
   return {
     isLoaded,
@@ -214,5 +258,6 @@ export function useNextAuth() {
     user,
     session: sessionCache,
     validateSession,
+    clearSession,
   };
 }

@@ -4,22 +4,13 @@ import PublicRoutes from './PublicRoutes';
 import { getCookie } from '@/utils/cookies';
 
 // SSO Configuration - Receive auth from primary domain (siz.land)
-// Force www.siz.land to ensure correct cookie domain handling
-const SSO_PRIMARY_DOMAIN = 'https://www.siz.land';
+const SSO_PRIMARY_DOMAIN = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land';
 
+// PERFORMANCE: Fast synchronous session check - no network calls
 function hasNextAuthSession(): boolean {
-  // Debug: Log all cookies
-  console.log('[Router Debug] All cookies:', document.cookie);
-
   const sessionToken = getCookie('next-auth.session-token') ||
     getCookie('__Secure-next-auth.session-token') ||
-    getCookie('siz_sso_token'); // Add check for SSO token
-
-  console.log('[Router Debug] Session token found:', !!sessionToken);
-  if (sessionToken) {
-    console.log('[Router Debug] Session token value (first 20 chars):', sessionToken.substring(0, 20));
-  }
-
+    getCookie('siz_sso_token');
   return !!sessionToken;
 }
 
