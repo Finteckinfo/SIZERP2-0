@@ -252,7 +252,7 @@ export class NextAuthService {
       this.clearTokenCache();
 
       // Redirect to SSO login
-      const ssoUrl = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://siz.land';
+      const ssoUrl = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land';
       window.location.href = `${ssoUrl}/login?redirect=${encodeURIComponent(window.location.href)}`;
     }
   }

@@ -153,7 +153,8 @@ const isDevelopment = computed(() => {
 
 // Open wallet modal (redirect to login page)
 const handleOpenWalletModal = () => {
-  window.location.href = 'https://www.siz.land/login';
+  const ssoDomain = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land';
+  window.location.href = `${ssoDomain}/login`;
 };
 
 // Debug logging
@@ -186,12 +187,14 @@ const checkWalletStatus = () => {
 
 const forceRefresh = () => {
   console.log('[WalletGuard] Redirecting to login');
-  window.location.href = 'https://www.siz.land/login';
+  const ssoDomain = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land';
+  window.location.href = `${ssoDomain}/login`;
 };
 
 const clearWallet = () => {
   console.log('[WalletGuard] Logging out');
-  window.location.href = 'https://www.siz.land/logout';
+  const ssoDomain = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land';
+  window.location.href = `${ssoDomain}/logout`;
 };
 </script>
 

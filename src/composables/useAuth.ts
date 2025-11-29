@@ -34,7 +34,8 @@ export function useAuth() {
     loading.value = true;
     try {
       // Check if NextAuth session cookie exists by calling the primary domain
-      const response = await fetch('https://siz.land/api/auth/session', {
+      const ssoDomain = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land';
+      const response = await fetch(`${ssoDomain}/api/auth/session`, {
         credentials: 'include',
         headers: {
           'Accept': 'application/json'
@@ -72,7 +73,8 @@ export function useAuth() {
   async function login(email: string, password: string) {
     loading.value = true;
     try {
-      const response = await fetch('https://siz.land/api/auth/callback/credentials', {
+      const ssoDomain = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land';
+      const response = await fetch(`${ssoDomain}/api/auth/callback/credentials`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -99,12 +101,14 @@ export function useAuth() {
     user.value = null;
     initialized.value = false;
     // Redirect to primary domain for logout to clear the session cookie
-    window.location.href = 'https://siz.land/api/auth/signout?callbackUrl=https://siz.land';
+    const ssoDomain = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land';
+    window.location.href = `${ssoDomain}/api/auth/signout?callbackUrl=${ssoDomain}`;
   }
 
   function redirectToLogin() {
     // Redirect to primary domain for login
-    window.location.href = 'https://siz.land/login?callbackUrl=' + encodeURIComponent(window.location.href);
+    const ssoDomain = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land';
+    window.location.href = `${ssoDomain}/login?callbackUrl=${encodeURIComponent(window.location.href)}`;
   }
 
   return {

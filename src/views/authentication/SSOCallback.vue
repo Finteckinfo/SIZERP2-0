@@ -38,7 +38,8 @@ onMounted(async () => {
     console.log('[SSO Callback] Validating SSO token...');
 
     // Determine backend URL based on current domain
-    let backendUrl = 'https://www.siz.land'; // Default for production
+    // Use environment variable with fallback to www.siz.land
+    let backendUrl = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land';
     
     // If we're on localhost or a dev environment, use localhost
     if (window.location.hostname === 'localhost' || 
