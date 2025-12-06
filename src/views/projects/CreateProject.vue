@@ -67,6 +67,173 @@
       <!-- Main Content Area -->
       <div v-if="!loading" class="main-content">
         
+        <!-- Creation Mode Toggle -->
+        <div class="creation-mode-toggle d-flex justify-end mb-4">
+          <span class="text-caption mr-2" :style="{ color: 'var(--erp-text)' }">Creation mode:</span>
+          <v-btn
+            size="small"
+            class="mr-1"
+            :color="creationMode === 'quick' ? 'var(--erp-accent-green)' : undefined"
+            :variant="creationMode === 'quick' ? 'elevated' : 'outlined'"
+            @click="creationMode = 'quick'"
+          >
+            Quick
+          </v-btn>
+          <v-btn
+            size="small"
+            :color="creationMode === 'advanced' ? 'var(--erp-accent-green)' : undefined"
+            :variant="creationMode === 'advanced' ? 'elevated' : 'outlined'"
+            @click="creationMode = 'advanced'"
+          >
+            Advanced
+          </v-btn>
+        </div>
+
+        <!-- Quick Project Setup -->
+        <div v-if="creationMode === 'quick'" class="step-content quick-project-section mb-6">
+          <div class="step-header d-flex justify-space-between align-center mb-4">
+            <div>
+              <h2 class="text-h5 font-weight-medium mb-1">Quick Project Setup</h2>
+              <p class="text-body-2 text-medium-emphasis mb-0">
+                Create a basic project with a recommended board template in just a few fields. You can fine-tune stages and team later.
+              </p>
+            </div>
+          </div>
+
+          <v-form ref="quickForm" v-model="quickFormValid">
+            <v-row>
+              <v-col cols="12" md="8">
+                <v-text-field
+                  v-model="quickProject.name"
+                  label="Project Name"
+                  placeholder="Project Name"
+                  variant="outlined"
+                  :rules="[v => !!v || 'Project name is required']"
+                  class="mb-4"
+                />
+
+                <v-select
+                  v-model="quickProject.type"
+                  label="Project Type"
+                  placeholder="Project Type"
+                  :items="projectTypes"
+                  variant="outlined"
+                  :rules="[v => !!v || 'Project type is required']"
+                  class="mb-4"
+                />
+
+                <v-textarea
+                  v-model="quickProject.description"
+                  label="Description (Optional)"
+                  placeholder="Short summary of what this project is about"
+                  variant="outlined"
+                  rows="3"
+                  class="mb-4"
+                />
+
+                <v-row>
+                  <v-col cols="12" md="6">
+                    <v-text-field
+                      v-model="quickProject.startDate"
+                      label="Start Date"
+                      type="date"
+                      variant="outlined"
+                      :rules="[v => !!v || 'Start date is required']"
+                      class="mb-4"
+                    />
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <v-text-field
+                      v-model="quickProject.endDate"
+                      label="End Date"
+                      type="date"
+                      variant="outlined"
+                      :rules="[v => !!v || 'End date is required']"
+                      class="mb-4"
+                    />
+                  </v-col>
+                </v-row>
+
+                <v-select
+                  v-model="quickProject.templateKey"
+                  label="Board Template"
+                  :items="quickTemplates"
+                  item-title="label"
+                  item-value="key"
+                  variant="outlined"
+                  :rules="[v => !!v || 'Board template is required']"
+                  class="mb-2"
+                />
+              </v-col>
+
+              <v-col cols="12" md="4">
+                <v-card
+                  elevation="0"
+                  class="pa-4 border rounded-lg h-100 d-flex flex-column justify-space-between"
+                  :style="{ background: 'var(--erp-card-bg)', color: 'var(--erp-text)' }"
+                >
+                  <div>
+                    <h4 class="text-subtitle-1 font-weight-medium mb-3" :style="{ color: 'var(--erp-text)' }">
+                      Quick Summary
+                    </h4>
+                    <div class="space-y-3">
+                      <div>
+                        <div class="text-caption text-medium-emphasis">Project</div>
+                        <div class="text-body-2">{{ quickProject.name || 'Untitled Project' }}</div>
+                      </div>
+                      <div>
+                        <div class="text-caption text-medium-emphasis">Type</div>
+                        <div class="text-body-2">{{ quickProject.type || 'Not set' }}</div>
+                      </div>
+                      <div>
+                        <div class="text-caption text-medium-emphasis">Dates</div>
+                        <div class="text-body-2">
+                          {{ quickProject.startDate || 'Start not set' }}
+                          <span class="mx-1">→</span>
+                          {{ quickProject.endDate || 'End not set' }}
+                        </div>
+                      </div>
+                      <div>
+                        <div class="text-caption text-medium-emphasis">Board Template</div>
+                        <div class="text-body-2">
+                          {{ selectedQuickTemplate?.label }} — {{ selectedQuickTemplate?.description }}
+                        </div>
+                      </div>
+
+                      <v-alert
+                        class="mt-3"
+                        :type="meetsSizRequirement ? 'success' : 'info'"
+                        variant="tonal"
+                        density="compact"
+                      >
+                        <template v-slot:prepend>
+                          <v-icon size="small">mdi-currency-usd</v-icon>
+                        </template>
+                        <div class="text-caption">
+                          Minimum {{ MIN_SIZ_FOR_PROJECT.toFixed(2) }} SIZ required to create a project.
+                          <div>
+                            Current: {{ sizBalance.toFixed(2) }} SIZ
+                          </div>
+                        </div>
+                      </v-alert>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 d-flex justify-end">
+                    <v-btn
+                      :color="'var(--erp-accent-green)'"
+                      @click="createQuickProject"
+                      :disabled="!canCreateQuickProject || submitting"
+                      :loading="submitting"
+                    >
+                      Create Quick Project
+                    </v-btn>
+                  </div>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-form>
+        </div>
 
         <!-- Step Content -->
         <div class="step-content-container">
@@ -429,7 +596,7 @@
               
               <div v-if="currentStep === 'settings'" class="d-flex flex-column align-end" style="gap: 8px;">
                 <v-alert
-                  v-if="sizBalance < 1"
+                  v-if="!meetsSizRequirement"
                   type="info"
                   variant="tonal"
                   density="compact"
@@ -440,7 +607,7 @@
                   </template>
                   <div class="d-flex flex-column" style="gap: 8px;">
                     <div>
-                      Minimum 0.00 SIZ required to create a project.
+                      Minimum {{ MIN_SIZ_FOR_PROJECT.toFixed(2) }} SIZ required to create a project.
                       <span class="ml-1">Current: {{ sizBalance.toFixed(2) }} SIZ</span>
                     </div>
                     <div v-if="balanceError" class="text-error text-caption">{{ balanceError }}</div>
@@ -524,6 +691,13 @@ interface Role {
   };
 }
 
+interface QuickTemplate {
+  key: string;
+  label: string;
+  description: string;
+  stages: Department[];
+}
+
 // Templates/Drafts removed
 
 // Project creation steps
@@ -551,6 +725,43 @@ const projectData = reactive({
   departments: [] as Department[],
   roles: [] as Role[]
 });
+
+const creationMode = ref<'quick' | 'advanced'>('quick');
+
+const quickTemplates = ref<QuickTemplate[]>([
+  {
+    key: 'simple',
+    label: 'Simple Kanban',
+    description: 'Todo → In Progress → Done',
+    stages: [
+      { name: 'Todo', type: 'MAJOR', description: 'New tasks to be picked up', order: 0, isVisible: true },
+      { name: 'In Progress', type: 'MAJOR', description: 'Tasks currently being worked on', order: 1, isVisible: true },
+      { name: 'Done', type: 'MAJOR', description: 'Completed tasks', order: 2, isVisible: true }
+    ]
+  },
+  {
+    key: 'software',
+    label: 'Software Delivery',
+    description: 'Backlog → In Progress → Review → Done',
+    stages: [
+      { name: 'Backlog', type: 'MAJOR', description: 'Planned work items', order: 0, isVisible: true },
+      { name: 'In Progress', type: 'MAJOR', description: 'Work in progress', order: 1, isVisible: true },
+      { name: 'Review', type: 'MINOR', description: 'Items under review or QA', order: 2, isVisible: true },
+      { name: 'Done', type: 'MAJOR', description: 'Shipped and completed items', order: 3, isVisible: true }
+    ]
+  }
+]);
+
+const quickProject = reactive({
+  name: '',
+  description: '',
+  type: '' as 'PROGRESSIVE' | 'PARALLEL',
+  startDate: '',
+  endDate: '',
+  templateKey: ''
+});
+
+const quickFormValid = ref(false);
 
 // Form validation
 const foundationValid = ref(false);
@@ -622,11 +833,31 @@ const canCreateProject = computed(() => {
          projectData.priority;
 });
 
+// Quick Project helpers
+const selectedQuickTemplate = computed(() =>
+  quickTemplates.value.find(t => t.key === quickProject.templateKey) || null
+);
+
+const canCreateQuickProject = computed(() => {
+  return !!user.value?.id &&
+         quickFormValid.value &&
+         !!quickProject.name &&
+         !!quickProject.type &&
+         !!quickProject.startDate &&
+         !!quickProject.endDate &&
+         !!quickProject.templateKey &&
+         walletConnected.value &&
+         meetsSizRequirement.value;
+});
+
 // Wallet + SIZ balance gating (using SSO wallet)
 const sizBalance = ref(0);
 const sizBalanceFormatted = ref(0);
 const balanceLoading = ref(false);
 const balanceError = ref('');
+
+// Minimum SIZ balance required for project creation (in whole SIZ units)
+const MIN_SIZ_FOR_PROJECT = 20;
 
 // Use SSO wallet address from NextAuth instead of manual wallet connection
 const ssoWalletAddress = computed(() => user.value?.walletAddress || '');
@@ -662,13 +893,76 @@ const loadWalletSIZBalance = async () => {
   }
 };
 
+// Quick Project creation: map quickProject fields into projectData, then reuse createProject
+const createQuickProject = async () => {
+  if (!user.value?.id) {
+    error.value = 'User not authenticated';
+    return;
+  }
+
+  if (!walletConnected.value) {
+    error.value = 'Your Sizland account does not have an associated SIZ wallet yet. Please open Sizland, configure or generate a wallet, then return to create a project.';
+    setTimeout(() => error.value = '', 5000);
+    return;
+  }
+
+  if (!meetsSizRequirement.value) {
+    error.value = `You need at least ${MIN_SIZ_FOR_PROJECT.toFixed(2)} SIZ in your Sizland wallet to create a project.`;
+    setTimeout(() => error.value = '', 5000);
+    return;
+  }
+
+  if (!quickFormValid.value) {
+    error.value = 'Please fill in all required Quick Project fields.';
+    setTimeout(() => error.value = '', 4000);
+    return;
+  }
+
+  const template = selectedQuickTemplate.value;
+  if (!template) {
+    error.value = 'Please select a board template for your Quick Project.';
+    setTimeout(() => error.value = '', 4000);
+    return;
+  }
+
+  // Map quickProject basics into full projectData
+  projectData.name = quickProject.name;
+  projectData.description = quickProject.description;
+  projectData.type = quickProject.type;
+  projectData.startDate = quickProject.startDate;
+  projectData.endDate = quickProject.endDate;
+  projectData.priority = 'MEDIUM';
+  projectData.isPublic = false;
+  projectData.allowGuests = false;
+  projectData.tags = '';
+  projectData.notes = '';
+
+  // Apply template stages as departments
+  projectData.departments.splice(0, projectData.departments.length, ...template.stages.map((stage, idx) => ({
+    ...stage,
+    order: idx,
+  })));
+
+  // Reset roles and ensure creator is PROJECT_OWNER
+  projectData.roles.splice(0, projectData.roles.length);
+  ensureOwnerRole();
+
+  await sendProjectToApi((projectId) => {
+    if (projectId) {
+      router.push(`/projects/${projectId}/workspace?panel=board`);
+    } else {
+      router.push('/projects');
+    }
+  });
+};
+
 watch(() => ssoWalletAddress.value, async (addr) => {
   if (addr) await loadWalletSIZBalance();
   else sizBalance.value = 0;
 }, { immediate: true });
 
 // Gate strictly on the displayed formattedAmount per product requirement
-const meetsSizRequirement = computed(() => sizBalanceFormatted.value >= 0);
+const meetsSizRequirement = computed(() => sizBalanceFormatted.value >= MIN_SIZ_FOR_PROJECT);
 const canSubmit = computed(() => !!canCreateProject.value && walletConnected.value && meetsSizRequirement.value);
 
 // Draft state removed
@@ -911,33 +1205,11 @@ const formatDate = (timestamp: string) => {
   }
 };
 
-// Project creation
-const createProject = async () => {
-  if (!user.value?.id) {
-    error.value = 'User not authenticated';
-    return;
-  }
-
-  if (!ssoWalletAddress.value) {
-    error.value = 'Wallet address is required. Please ensure you are authenticated with a wallet.';
-    setTimeout(() => error.value = '', 5000);
-    return;
-  }
-  
-  if (!meetsSizRequirement.value) {
-    error.value = 'You need at least 0.00 SIZ in your connected wallet to create a project.';
-    setTimeout(() => error.value = '', 5000);
-    return;
-  }
-  
-  // Backend precheck removed; rely on client-side gating
-
-  // Ensure owner role
-  ensureOwnerRole();
-  
+// Internal helper to send project to API and handle navigation
+const sendProjectToApi = async (onSuccess?: (projectId: string | null) => void) => {
   submitting.value = true;
   error.value = '';
-  
+
   try {
     // Prepare project data for API - FIXED to match backend requirements
     const projectPayload = {
@@ -947,10 +1219,10 @@ const createProject = async () => {
       priority: projectData.priority,
       startDate: projectData.startDate,
       endDate: projectData.endDate,
-      ownerId: user.value.id, // Required by backend
-      userId: user.value.id, // Required by backend
-      walletAddress: ssoWalletAddress.value, // From SSO authentication
-      departments: projectData.departments.map((dept, index) => ({
+      ownerId: user.value!.id,
+      userId: user.value!.id,
+      walletAddress: ssoWalletAddress.value,
+      departments: projectData.departments.map((dept) => ({
         name: dept.name,
         type: dept.type as 'MAJOR' | 'MINOR',
         description: dept.description,
@@ -960,8 +1232,7 @@ const createProject = async () => {
       roles: projectData.roles.map(role => ({
         userEmail: role.userEmail,
         role: role.role as 'PROJECT_OWNER' | 'PROJECT_MANAGER' | 'EMPLOYEE',
-        departmentId: role.role === 'PROJECT_OWNER' ? null : role.departmentId, // PROJECT_OWNER gets access to all departments
-        // Include payment configuration
+        departmentId: role.role === 'PROJECT_OWNER' ? null : role.departmentId,
         paymentType: role.paymentConfig?.paymentType,
         salaryAmount: role.paymentConfig?.salaryAmount,
         salaryFrequency: role.paymentConfig?.salaryFrequency,
@@ -970,8 +1241,7 @@ const createProject = async () => {
       })),
       tags: projectData.tags ? projectData.tags.split(',').map(tag => tag.trim()) : []
     };
-    
-    // Log key fields to ensure userId and wallet are present at send-time
+
     console.log('[CreateProject] Sending project payload meta:', {
       userId: projectPayload.userId,
       walletAddress: projectPayload.walletAddress,
@@ -979,7 +1249,6 @@ const createProject = async () => {
       departmentsCount: projectPayload.departments.length,
       rolesCount: projectPayload.roles.length
     });
-    // Optional: log first role and first department shapes for debugging
     if (projectPayload.roles[0]) {
       console.log('[CreateProject] first role:', {
         userEmail: projectPayload.roles[0].userEmail,
@@ -990,8 +1259,7 @@ const createProject = async () => {
     if (projectPayload.departments[0]) {
       console.log('[CreateProject] first department:', projectPayload.departments[0]);
     }
-    
-    // Fix departmentId type conversion - convert number to string
+
     const fixedPayload = {
       ...projectPayload,
       roles: projectPayload.roles.map(role => ({
@@ -999,34 +1267,61 @@ const createProject = async () => {
         departmentId: role.departmentId !== null ? String(role.departmentId) : null
       }))
     };
-    
+
     console.log('[CreateProject] fixedPayload meta:', {
       rolesCount: fixedPayload.roles.length,
       firstRoleDeptIdType: typeof fixedPayload.roles[0]?.departmentId
     });
-    const response = await projectApi.createProject(fixedPayload);
-    
+
+    const response = await projectApi.createProject(fixedPayload as any);
+
     if (response) {
       console.log('Project created:', response);
-      // Draft cleanup removed
-      
+      const createdProjectId = (response as any).id || (response as any).projectId || (response as any).project?.id || null;
+
       success.value = 'Project created successfully!';
-      
+
       setTimeout(() => {
-        router.push('/projects');
+        if (onSuccess) {
+          onSuccess(createdProjectId);
+        } else {
+          router.push('/projects');
+        }
       }, 2500);
     } else {
       throw new Error('Failed to create project');
     }
   } catch (err) {
     console.error('[CreateProject] Error creating project:', err);
-    // If we have server details, surface them
     const serverMsg = (err as any)?.response?.data?.error || (err as any)?.response?.data?.message;
     error.value = serverMsg || (err instanceof Error ? err.message : 'Failed to create project');
     setTimeout(() => error.value = '', 5000);
   } finally {
     submitting.value = false;
   }
+};
+
+// Project creation (advanced flow)
+const createProject = async () => {
+  if (!user.value?.id) {
+    error.value = 'User not authenticated';
+    return;
+  }
+
+  if (!ssoWalletAddress.value) {
+    error.value = 'Your Sizland account does not have an associated SIZ wallet yet. Please open Sizland, configure or generate a wallet, then return to create a project.';
+    setTimeout(() => error.value = '', 5000);
+    return;
+  }
+  
+  if (!meetsSizRequirement.value) {
+    error.value = `You need at least ${MIN_SIZ_FOR_PROJECT.toFixed(2)} SIZ in your Sizland wallet to create a project.`;
+    setTimeout(() => error.value = '', 5000);
+    return;
+  }
+  
+  ensureOwnerRole();
+  await sendProjectToApi();
 };
 
 // Auto-save draft when data changes

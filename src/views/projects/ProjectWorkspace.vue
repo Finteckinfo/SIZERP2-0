@@ -145,6 +145,24 @@
           <!-- Payment Notification Banner -->
           <PaymentNotificationBanner :project-id="projectId" />
           
+          <!-- Quick Setup / Board Settings Hint -->
+          <div v-if="route.query.panel === 'board'" class="mb-4">
+            <v-alert
+              type="info"
+              variant="tonal"
+              density="compact"
+              :border="'start'"
+              :color="'var(--erp-accent-green)'"
+            >
+              <template #prepend>
+                <v-icon size="18">mdi-view-column</v-icon>
+              </template>
+              <div class="text-caption">
+                You just created this project via Quick Setup. You are now in <strong>Board Settings</strong> — add or adjust your stages (departments) here before inviting your team.
+              </div>
+            </v-alert>
+          </div>
+          
           <!-- Loading State -->
           <div v-if="loading" class="loading-state">
             <v-progress-circular indeterminate :color="'var(--erp-accent-green)'" size="64"></v-progress-circular>
@@ -705,6 +723,7 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const submitting = ref(false);
 const loadInFlight = ref(false);
+const shouldOpenBoardSettingsOnLoad = ref(false);
 
 // Forms state
 const addDepartmentForm = ref();
@@ -857,6 +876,13 @@ const loadProjectData = async () => {
   } finally {
     loading.value = false;
     loadInFlight.value = false;
+    if (shouldOpenBoardSettingsOnLoad.value) {
+      // Open the Add Department panel as the "Board Settings" view
+      if (myRole.value === 'PROJECT_OWNER') {
+        openAddDepartmentPanel();
+      }
+      shouldOpenBoardSettingsOnLoad.value = false;
+    }
   }
 };
 
@@ -1224,6 +1250,10 @@ const createReport = () => {
 // Access gate handlers
 const handleAccessGranted = (userRole: UserRole) => {
   console.log('Access granted with role:', userRole.role);
+  // If navigated with ?panel=board, open Board Settings (add department) after data load
+  if (route.query.panel === 'board') {
+    shouldOpenBoardSettingsOnLoad.value = true;
+  }
   // Load project data once access is confirmed
   if (projectId) {
     loadProjectData();
