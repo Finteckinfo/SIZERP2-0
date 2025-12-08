@@ -90,7 +90,10 @@
         </div>
 
         <!-- Quick Project Setup -->
-        <div v-if="creationMode === 'quick'" class="step-content quick-project-section mb-6">
+        <div
+          v-if="creationMode === 'quick'"
+          class="step-content quick-project-section mb-6"
+        >
           <div class="step-header d-flex justify-space-between align-center mb-4">
             <div>
               <h2 class="text-h5 font-weight-medium mb-1">Quick Project Setup</h2>
@@ -235,8 +238,10 @@
           </v-form>
         </div>
 
-        <!-- Step Content -->
-        <div class="step-content-container">
+        <!-- Advanced Project Wizard -->
+        <div v-if="creationMode === 'advanced'">
+          <!-- Step Content -->
+          <div class="step-content-container">
           <!-- Foundation Step -->
           <div v-if="currentStep === 'foundation'" class="step-content">
             <div class="step-header">
@@ -558,92 +563,93 @@
               </v-col>
             </v-row>
           </div>
-        </div>
+          </div>
 
-        <!-- Navigation Footer -->
-        <div class="navigation-footer">
-          <div class="d-flex justify-space-between align-center">
-            <v-btn 
-              v-if="currentStep !== 'foundation'"
-              variant="text" 
-              @click="previousStep"
-              :disabled="saving"
-            >
-              <v-icon class="mr-2">mdi-arrow-left</v-icon>
-              Back
-            </v-btn>
-            <div v-else></div>
-            
-            <div class="d-flex gap-3">
+          <!-- Navigation Footer -->
+          <div class="navigation-footer">
+            <div class="d-flex justify-space-between align-center">
               <v-btn 
-                v-if="currentStep !== 'settings'"
+                v-if="currentStep !== 'foundation'"
                 variant="text" 
-                @click="nextStep"
-                :disabled="!canProceedToNext || saving"
+                @click="previousStep"
+                :disabled="saving"
               >
-                Skip
+                <v-icon class="mr-2">mdi-arrow-left</v-icon>
+                Back
               </v-btn>
+              <div v-else></div>
               
-              <v-btn 
-                v-if="currentStep !== 'settings'"
-                :color="'var(--erp-accent-green)'" 
-                @click="nextStep"
-                :disabled="!canProceedToNext || saving"
-                :loading="saving"
-              >
-                Save & Continue
-              </v-btn>
-              
-              <div v-if="currentStep === 'settings'" class="d-flex flex-column align-end" style="gap: 8px;">
-                <v-alert
-                  v-if="!meetsSizRequirement"
-                  type="info"
-                  variant="tonal"
-                  density="compact"
-                  class="mb-2"
-                >
-                  <template v-slot:prepend>
-                    <v-icon>mdi-information</v-icon>
-                  </template>
-                  <div class="d-flex flex-column" style="gap: 8px;">
-                    <div>
-                      Minimum {{ MIN_SIZ_FOR_PROJECT.toFixed(2) }} SIZ required to create a project.
-                      <span class="ml-1">Current: {{ sizBalance.toFixed(2) }} SIZ</span>
-                    </div>
-                    <div v-if="balanceError" class="text-error text-caption">{{ balanceError }}</div>
-                    <div class="d-flex align-center" style="gap: 8px;">
-                      <v-btn
-                        color="primary"
-                        variant="elevated"
-                        size="small"
-                        :href="'https://www.siz.land/wallet'"
-                        target="_blank"
-                      >
-                        <v-icon start>mdi-open-in-new</v-icon>
-                        Get SIZ on DEX
-                      </v-btn>
-                      <v-btn
-                        variant="outlined"
-                        size="small"
-                        :loading="balanceLoading"
-                        @click="loadWalletSIZBalance()"
-                      >
-                        <v-icon start>mdi-refresh</v-icon>
-                        Refresh Balance
-                      </v-btn>
-                    </div>
-                  </div>
-                </v-alert>
-
+              <div class="d-flex gap-3">
                 <v-btn 
-                  :color="'var(--erp-accent-green)'" 
-                  @click="createProject"
-                  :disabled="!canSubmit || saving"
-                  :loading="saving"
-                  size="large"
+                  v-if="currentStep !== 'settings'"
+                  variant="text" 
+                  @click="nextStep"
+                  :disabled="!canProceedToNext || saving"
                 >
-                  Create Project
+                  Skip
                 </v-btn>
+                
+                <v-btn 
+                  v-if="currentStep !== 'settings'"
+                  :color="'var(--erp-accent-green)'" 
+                  @click="nextStep"
+                  :disabled="!canProceedToNext || saving"
+                  :loading="saving"
+                >
+                  Save & Continue
+                </v-btn>
+                
+                <div v-if="currentStep === 'settings'" class="d-flex flex-column align-end" style="gap: 8px;">
+                  <v-alert
+                    v-if="!meetsSizRequirement"
+                    type="info"
+                    variant="tonal"
+                    density="compact"
+                    class="mb-2"
+                  >
+                    <template v-slot:prepend>
+                      <v-icon>mdi-information</v-icon>
+                    </template>
+                    <div class="d-flex flex-column" style="gap: 8px;">
+                      <div>
+                        Minimum {{ MIN_SIZ_FOR_PROJECT.toFixed(2) }} SIZ required to create a project.
+                        <span class="ml-1">Current: {{ sizBalance.toFixed(2) }} SIZ</span>
+                      </div>
+                      <div v-if="balanceError" class="text-error text-caption">{{ balanceError }}</div>
+                      <div class="d-flex align-center" style="gap: 8px;">
+                        <v-btn
+                          color="primary"
+                          variant="elevated"
+                          size="small"
+                          :href="'https://www.siz.land/wallet'"
+                          target="_blank"
+                        >
+                          <v-icon start>mdi-open-in-new</v-icon>
+                          Get SIZ on DEX
+                        </v-btn>
+                        <v-btn
+                          variant="outlined"
+                          size="small"
+                          :loading="balanceLoading"
+                          @click="loadWalletSIZBalance()"
+                        >
+                          <v-icon start>mdi-refresh</v-icon>
+                          Refresh Balance
+                        </v-btn>
+                      </div>
+                    </div>
+                  </v-alert>
+
+                  <v-btn 
+                    :color="'var(--erp-accent-green)'" 
+                    @click="createProject"
+                    :disabled="!canSubmit || saving"
+                    :loading="saving"
+                    size="large"
+                  >
+                    Create Project
+                  </v-btn>
+                </div>
               </div>
             </div>
           </div>
@@ -761,6 +767,7 @@ const quickProject = reactive({
   templateKey: ''
 });
 
+const quickForm = ref();
 const quickFormValid = ref(false);
 
 // Form validation
@@ -912,7 +919,10 @@ const createQuickProject = async () => {
     return;
   }
 
-  if (!quickFormValid.value) {
+  const validationResult = await quickForm.value?.validate();
+  const isQuickFormValid = validationResult?.valid ?? quickFormValid.value;
+
+  if (!isQuickFormValid) {
     error.value = 'Please fill in all required Quick Project fields.';
     setTimeout(() => error.value = '', 4000);
     return;
