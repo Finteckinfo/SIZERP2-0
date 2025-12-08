@@ -1,39 +1,25 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { LogoutIcon, SettingsIcon, UserIcon, SearchIcon } from 'vue-tabler-icons'
 import { useNextAuth } from '@/composables/useNextAuth'
-import ConnectWallet from '@/layouts/full/vertical-header/ConnectWallet.vue'
-
-// wallet modal state & active wallet
-import { isWalletModalOpen, openWalletModal } from '@/stores/walletStore'
-import { activeAccount } from '@/lib/walletManager'
 
 const swt1 = ref(true)
 const swt2 = ref(false)
 const { user } = useNextAuth()
+const ssoDomain = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land'
 
 // fallback if no name
-const firstName = computed(() => user.value?.firstName || 'Guest')
+const firstName = computed(() => user.value?.firstName || user.value?.name || 'Guest')
+const userEmail = computed(() => user.value?.email || 'Authenticated via Sizland SSO')
 
-// computed for connected wallet
-const walletAddress = computed(() => activeAccount.value?.address || 'Connect Wallet')
-
-// debug logs
-watch(activeAccount, val => console.log('ProfileDD sees active wallet change:', val))
-watch(isWalletModalOpen, val => console.log('ProfileDD sees wallet modal change:', val))
-
-function handleOpenWallet() {
-  console.log('Opening wallet modal from ProfileDD')
-  openWalletModal()
+function handleManageAccount() {
+  const redirectTarget = encodeURIComponent(window.location.href)
+  window.location.href = `${ssoDomain}/profile?redirect=${redirectTarget}`
 }
 
-// Handle NextAuth logout
 async function handleLogout() {
   try {
-    // Redirect to main domain for NextAuth logout
-    const ssoUrl = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'http://localhost:3000'
-    window.location.href = `${ssoUrl}/api/auth/signout?callbackUrl=${encodeURIComponent(ssoUrl)}`
-    console.log('User logged out successfully')
+    window.location.href = `${ssoDomain}/api/auth/signout?callbackUrl=${encodeURIComponent(ssoDomain)}`
   } catch (error) {
     console.error('Logout error:', error)
   }
@@ -70,17 +56,21 @@ async function handleLogout() {
       </div>
 
       <!-- Wallet Connect button -->
-      <div class="my-4">
-        <v-btn block class="rounded-lg" :style="{ background: 'var(--erp-accent-indigo)', color: '#ffffff' }" @click="handleOpenWallet()">
-          {{ walletAddress }}
+      <div class="my-4 rounded-lg pa-4" :style="{ background: 'var(--erp-surface)', color: 'var(--erp-text)' }">
+        <p class="text-subtitle-1 font-weight-medium mb-1">{{ userEmail }}</p>
+        <p class="text-body-2 text-medium-emphasis mb-3">
+          Account managed centrally via Sizland SSO.
+        </p>
+        <v-btn
+          block
+          class="rounded-lg"
+          color="primary"
+          variant="flat"
+          @click="handleManageAccount"
+        >
+          Manage Account
         </v-btn>
-
-        <!-- Ensure the ConnectWallet component is mounted so its v-dialog (bound to the store ref)
-         can appear when openWalletModal() toggles the store. Import ConnectWallet in your <script setup>. -->
-        <ConnectWallet />
       </div>
-
-      <v-divider></v-divider>
 
       <v-list class="mt-3">
         <v-list-item rounded="md" class="erp-hover" :style="{ background: 'transparent', color: 'var(--erp-text)' }">
