@@ -567,25 +567,41 @@ const handleDragEnd = () => {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  background: var(--erp-surface);
-  border: 1px solid var(--erp-border);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 18px;
   padding: 1.25rem 1.5rem;
   cursor: pointer;
   user-select: none;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.08);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.2s ease, background-color 0.2s ease;
+  backdrop-filter: blur(6px);
+}
+
+.kanban-task-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: linear-gradient(120deg, rgba(16, 185, 129, 0), rgba(59, 130, 246, 0.08));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
 }
 
 .kanban-task-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.12);
-  border-color: color-mix(in srgb, var(--erp-primary) 35%, var(--erp-border));
+  transform: translateY(-4px);
+  box-shadow: 0 25px 45px rgba(15, 23, 42, 0.15);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.kanban-task-card:hover::after {
+  opacity: 1;
 }
 
 .task-selected {
-  border-color: color-mix(in srgb, var(--erp-primary) 55%, var(--erp-border));
-  background: color-mix(in srgb, var(--erp-primary) 14%, var(--erp-surface));
+  border-color: rgba(59, 130, 246, 0.6);
+  background: color-mix(in srgb, var(--erp-primary) 16%, rgba(255, 255, 255, 0.95));
 }
 
 .task-draggable {
@@ -625,10 +641,10 @@ const handleDragEnd = () => {
 }
 
 .task-description {
-  font-size: 0.875rem;
-  color: color-mix(in srgb, var(--erp-text) 75%, transparent);
+  font-size: 0.9rem;
+  color: rgba(15, 23, 42, 0.65);
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.55;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -638,7 +654,7 @@ const handleDragEnd = () => {
 .task-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
 .meta-item {
@@ -711,12 +727,16 @@ const handleDragEnd = () => {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  opacity: 0;
-  transition: opacity 0.2s ease;
 }
 
-.kanban-task-card:hover .task-actions {
+.task-actions .v-btn {
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.kanban-task-card:hover .task-actions .v-btn {
   opacity: 1;
+  transform: translateY(-1px);
 }
 
 .drag-handle {

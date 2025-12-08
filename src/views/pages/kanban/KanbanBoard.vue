@@ -505,22 +505,40 @@ const { isDark } = useTheme();
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding: clamp(1.5rem, 2vw, 2.5rem) clamp(1.25rem, 2vw, 2.25rem) 3rem;
-  background: var(--erp-page-bg);
+  padding: clamp(1.5rem, 2vw, 2.5rem) clamp(1.25rem, 2vw, 2.5rem) 3rem;
+  background: linear-gradient(140deg, #f7f9ff 8%, #f1f7f4 55%, #eef5ff 92%);
+  position: relative;
+  overflow: hidden;
+}
+
+.kanban-board::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.08), transparent 45%),
+    radial-gradient(circle at 80% 0%, rgba(79, 70, 229, 0.08), transparent 35%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.kanban-board > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Hero Section */
 .kanban-hero {
   position: relative;
   width: 100%;
-  padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 3vw, 2.5rem);
+  padding: clamp(2rem, 4vw, 3.25rem) clamp(1.5rem, 3vw, 2.75rem);
   text-align: center;
-  border-radius: 20px;
-  border: 1px solid var(--erp-border);
-  background: var(--erp-surface);
-  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: linear-gradient(125deg, rgba(16, 185, 129, 0.12), rgba(14, 165, 233, 0.1));
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
   overflow: hidden;
   margin: 0;
+  backdrop-filter: blur(8px);
 }
 
 .kanban-hero-grid {
@@ -539,10 +557,17 @@ const { isDark } = useTheme();
 
 .hero-icon {
   margin-bottom: 1rem;
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: rgba(16, 185, 129, 0.12);
+  display: grid;
+  place-items: center;
+  margin-inline: auto;
 }
 
 .hero-icon .v-icon {
-  color: var(--erp-accent-green);
+  color: var(--erp-accent-green, #10b981);
 }
 
 .hero-title {
@@ -562,32 +587,25 @@ const { isDark } = useTheme();
 }
 
 /* Action Bar */
-.kanban-actions {
-  flex-shrink: 0;
-  background: var(--erp-surface);
-  border: 1px solid var(--erp-border);
-  border-radius: 16px;
-  padding: 1.5rem clamp(1.5rem, 2.5vw, 2.5rem);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-  width: 100%;
-  margin: 0;
-}
-
-.actions-content {
+.kanban-toolbar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  width: 100%;
+  gap: 1.25rem;
   flex-wrap: wrap;
-  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 20px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(12px);
 }
 
-.actions-left {
+.toolbar-left {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  flex: 1;
-  min-width: 240px;
+  gap: 1.25rem;
+  flex-wrap: wrap;
 }
 
 .board-stats {
@@ -597,11 +615,16 @@ const { isDark } = useTheme();
   flex-wrap: wrap;
 }
 
-.actions-right {
+.toolbar-controls {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  flex-shrink: 0;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
@@ -609,6 +632,16 @@ const { isDark } = useTheme();
   flex: 1;
   position: relative;
   width: 100%;
+  padding-top: 0.5rem;
+}
+
+.kanban-columns::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 100%;
+  background: radial-gradient(circle at top, rgba(16, 185, 129, 0.1), transparent 60%);
+  pointer-events: none;
 }
 
 .columns-container {
@@ -618,38 +651,55 @@ const { isDark } = useTheme();
   width: 100%;
   box-sizing: border-box;
   overflow-x: auto;
-  padding: 0 clamp(0.5rem, 2vw, 1.5rem) 1.5rem;
+  padding: 1rem clamp(0.5rem, 2vw, 1.5rem) 1.75rem;
   scroll-snap-type: x proximity;
 }
 
-.kanban-column {
-  flex: 1;
+.columns-container::-webkit-scrollbar {
+  height: 12px;
 }
 
-.loading-container {
-  padding: 2rem;
+.columns-container::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.loading-container :deep(.v-skeleton-loader) {
+.columns-container::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.15);
+  border-radius: 999px;
+}
+
+.kanban-insights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  padding: 1.2rem;
   border-radius: 18px;
-  border: 1px solid var(--erp-border);
-  background: color-mix(in srgb, var(--erp-surface) 85%, #f8fafc);
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.14);
-  padding: 1.25rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
 }
 
-.loading-container :deep(.v-skeleton-loader__bone) {
-  background: color-mix(in srgb, var(--erp-surface) 70%, #ffffff);
+.stat-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(15, 23, 42, 0.65);
 }
 
-:global(.dark-theme) .loading-container :deep(.v-skeleton-loader) {
-  background: rgba(15, 23, 42, 0.75);
-  border-color: rgba(148, 163, 184, 0.25);
-  box-shadow: 0 16px 36px rgba(2, 6, 23, 0.65);
+.stat-value {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 0.35rem;
 }
 
-:global(.dark-theme) .loading-container :deep(.v-skeleton-loader__bone) {
-  background: rgba(248, 250, 252, 0.08);
+.stat-hint {
+  margin: 0.35rem 0 0;
+  color: rgba(15, 23, 42, 0.55);
+  font-size: 0.9rem;
 }
 
 .empty-state {
@@ -670,6 +720,7 @@ const { isDark } = useTheme();
   bottom: 2rem;
   right: 2rem;
   z-index: 10;
+  backdrop-filter: blur(8px);
 }
 
 /* Responsive Design */

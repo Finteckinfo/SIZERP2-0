@@ -394,30 +394,43 @@ const handleDrop = (event: DragEvent) => {
 
 <style scoped>
 .kanban-column {
-  width: 360px;
-  min-width: 360px;
+  width: 340px;
+  min-width: 320px;
   display: flex;
   flex-direction: column;
-  background: var(--erp-surface);
-  border: 1px solid var(--erp-border);
-  border-radius: 18px;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 22px;
+  box-shadow: 0 25px 50px rgba(15, 23, 42, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
   position: relative;
   flex-shrink: 0;
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.kanban-column::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.06), transparent 55%);
+  opacity: 0.9;
+  pointer-events: none;
 }
 
 .kanban-column:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 35px 65px rgba(15, 23, 42, 0.16);
 }
 
 .column-header {
   flex-shrink: 0;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--erp-border);
-  border-radius: 18px 18px 0 0;
-  background: var(--erp-surface);
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(244, 250, 246, 0.95));
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .header-content {
@@ -465,21 +478,21 @@ const handleDrop = (event: DragEvent) => {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 1.25rem 1.5rem 1.5rem;
-  background: var(--erp-surface);
-  border-radius: 0 0 18px 18px;
+  padding: 1.25rem 1.5rem 1.75rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(249, 251, 255, 0.85));
+  border-radius: 0 0 22px 22px;
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .column-content.drag-over {
-  background: color-mix(in srgb, var(--erp-primary) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--erp-primary) 35%, transparent);
+  background: color-mix(in srgb, var(--erp-primary) 18%, rgba(255, 255, 255, 0.95));
+  border: 1px dashed color-mix(in srgb, var(--erp-primary) 50%, transparent);
 }
 
 .tasks-container {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.85rem;
 }
 
 .empty-drop-zone {
@@ -487,26 +500,27 @@ const handleDrop = (event: DragEvent) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 120px;
-  border: 1px dashed var(--erp-border);
-  border-radius: 12px;
+  min-height: 140px;
+  border: 2px dashed rgba(203, 213, 225, 0.9);
+  border-radius: 16px;
   text-align: center;
-  background: var(--erp-page-bg);
+  background: rgba(248, 250, 252, 0.8);
   color: var(--erp-text);
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
 }
 
 .empty-drop-zone.drag-over {
-  border-color: color-mix(in srgb, var(--erp-primary) 40%, transparent);
-  background: color-mix(in srgb, var(--erp-primary) 10%, transparent);
+  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(236, 253, 245, 0.85);
+  transform: translateY(-2px);
 }
 
 .collapsed-content {
   padding: 1rem 1.25rem;
   text-align: center;
-  background: var(--erp-surface);
-  border-top: 1px solid var(--erp-border);
-  border-radius: 0 0 18px 18px;
+  background: rgba(255, 255, 255, 0.92);
+  border-top: 1px solid rgba(226, 232, 240, 0.7);
+  border-radius: 0 0 22px 22px;
 }
 
 .column-stats {
@@ -539,14 +553,14 @@ const handleDrop = (event: DragEvent) => {
 }
 
 .column-drag-over {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 28px rgba(15, 23, 42, 0.16);
+  transform: translateY(-4px);
+  box-shadow: 0 28px 50px rgba(15, 23, 42, 0.18);
 }
 
 @media (max-width: 1024px) {
   .kanban-column {
-    width: 320px;
-    min-width: 320px;
+    width: 300px;
+    min-width: 300px;
   }
 }
 
@@ -554,6 +568,7 @@ const handleDrop = (event: DragEvent) => {
   .kanban-column {
     width: 100%;
     min-width: 100%;
+    border-radius: 20px;
   }
 
   .column-header,
@@ -585,10 +600,22 @@ const handleDrop = (event: DragEvent) => {
 }
 
 ::global(.dark-theme) .kanban-column {
-  box-shadow: 0 16px 32px rgba(8, 15, 33, 0.35);
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(51, 65, 85, 0.8);
+  box-shadow: 0 25px 45px rgba(2, 6, 23, 0.8);
+}
+
+::global(.dark-theme) .column-header {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
+  border-bottom-color: rgba(51, 65, 85, 0.7);
+}
+
+::global(.dark-theme) .column-content {
+  background: rgba(15, 23, 42, 0.85);
 }
 
 ::global(.dark-theme) .empty-drop-zone {
-  background: color-mix(in srgb, var(--erp-page-bg) 85%, transparent);
+  background: rgba(30, 41, 59, 0.65);
+  border-color: rgba(59, 130, 246, 0.35);
 }
 </style>
