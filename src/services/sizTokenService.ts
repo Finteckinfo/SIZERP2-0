@@ -83,7 +83,7 @@ export async function fetchAccountInfo(
     // Debug logging
     if (sizAsset) {
       const divisor = Math.pow(10, decimals);
-      console.log('✅ [SIZ Token] Found SIZ token in wallet:', {
+      console.log('[SIZ Token] Found SIZ token in wallet:', {
         assetId: sizAssetId,
         amount: Number(sizAsset.amount),
         decimals,
@@ -92,7 +92,7 @@ export async function fetchAccountInfo(
         networkId
       });
     } else {
-      console.log('❌ [SIZ Token] SIZ token not found in wallet:', {
+      console.log('[SIZ Token] SIZ token not found in wallet:', {
         assetId: sizAssetId,
         networkId,
         totalAssets: accountAssets.length

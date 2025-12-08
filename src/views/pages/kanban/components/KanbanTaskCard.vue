@@ -2,7 +2,7 @@
   <div 
     class="kanban-task-card"
     :class="cardClasses"
-    :draggable="draggable"
+    :draggable="draggable && !isInlineEditing"
     :aria-label="`Task: ${task.title}. Priority: ${task.priority}. Status: ${task.status}`"
     :tabindex="0"
     role="button"
@@ -22,24 +22,104 @@
       />
     </div>
 
-    <!-- Priority Badge -->
-    <div class="task-priority">
-      <v-chip
-        :color="getPriorityColor(task.priority)"
+    <!-- Priority + Title Row -->
+    <div class="task-title-row">
+      <div class="task-title-stack">
+        <div class="task-priority">
+          <v-chip
+            :color="getPriorityColor(task.priority)"
+            size="x-small"
+            variant="flat"
+          >
+            {{ task.priority }}
+          </v-chip>
+        </div>
+
+        <template v-if="!isInlineEditing">
+          <h4 class="task-title">{{ task.title }}</h4>
+        </template>
+        <template v-else>
+          <v-text-field
+            v-model="inlineForm.title"
+            label="Task title"
+            variant="outlined"
+            density="compact"
+            hide-details
+            :disabled="isSavingInlineEdit"
+            maxlength="180"
+          />
+        </template>
+      </div>
+
+      <v-btn
+        v-if="hasInlineEditPermission"
+        icon
         size="x-small"
-        variant="flat"
+        variant="text"
+        :aria-label="isInlineEditing ? 'Close inline editor' : 'Edit task inline'"
+        @click.stop="isInlineEditing ? cancelInlineEdit() : startInlineEdit()"
       >
-        {{ task.priority }}
-      </v-chip>
+        <v-icon size="16">
+          {{ isInlineEditing ? 'mdi-close' : 'mdi-pencil' }}
+        </v-icon>
+      </v-btn>
     </div>
 
-    <!-- Task Title -->
-    <h4 class="task-title">{{ task.title }}</h4>
-
     <!-- Task Description -->
-    <p v-if="task.description" class="task-description">
+    <p v-if="task.description && !isInlineEditing" class="task-description">
       {{ task.description }}
     </p>
+
+    <!-- Inline Editing Controls -->
+    <div v-if="isInlineEditing" class="inline-edit-grid">
+      <div class="inline-edit-row">
+        <v-text-field
+          v-model="inlineForm.dueDate"
+          label="Due date"
+          type="date"
+          variant="outlined"
+          density="compact"
+          hide-details
+          :disabled="isSavingInlineEdit"
+        />
+        <div class="inline-progress-control">
+          <label class="inline-progress-label">Progress</label>
+          <v-slider
+            v-model="inlineForm.progress"
+            :min="0"
+            :max="100"
+            :step="5"
+            color="primary"
+            hide-details
+            thumb-label
+            :disabled="isSavingInlineEdit"
+          />
+        </div>
+      </div>
+
+      <p v-if="inlineError" class="inline-edit-error">
+        {{ inlineError }}
+      </p>
+
+      <div class="inline-edit-actions">
+        <v-btn
+          variant="text"
+          size="small"
+          @click.stop="cancelInlineEdit"
+          :disabled="isSavingInlineEdit"
+        >
+          Cancel
+        </v-btn>
+        <v-btn
+          color="primary"
+          size="small"
+          :loading="isSavingInlineEdit"
+          @click.stop="saveInlineEdit"
+        >
+          Save
+        </v-btn>
+      </div>
+    </div>
 
     <!-- Task Meta Information -->
     <div class="task-meta">
@@ -216,8 +296,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { KanbanTask } from '../types/kanban';
+import { computed, reactive, ref, watch } from 'vue';
+import type { KanbanTask, KanbanTaskInlineUpdates } from '../types/kanban';
 
 interface Props {
   task: KanbanTask;
@@ -231,9 +311,11 @@ interface Props {
   };
   draggable?: boolean;
   showSelection?: boolean;
+  compact?: boolean;
+  inlineEditHandler?: (payload: { taskId: string; updates: KanbanTaskInlineUpdates }) => Promise<void>;
 }
 
-interface Emits {
+type Emits = {
   (e: 'click'): void;
   (e: 'select'): void;
   (e: 'edit'): void;
@@ -241,12 +323,15 @@ interface Emits {
   (e: 'reassign'): void;
   (e: 'delete'): void;
   (e: 'drag-start', taskId: string): void;
-  (e: 'drag-end'): void;
-}
+  (e: 'drag-end', taskId: string): void;
+  (e: 'inline-edit', payload: { taskId: string; updates: KanbanTaskInlineUpdates }): void;
+};
 
 const props = withDefaults(defineProps<Props>(), {
   draggable: false,
-  showSelection: false
+  showSelection: false,
+  compact: false,
+  inlineEditHandler: undefined,
 });
 
 const emit = defineEmits<Emits>();
@@ -256,7 +341,8 @@ const cardClasses = computed(() => ({
   'task-selected': props.selected,
   'task-draggable': props.draggable,
   'task-overdue': isOverdue.value,
-  'task-due-soon': isDueSoon.value
+  'task-due-soon': isDueSoon.value,
+  'task-compact': props.compact
 }));
 
 const isOverdue = computed(() => {
@@ -289,7 +375,81 @@ const checklistProgress = computed(() => {
   return Math.round(((props.task.checklistCompleted || 0) / props.task.checklistCount) * 100);
 });
 
-// Methods
+// Inline editing state
+const isInlineEditing = ref(false);
+const isSavingInlineEdit = ref(false);
+const inlineForm = reactive({
+  title: props.task.title,
+  progress: props.task.progress ?? 0,
+  dueDate: props.task.dueDate || ''
+});
+const inlineError = ref<string | null>(null);
+const hasInlineEditPermission = computed(
+  () => props.userPermissions.canEditAllTasks || props.task.canEdit || false
+);
+
+watch(
+  () => props.task,
+  (newTask) => {
+    if (!isInlineEditing.value) {
+      inlineForm.title = newTask.title;
+      inlineForm.progress = newTask.progress ?? 0;
+      inlineForm.dueDate = newTask.dueDate || '';
+    }
+  },
+  { deep: true }
+);
+
+const startInlineEdit = () => {
+  inlineForm.title = props.task.title;
+  inlineForm.progress = props.task.progress ?? 0;
+  inlineForm.dueDate = props.task.dueDate || '';
+  inlineError.value = null;
+  isInlineEditing.value = true;
+};
+
+const cancelInlineEdit = () => {
+  inlineForm.title = props.task.title;
+  inlineForm.progress = props.task.progress ?? 0;
+  inlineForm.dueDate = props.task.dueDate || '';
+  inlineError.value = null;
+  isInlineEditing.value = false;
+};
+
+const saveInlineEdit = async () => {
+  inlineError.value = null;
+
+  const updates: KanbanTaskInlineUpdates = {
+    title: inlineForm.title?.trim() || props.task.title,
+    progress: inlineForm.progress,
+    dueDate: inlineForm.dueDate || undefined,
+  };
+
+  if (
+    updates.title === props.task.title &&
+    updates.progress === props.task.progress &&
+    updates.dueDate === props.task.dueDate
+  ) {
+    isInlineEditing.value = false;
+    return;
+  }
+
+  try {
+    isSavingInlineEdit.value = true;
+    if (props.inlineEditHandler) {
+      await props.inlineEditHandler({ taskId: props.task.id, updates });
+    } else {
+      emit('inline-edit', { taskId: props.task.id, updates });
+    }
+    isInlineEditing.value = false;
+  } catch (error: any) {
+    inlineError.value = error?.message || 'Failed to save updates';
+    console.error('[KanbanTaskCard] Inline edit failed:', error);
+  } finally {
+    isSavingInlineEdit.value = false;
+  }
+};
+
 const getPriorityColor = (priority: string) => {
   switch (priority) {
     case 'CRITICAL': return 'error';
@@ -397,7 +557,7 @@ const handleDragEnd = () => {
     taskTitle: props.task.title,
     taskStatus: props.task.status
   });
-  emit('drag-end');
+  emit('drag-end', props.task.id);
 };
 </script>
 

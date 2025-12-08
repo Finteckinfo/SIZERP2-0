@@ -48,6 +48,10 @@ export interface KanbanTask {
   canApprove?: boolean; // Only project owner can approve tasks (move from COMPLETED to APPROVED)
 }
 
+export type KanbanTaskInlineUpdates = Partial<
+  Pick<KanbanTask, 'title' | 'progress' | 'dueDate'>
+>;
+
 export interface KanbanColumn {
   id: string;
   title: string;

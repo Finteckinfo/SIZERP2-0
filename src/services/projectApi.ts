@@ -236,6 +236,26 @@ export interface CreateTaskData {
   paymentAmount?: number;
 }
 
+export type TaskUpdatePayload = Partial<
+  Pick<
+    Task,
+    | 'title'
+    | 'description'
+    | 'status'
+    | 'priority'
+    | 'assignedRoleId'
+    | 'dueDate'
+    | 'progress'
+    | 'estimatedHours'
+    | 'actualHours'
+    | 'departmentId'
+    | 'startDate'
+    | 'endDate'
+    | 'paymentAmount'
+    | 'paymentStatus'
+  >
+>;
+
 // Project Management APIs
 export const projectApi = {
   // Get user's projects (filtered by backend)
@@ -610,7 +630,7 @@ export const taskApi = {
   },
 
   // Update task
-  updateTask: async (taskId: string, taskData: Partial<Task>) => {
+  updateTask: async (taskId: string, taskData: TaskUpdatePayload) => {
     const response = await api.put(`/tasks/${taskId}`, taskData);
     return response.data;
   },

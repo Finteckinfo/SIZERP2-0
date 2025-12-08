@@ -3,74 +3,133 @@
     <!-- Skip to content link for accessibility -->
     <a href="#kanban-columns" class="skip-to-content">Skip to Kanban Board</a>
     
-    <!-- Hero Section with Retro Grid -->
-    <div class="kanban-hero">
+    <!-- Hero Section with Gradient Status Pills -->
+    <section class="kanban-hero">
       <RetroGrid v-if="!isDark" class="kanban-hero-grid" />
       <div class="hero-content">
-        <div class="hero-icon">
-          <v-icon size="48">mdi-view-column</v-icon>
-        </div>
-        <h1 class="hero-title">Kanban Board</h1>
-        <p class="hero-subtitle">Visualize your workflow and manage tasks efficiently</p>
-      </div>
-    </div>
-    
-    <!-- Action Bar -->
-    <div class="kanban-actions">
-      <div class="actions-content">
-        <div class="actions-left">
-          <div class="board-stats" v-if="!loading">
-            <v-chip size="small" variant="outlined" class="mr-2">
-              <v-icon start size="16">mdi-format-list-bulleted</v-icon>
-              {{ totalTasks }} Tasks
-            </v-chip>
-            <v-chip 
-              v-if="hasSelectedTasks" 
-              size="small" 
-              color="primary" 
-              variant="flat"
-              class="mr-2"
-            >
-              <v-icon start size="16">mdi-check-circle</v-icon>
-              {{ selectedTasks.length }} Selected
-            </v-chip>
+        <div class="hero-headline">
+          <div class="hero-icon">
+            <v-icon size="48">mdi-view-column</v-icon>
+          </div>
+          <div>
+            <p class="hero-kicker">Operational Nerve Center</p>
+            <h1 class="hero-title">Cross-Project Kanban</h1>
+            <p class="hero-subtitle">
+              Monitor every payment-backed task from drafting to approval with drag-and-drop precision.
+            </p>
           </div>
         </div>
-        
-        <div class="actions-right">
-          <v-btn
-            v-if="hasSelectedTasks"
-            variant="outlined"
-            size="small"
-            class="mr-2"
-            @click="clearSelection"
-          >
-            <v-icon start>mdi-close</v-icon>
-            Clear Selection
-          </v-btn>
-          
-          <v-btn
-            v-if="hasSelectedTasks"
-            color="primary"
-            size="small"
-            class="mr-2"
-            @click="showBulkActions = true"
-          >
-            <v-icon start>mdi-format-list-checks</v-icon>
-            Bulk Actions
-          </v-btn>
-          
-          <v-btn
-            v-if="userPermissions.canCreateTasks"
-            color="primary"
-            @click="showCreateTask = true"
-          >
-            <v-icon start>mdi-plus</v-icon>
-            New Task
-          </v-btn>
+        <div class="hero-pills">
+          <div class="hero-pill">
+            <span class="pill-label">Work in progress</span>
+            <strong>{{ columnTotals.inProgress }}</strong>
+          </div>
+          <div class="hero-pill">
+            <span class="pill-label">Awaiting approval</span>
+            <strong>{{ reviewQueueCount }}</strong>
+          </div>
+          <div class="hero-pill">
+            <span class="pill-label">Automation coverage</span>
+            <strong>{{ automationCoverage }}%</strong>
+          </div>
         </div>
       </div>
-    </div> 
+    </section>
+
+    <!-- Insights Grid -->
+    <section class="kanban-insights" v-if="!loading">
+      <div class="stat-card">
+        <div class="stat-label">Total Tasks</div>
+        <div class="stat-value">{{ totalTasks }}</div>
+        <p class="stat-hint">Across {{ projectSummaryCount }} active projects.</p>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pending Escrow Release</div>
+        <div class="stat-value">{{ awaitingPaymentCount }}</div>
+        <p class="stat-hint">Tasks ready for automated payout.</p>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Average Progress</div>
+        <div class="stat-value">{{ averageProgress }}%</div>
+        <p class="stat-hint">Across tasks with active tracking.</p>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Flow Stability</div>
+        <div class="stat-value">{{ flowStability }}%</div>
+        <p class="stat-hint">Healthy pipelines stay above 65%.</p>
+      </div>
+    </section>
+
+    <!-- Action & View Controls -->
+    <div class="kanban-toolbar">
+      <div class="toolbar-left">
+        <div class="board-stats" v-if="!loading">
+          <v-chip size="small" variant="outlined" class="mr-2">
+            <v-icon start size="16">mdi-format-list-bulleted</v-icon>
+            {{ totalTasks }} Tasks
+          </v-chip>
+          <v-chip
+            v-if="hasSelectedTasks"
+            size="small"
+            color="primary"
+            variant="flat"
+            class="mr-2"
+          >
+            <v-icon start size="16">mdi-check-circle</v-icon>
+            {{ selectedTasks.length }} Selected
+          </v-chip>
+        </div>
+        <div class="toolbar-controls">
+          <v-switch
+            v-model="compactView"
+            hide-details
+            inset
+            color="primary"
+            label="Compact cards"
+            density="comfortable"
+          />
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <v-btn
+          v-if="hasSelectedTasks"
+          variant="outlined"
+          size="small"
+          class="mr-2"
+          @click="clearSelection"
+        >
+          <v-icon start>mdi-close</v-icon>
+          Clear
+        </v-btn>
+        <v-btn
+          v-if="hasSelectedTasks"
+          color="primary"
+          size="small"
+          class="mr-2"
+          @click="showBulkActions = true"
+        >
+          <v-icon start>mdi-format-list-checks</v-icon>
+          Bulk Actions
+        </v-btn>
+        <v-btn
+          variant="outlined"
+          size="small"
+          class="mr-2"
+          @click="loadKanbanData(true)"
+        >
+          <v-icon start>mdi-refresh</v-icon>
+          Refresh
+        </v-btn>
+        <v-btn
+          v-if="userPermissions.canCreateTasks"
+          color="primary"
+          @click="showCreateTask = true"
+        >
+          <v-icon start>mdi-plus</v-icon>
+          New Task
+        </v-btn>
+      </div>
+    </div>
 
     <!-- Filters -->
     <KanbanFilters
@@ -109,7 +168,12 @@
     </v-alert>
 
     <!-- Kanban Columns -->
-    <div v-if="!loading && !error" id="kanban-columns" class="kanban-columns">
+    <div
+      v-if="!loading && !error"
+      id="kanban-columns"
+      class="kanban-columns"
+      :class="{ 'columns-compact': compactView }"
+    >
       <div 
         class="columns-container"
         role="region"
@@ -123,6 +187,9 @@
           :tasks="(columns as any)[column.status] || []"
           :selected-tasks="selectedTasks"
           :user-permissions="userPermissions"
+           :compact-view="compactView"
+          :initial-collapsed="column.collapsed ?? false"
+          :inline-edit-handler="handleInlineEdit"
           @task-click="handleTaskClick"
           @task-select="toggleTaskSelection"
           @task-move="handleTaskMove"
@@ -198,11 +265,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useKanban } from './composables/useKanban';
 import { DEFAULT_COLUMNS } from './types/kanban';
-import type { KanbanTask, TaskPosition } from './types/kanban';
+import type { KanbanTask, KanbanTaskInlineUpdates, TaskPosition } from './types/kanban';
 
 // Import kanban styles
 import './styles/kanban.css';
@@ -216,6 +283,8 @@ import BulkActionsModal from './components/BulkActionsModal.vue';
 import { RetroGrid } from '@/components/ui/retro-grid';
 import KanbanAnalytics from './components/KanbanAnalytics.vue';
 import { useTheme } from '@/composables/useTheme';
+import { taskApi } from '@/services/projectApi';
+import type { TaskUpdatePayload } from '@/services/projectApi';
 
 // Kanban composable (no project ID needed for cross-project view)
 const {
@@ -240,9 +309,92 @@ const showCreateTask = ref(false);
 const showBulkActions = ref(false);
 const showAnalytics = ref(false);
 const selectedTask = ref<KanbanTask | null>(null);
+const collapsedColumns = ref<Record<string, boolean>>({});
+const COLLAPSE_STORAGE_KEY = 'sizland_kanban_collapsed_columns';
+
+const loadCollapsedPreferences = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = localStorage.getItem(COLLAPSE_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        collapsedColumns.value = parsed;
+      }
+    }
+  } catch (error) {
+    console.warn('[KanbanBoard] Failed to parse collapsed column preferences:', error);
+  }
+};
+
+const persistCollapsedPreferences = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(COLLAPSE_STORAGE_KEY, JSON.stringify(collapsedColumns.value));
+  } catch (error) {
+    console.warn('[KanbanBoard] Failed to persist collapsed column preferences:', error);
+  }
+};
 
 // Column configurations
-const columnConfigs = computed(() => DEFAULT_COLUMNS);
+const columnConfigs = computed(() =>
+  DEFAULT_COLUMNS.map((column) => ({
+    ...column,
+    collapsed: collapsedColumns.value[column.status] ?? false,
+  }))
+);
+const compactView = ref(false);
+
+const flattenTasks = computed(() => {
+  const list: KanbanTask[] = [];
+  const map = columns.value || {};
+  Object.keys(map).forEach((key) => {
+    const colTasks = map[key as keyof typeof map] || [];
+    list.push(...colTasks);
+  });
+  return list;
+});
+
+const columnTotals = computed(() => {
+  const map = columns.value || {};
+  return {
+    pending: map.PENDING?.length || 0,
+    inProgress: map.IN_PROGRESS?.length || 0,
+    completed: map.COMPLETED?.length || 0,
+    approved: map.APPROVED?.length || 0,
+  };
+});
+
+const reviewQueueCount = computed(() => columnTotals.value.completed);
+
+const automationCoverage = computed(() => {
+  if (!totalTasks.value) return 0;
+  return Math.min(100, Math.round((columnTotals.value.approved / totalTasks.value) * 100));
+});
+
+const projectSummaryCount = computed(() => {
+  const ids = new Set(flattenTasks.value.map((task) => task.projectId));
+  return ids.size;
+});
+
+const awaitingPaymentCount = computed(() =>
+  flattenTasks.value.filter((task) => ["ALLOCATED", "PROCESSING"].includes(task.paymentStatus || "")).length
+);
+
+const averageProgress = computed(() => {
+  const progressValues = flattenTasks.value
+    .map((task) => task.progress)
+    .filter((value): value is number => typeof value === "number");
+  if (!progressValues.length) return 0;
+  return Math.round(progressValues.reduce((sum, value) => sum + value, 0) / progressValues.length);
+});
+
+const flowStability = computed(() => {
+  if (!totalTasks.value) return 0;
+  const stalled = columnTotals.value.pending;
+  const ratio = 1 - stalled / totalTasks.value;
+  return Math.max(0, Math.min(100, Math.round(ratio * 100)));
+});
 
 // Methods
 const handleTaskClick = (task: KanbanTask) => {
@@ -281,7 +433,7 @@ const handleAddTask = (columnStatus: string) => {
   showCreateTask.value = true;
 };
 
-const handleColumnAction = (action: string, columnStatus: string) => {
+const handleColumnAction = (action: string, columnStatus: string, payload?: any) => {
   switch (action) {
     case 'select-all':
       // Implementation handled in useKanban
@@ -290,7 +442,10 @@ const handleColumnAction = (action: string, columnStatus: string) => {
       // Future feature
       break;
     case 'collapse':
-      // Future feature
+      collapsedColumns.value = {
+        ...collapsedColumns.value,
+        [columnStatus]: payload?.collapsed ?? false,
+      };
       break;
   }
 };
@@ -319,6 +474,27 @@ const handleBulkActionsCompleted = () => {
   clearSelection();
   showBulkActions.value = false;
 };
+
+const handleInlineEdit = async ({ taskId, updates }: { taskId: string; updates: KanbanTaskInlineUpdates }) => {
+  try {
+    const payload: TaskUpdatePayload = {
+      title: updates.title,
+      progress: updates.progress,
+      dueDate: updates.dueDate,
+    };
+    await taskApi.updateTask(taskId, payload);
+    // Optimistically reload to reflect updates
+    loadKanbanData(true);
+  } catch (error: any) {
+    console.error('[KanbanBoard] Inline edit update failed:', error);
+    throw new Error(error?.message || 'Failed to update task');
+  }
+};
+
+onMounted(() => {
+  loadCollapsedPreferences();
+});
+watch(collapsedColumns, persistCollapsedPreferences, { deep: true });
 
 const { isDark } = useTheme();
 </script>

@@ -77,7 +77,10 @@
     <div 
       v-show="!collapsed"
       class="column-content"
-      :class="{ 'drag-over': isDragOver }"
+      :class="[
+        { 'column-content-compact': compactView },
+        { 'drag-over': isDragOver }
+      ]"
       role="list"
       :aria-label="`${column.title} tasks`"
       @dragover.prevent="handleDragOver"
@@ -93,6 +96,8 @@
           :index="index"
           :selected="selectedTasks.includes(task.id)"
           :user-permissions="userPermissions"
+          :compact="compactView"
+          :inline-edit-handler="props.inlineEditHandler"
           :draggable="userPermissions.canEditAllTasks || task.canEdit"
           role="listitem"
           @click="$emit('task-click', task)"
@@ -170,9 +175,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import type { ColumnConfig, KanbanTask, TaskPosition } from '../types/kanban';
+import { ref, computed, onMounted, watch } from 'vue';
+import type { ColumnConfig, KanbanTask, KanbanTaskInlineUpdates, TaskPosition } from '../types/kanban';
 import KanbanTaskCard from './KanbanTaskCard.vue';
+
+interface InlineEditPayload {
+  taskId: string;
+  updates: KanbanTaskInlineUpdates;
+}
 
 interface Props {
   column: ColumnConfig;
@@ -184,6 +194,9 @@ interface Props {
     canDeleteTasks: boolean;
     canAssignTasks: boolean;
   };
+  compactView?: boolean;
+  initialCollapsed?: boolean;
+  inlineEditHandler?: (payload: InlineEditPayload) => Promise<void>;
 }
 
 interface Emits {
@@ -191,10 +204,13 @@ interface Emits {
   (e: 'task-select', taskId: string): void;
   (e: 'task-move', taskId: string, position: TaskPosition): void;
   (e: 'add-task', status: string): void;
-  (e: 'column-action', action: string, status: string): void;
+  (e: 'column-action', action: string, status: string, payload?: any): void;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  compactView: false,
+  initialCollapsed: false,
+});
 const emit = defineEmits<Emits>();
 
 // Local state
@@ -210,6 +226,17 @@ const columnClasses = computed(() => ({
   'column-limit-reached': props.column.limit && props.tasks.length >= props.column.limit
 }));
 
+onMounted(() => {
+  collapsed.value = props.initialCollapsed ?? false;
+});
+
+watch(
+  () => props.initialCollapsed,
+  (newVal) => {
+    collapsed.value = newVal ?? false;
+  }
+);
+
 // Methods
 const getColumnIcon = (status: string) => {
   const iconMap: Record<string, string> = {
@@ -223,7 +250,7 @@ const getColumnIcon = (status: string) => {
 
 const toggleCollapse = () => {
   collapsed.value = !collapsed.value;
-  emit('column-action', 'collapse', props.column.status);
+  emit('column-action', 'collapse', props.column.status, { collapsed: collapsed.value });
 };
 
 const selectAllTasks = () => {
@@ -239,16 +266,20 @@ const selectAllTasks = () => {
 const handleTaskDragStart = (taskId: string) => {
   console.log('[KanbanColumn] Task drag started:', {
     taskId,
-    columnStatus: props.column.status,
+    ColumnHeaderActions: 'ColumnHeaderActions',
+    ColumnBody: 'ColumnBody',
+    ColumnFooter: 'ColumnFooter',
+  },
+  {
     columnTitle: props.column.title,
     currentTasksCount: props.tasks.length
   });
   draggedTaskId.value = taskId;
 };
 
-const handleTaskDragEnd = () => {
+const handleTaskDragEnd = (taskId?: string) => {
   console.log('[KanbanColumn] Task drag ended:', {
-    taskId: draggedTaskId.value,
+    taskId: taskId || draggedTaskId.value,
     columnStatus: props.column.status,
     wasDragOver: isDragOver.value
   });
