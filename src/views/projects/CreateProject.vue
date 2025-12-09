@@ -732,6 +732,21 @@ const projectData = reactive({
   roles: [] as Role[]
 });
 
+const fetchTokenGateStatus = async () => {
+  try {
+    const response = await fetch(`${API_BASE}/api/projects/token-gate/status`);
+    if (response.ok) {
+      const data = await response.json();
+      tokenGateStatus.value = {
+        skipTokenGate: !!data.skipTokenGate,
+        minimumSizRequired: typeof data.minimumSizRequired === 'number' ? data.minimumSizRequired : DEFAULT_MIN_SIZ
+      };
+    }
+  } catch (err) {
+    console.error('Failed to fetch token gate status:', err);
+  }
+};
+
 const creationMode = ref<'quick' | 'advanced'>('quick');
 
 const quickTemplates = ref<QuickTemplate[]>([
@@ -853,7 +868,7 @@ const canCreateQuickProject = computed(() => {
          !!quickProject.startDate &&
          !!quickProject.endDate &&
          !!quickProject.templateKey &&
-         walletConnected.value &&
+         (!walletRequirementActive.value || walletConnected.value) &&
          meetsSizRequirement.value;
 });
 
@@ -864,7 +879,23 @@ const balanceLoading = ref(false);
 const balanceError = ref('');
 
 // Minimum SIZ balance required for project creation (in whole SIZ units)
-const MIN_SIZ_FOR_PROJECT = 20;
+const DEFAULT_MIN_SIZ = 20;
+const tokenGateStatus = ref<{ skipTokenGate: boolean; minimumSizRequired: number }>({
+  skipTokenGate: false,
+  minimumSizRequired: DEFAULT_MIN_SIZ
+});
+const tokenGateEnforced = computed(() => {
+  const min = typeof tokenGateStatus.value.minimumSizRequired === 'number'
+    ? tokenGateStatus.value.minimumSizRequired
+    : DEFAULT_MIN_SIZ;
+  return !tokenGateStatus.value.skipTokenGate && min > 0;
+});
+const minimumSizRequired = computed(() => tokenGateEnforced.value
+  ? (tokenGateStatus.value.minimumSizRequired ?? DEFAULT_MIN_SIZ)
+  : 0
+);
+const minimumSizRequiredDisplay = computed(() => minimumSizRequired.value.toFixed(2));
+const walletRequirementActive = computed(() => tokenGateEnforced.value);
 
 // Use SSO wallet address from NextAuth instead of manual wallet connection
 const ssoWalletAddress = computed(() => user.value?.walletAddress || '');
@@ -907,14 +938,14 @@ const createQuickProject = async () => {
     return;
   }
 
-  if (!walletConnected.value) {
+  if (walletRequirementActive.value && !walletConnected.value) {
     error.value = 'Your Sizland account does not have an associated SIZ wallet yet. Please open Sizland, configure or generate a wallet, then return to create a project.';
     setTimeout(() => error.value = '', 5000);
     return;
   }
 
   if (!meetsSizRequirement.value) {
-    error.value = `You need at least ${MIN_SIZ_FOR_PROJECT.toFixed(2)} SIZ in your Sizland wallet to create a project.`;
+    error.value = `You need at least ${minimumSizRequiredDisplay.value} SIZ in your Sizland wallet to create a project.`;
     setTimeout(() => error.value = '', 5000);
     return;
   }
@@ -972,8 +1003,12 @@ watch(() => ssoWalletAddress.value, async (addr) => {
 }, { immediate: true });
 
 // Gate strictly on the displayed formattedAmount per product requirement
-const meetsSizRequirement = computed(() => sizBalanceFormatted.value >= MIN_SIZ_FOR_PROJECT);
-const canSubmit = computed(() => !!canCreateProject.value && walletConnected.value && meetsSizRequirement.value);
+const meetsSizRequirement = computed(() => !tokenGateEnforced.value || sizBalanceFormatted.value >= minimumSizRequired.value);
+const canSubmit = computed(() =>
+  !!canCreateProject.value &&
+  (!walletRequirementActive.value || walletConnected.value) &&
+  meetsSizRequirement.value
+);
 
 // Draft state removed
 
@@ -1231,7 +1266,7 @@ const sendProjectToApi = async (onSuccess?: (projectId: string | null) => void) 
       endDate: projectData.endDate,
       ownerId: user.value!.id,
       userId: user.value!.id,
-      walletAddress: ssoWalletAddress.value,
+      walletAddress: ssoWalletAddress.value || null,
       departments: projectData.departments.map((dept) => ({
         name: dept.name,
         type: dept.type as 'MAJOR' | 'MINOR',
@@ -1318,14 +1353,14 @@ const createProject = async () => {
     return;
   }
 
-  if (!ssoWalletAddress.value) {
+  if (walletRequirementActive.value && !ssoWalletAddress.value) {
     error.value = 'Your Sizland account does not have an associated SIZ wallet yet. Please open Sizland, configure or generate a wallet, then return to create a project.';
     setTimeout(() => error.value = '', 5000);
     return;
   }
   
   if (!meetsSizRequirement.value) {
-    error.value = `You need at least ${MIN_SIZ_FOR_PROJECT.toFixed(2)} SIZ in your Sizland wallet to create a project.`;
+    error.value = `You need at least ${minimumSizRequiredDisplay.value} SIZ in your Sizland wallet to create a project.`;
     setTimeout(() => error.value = '', 5000);
     return;
   }
@@ -1366,7 +1401,8 @@ onMounted(async () => {
     // Fetch all configuration data in parallel
     await Promise.all([
       fetchConfigData(),
-      fetchUserPermissions()
+      fetchUserPermissions(),
+      fetchTokenGateStatus()
     ]);
     
     // Add sample data for testing
