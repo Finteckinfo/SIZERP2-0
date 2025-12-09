@@ -213,7 +213,7 @@
                           <v-icon size="small">mdi-currency-usd</v-icon>
                         </template>
                         <div class="text-caption">
-                          Minimum {{ MIN_SIZ_FOR_PROJECT.toFixed(2) }} SIZ required to create a project.
+                          Minimum {{ minimumSizRequiredDisplay }} SIZ required to create a project.
                           <div>
                             Current: {{ sizBalance.toFixed(2) }} SIZ
                           </div>
@@ -612,7 +612,7 @@
                     </template>
                     <div class="d-flex flex-column" style="gap: 8px;">
                       <div>
-                        Minimum {{ MIN_SIZ_FOR_PROJECT.toFixed(2) }} SIZ required to create a project.
+                        Minimum {{ minimumSizRequiredDisplay }} SIZ required to create a project.
                         <span class="ml-1">Current: {{ sizBalance.toFixed(2) }} SIZ</span>
                       </div>
                       <div v-if="balanceError" class="text-error text-caption">{{ balanceError }}</div>
