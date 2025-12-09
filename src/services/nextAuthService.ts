@@ -20,6 +20,10 @@ export class NextAuthService {
     return NextAuthService.instance;
   }
 
+  private isLikelyJwt(token: string | null | undefined): boolean {
+    return !!token && token.includes('.') && token.split('.').length === 3;
+  }
+
   /**
    * Check if NextAuth session exists
    */
@@ -40,32 +44,49 @@ export class NextAuthService {
       return this.tokenCache;
     }
 
-    // Get token from cookie (synchronous)
-    const sessionToken = getCookie('next-auth.session-token') ||
-      getCookie('__Secure-next-auth.session-token') ||
-      getCookie('siz_sso_token');
+    // Check SSO sessionStorage first (guaranteed to be JWT)
+    const ssoToken = this.getValidSsoToken();
+    if (ssoToken) {
+      this.tokenCache = ssoToken;
+      this.tokenExpiry = Date.now() + (10 * 60 * 1000);
+      return ssoToken;
+    }
 
-    if (sessionToken) {
+    // Get token from cookie (synchronous) but only use if it's a JWT
+    const sessionToken = this.getNextAuthCookieToken();
+
+    if (sessionToken && this.isLikelyJwt(sessionToken)) {
       this.tokenCache = sessionToken;
       this.tokenExpiry = Date.now() + (10 * 60 * 1000); // 10 minutes cache
       return sessionToken;
     }
 
-    // Check SSO sessionStorage
+    return null;
+  }
+
+  private getNextAuthCookieToken(): string | null {
+    return getCookie('next-auth.session-token') ||
+      getCookie('__Secure-next-auth.session-token') ||
+      getCookie('siz_sso_token');
+  }
+
+  private getValidSsoToken(): string | null {
     const ssoToken = sessionStorage.getItem('erp_session_token');
-    if (ssoToken) {
-      const timestamp = sessionStorage.getItem('erp_auth_timestamp');
-      if (timestamp) {
-        const age = Date.now() - parseInt(timestamp);
-        if (age < 24 * 60 * 60 * 1000) { // 24 hours
-          this.tokenCache = ssoToken;
-          this.tokenExpiry = Date.now() + (10 * 60 * 1000);
-          return ssoToken;
-        }
-      }
+    if (!ssoToken) return null;
+
+    const timestamp = sessionStorage.getItem('erp_auth_timestamp');
+    if (!timestamp) return null;
+
+    const age = Date.now() - parseInt(timestamp);
+    if (age >= 24 * 60 * 60 * 1000) {
+      sessionStorage.removeItem('erp_user');
+      sessionStorage.removeItem('erp_session_token');
+      sessionStorage.removeItem('erp_auth_timestamp');
+      logger.debug('[NextAuth] SSO session expired');
+      return null;
     }
 
-    return null;
+    return ssoToken;
   }
 
   /**
@@ -87,12 +108,10 @@ export class NextAuthService {
           return this.tokenCache;
         }
 
-        // Get token from cookie
-        const sessionToken = getCookie('next-auth.session-token') ||
-          getCookie('__Secure-next-auth.session-token') ||
-          getCookie('siz_sso_token');
+        // Get token from cookie but only if it looks like a JWT
+        const sessionToken = this.getNextAuthCookieToken();
 
-        if (sessionToken) {
+        if (sessionToken && this.isLikelyJwt(sessionToken)) {
           // PERFORMANCE: Use token directly without backend validation
           // Backend validation happens on actual API calls
           this.tokenCache = sessionToken;
@@ -101,28 +120,11 @@ export class NextAuthService {
         }
       }
 
-      // If no NextAuth session, check for SSO session
-      logger.debug('[NextAuth] No NextAuth session, checking SSO session...');
-      const ssoUser = sessionStorage.getItem('erp_user');
-      const ssoToken = sessionStorage.getItem('erp_session_token');
+      // If no valid NextAuth JWT, check for SSO session token
+      logger.debug('[NextAuth] No valid NextAuth JWT, checking SSO session...');
+      const ssoToken = this.getValidSsoToken();
 
-      if (ssoUser && ssoToken) {
-        // Validate SSO session is still valid (24 hours)
-        const timestamp = sessionStorage.getItem('erp_auth_timestamp');
-        if (timestamp) {
-          const age = Date.now() - parseInt(timestamp);
-          const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-
-          if (age > maxAge) {
-            // Session expired, clear storage
-            sessionStorage.removeItem('erp_user');
-            sessionStorage.removeItem('erp_session_token');
-            sessionStorage.removeItem('erp_auth_timestamp');
-            logger.debug('[NextAuth] SSO session expired');
-            return null;
-          }
-        }
-
+      if (ssoToken) {
         logger.debug('[NextAuth] Using SSO session token');
         this.tokenCache = ssoToken;
         this.tokenExpiry = Date.now() + (10 * 60 * 1000);
@@ -144,47 +146,23 @@ export class NextAuthService {
    * Supports both NextAuth sessions and SSO sessions
    */
   public async getAuthHeaders(): Promise<Record<string, string>> {
-    // First, try to get NextAuth session token
-    const sessionToken = getCookie('next-auth.session-token') ||
-      getCookie('__Secure-next-auth.session-token') ||
-      getCookie('siz_sso_token'); // Add check for SSO token
-
-    if (sessionToken) {
+    // Prefer SSO session token first (guaranteed JWT)
+    const ssoToken = this.getValidSsoToken();
+    if (ssoToken) {
+      logger.debug('[NextAuth] Using SSO session for API authentication');
       return {
-        'Authorization': `Bearer ${sessionToken}`,
+        'Authorization': `Bearer ${ssoToken}`,
         'Content-Type': 'application/json',
       };
     }
 
-    // If no NextAuth session, check for SSO session
-    try {
-      const ssoUser = sessionStorage.getItem('erp_user');
-      const ssoToken = sessionStorage.getItem('erp_session_token');
-
-      if (ssoUser && ssoToken) {
-        // Validate SSO session is still valid (24 hours)
-        const timestamp = sessionStorage.getItem('erp_auth_timestamp');
-        if (timestamp) {
-          const age = Date.now() - parseInt(timestamp);
-          const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-
-          if (age > maxAge) {
-            // Session expired, clear storage
-            sessionStorage.removeItem('erp_user');
-            sessionStorage.removeItem('erp_session_token');
-            sessionStorage.removeItem('erp_auth_timestamp');
-            throw new Error('SSO session expired');
-          }
-        }
-
-        logger.debug('[NextAuth] Using SSO session for API authentication');
-        return {
-          'Authorization': `Bearer ${ssoToken}`,
-          'Content-Type': 'application/json',
-        };
-      }
-    } catch (error) {
-      logger.warn('[NextAuth] SSO session validation failed:', { error });
+    // Fallback to NextAuth cookie token only if it resembles a JWT
+    const sessionToken = this.getNextAuthCookieToken();
+    if (sessionToken && this.isLikelyJwt(sessionToken)) {
+      return {
+        'Authorization': `Bearer ${sessionToken}`,
+        'Content-Type': 'application/json',
+      };
     }
 
     throw new Error('No NextAuth session available');
