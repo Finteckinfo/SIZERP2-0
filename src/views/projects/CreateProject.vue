@@ -879,7 +879,7 @@ const balanceLoading = ref(false);
 const balanceError = ref('');
 
 // Minimum SIZ balance required for project creation (in whole SIZ units)
-const DEFAULT_MIN_SIZ = 20;
+const DEFAULT_MIN_SIZ = 0;
 const tokenGateStatus = ref<{ skipTokenGate: boolean; minimumSizRequired: number }>({
   skipTokenGate: false,
   minimumSizRequired: DEFAULT_MIN_SIZ
