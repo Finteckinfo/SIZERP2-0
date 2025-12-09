@@ -97,12 +97,23 @@ export function useAuth() {
     }
   }
 
-  function logout() {
+  async function logout() {
     user.value = null;
     initialized.value = false;
-    // Redirect to primary domain for logout to clear the session cookie
-    const ssoDomain = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land';
-    window.location.href = `${ssoDomain}/api/auth/signout?callbackUrl=${ssoDomain}`;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    try {
+      await fetch(`${backendUrl}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (error) {
+      console.warn('Logout request failed:', error);
+    } finally {
+      router.push('/login');
+    }
   }
 
   function redirectToLogin() {

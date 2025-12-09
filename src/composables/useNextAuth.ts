@@ -252,6 +252,26 @@ export function useNextAuth() {
     sessionStorage.removeItem('erp_auth_timestamp');
   };
 
+  const logout = async (redirectUrl?: string) => {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    try {
+      await fetch(`${backendUrl}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (error) {
+      console.warn('[NextAuth] Logout request failed', error);
+    } finally {
+      clearSession();
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      }
+    }
+  };
+
   return {
     isLoaded,
     isSignedIn,
@@ -259,5 +279,6 @@ export function useNextAuth() {
     session: sessionCache,
     validateSession,
     clearSession,
+    logout,
   };
 }

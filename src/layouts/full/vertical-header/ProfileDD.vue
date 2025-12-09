@@ -5,7 +5,7 @@ import { useNextAuth } from '@/composables/useNextAuth'
 
 const swt1 = ref(true)
 const swt2 = ref(false)
-const { user } = useNextAuth()
+const { user, logout } = useNextAuth()
 const ssoDomain = import.meta.env.VITE_SSO_PRIMARY_DOMAIN || 'https://www.siz.land'
 
 // fallback if no name
@@ -19,7 +19,8 @@ function handleManageAccount() {
 
 async function handleLogout() {
   try {
-    window.location.href = `${ssoDomain}/api/auth/signout?callbackUrl=${encodeURIComponent(ssoDomain)}`
+    await logout()
+    window.location.href = '/login'
   } catch (error) {
     console.error('Logout error:', error)
   }
