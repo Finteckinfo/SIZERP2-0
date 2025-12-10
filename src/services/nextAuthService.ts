@@ -25,6 +25,26 @@ export class NextAuthService {
   }
 
   /**
+   * Decode JWT payload
+   */
+  public decodeJWTPayload(token: string): any {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return null;
+    }
+  }
+
+  /**
    * Check if NextAuth session exists
    */
   private hasSession(): boolean {
@@ -145,6 +165,86 @@ export class NextAuthService {
    * Supports both NextAuth sessions and SSO sessions
    */
   public async getAuthHeaders(): Promise<Record<string, string>> {
+    const apiBaseUrl = (import.meta.env.VITE_BACKEND_URL || '').replace(/\/+$/, '');
+
+    // CHECK: Do we have a cached valid backend token?
+    if (this.tokenCache && this.tokenExpiry && Date.now() < this.tokenExpiry) {
+      if (this.isLikelyJwt(this.tokenCache)) {
+        return {
+          'Authorization': `Bearer ${this.tokenCache}`,
+          'Content-Type': 'application/json',
+        };
+      }
+    }
+
+    // SPECIAL HANDLING: Exchange SSO Identity for Backend Token
+    // Because of secret mismatch between Vercel (Frontend) and Render (Backend),
+    // the backend cannot verify the SSO token directly.
+    // WORKAROUND: We use the wallet address to "login" to the backend silently.
+    try {
+      // 1. Get Wallet Address from SSO Token or Storage
+      let walletAddress: string | null = null;
+
+      const ssoCookie = getCookie('siz_sso_token');
+      if (ssoCookie) {
+        const payload = this.decodeJWTPayload(ssoCookie);
+        if (payload?.walletAddress) {
+          walletAddress = payload.walletAddress;
+        } else if (payload?.email && payload.email.endsWith('@wallet.local')) {
+          // Extract wallet from email
+          // Email format: "{8chars}@wallet.local" - not enough info
+          // But wait, the SSO callback stores full user in sessionStorage
+        }
+      }
+
+      if (!walletAddress) {
+        const erpUser = sessionStorage.getItem('erp_user');
+        if (erpUser) {
+          const user = JSON.parse(erpUser);
+          if (user.walletAddress || (user.email && user.email.includes('@wallet.local'))) {
+            // For wallet users, we need the wallet address
+            walletAddress = user.walletAddress || user.address;
+          }
+        }
+      }
+
+      // 2. If we found a wallet address, perform Token Exchange
+      if (walletAddress) {
+        console.log('[NextAuth] 🔄 Exchanging SSO identity for Backend Token:', walletAddress);
+
+        // Call backend wallet-login endpoint
+        // Use fetch directly to avoid infinite loop with interceptors
+        const response = await fetch(`${apiBaseUrl}/api/auth/wallet-login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            walletAddress,
+            domain: window.location.hostname
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.token) {
+            console.log('[NextAuth] ✅ Obtained valid Backend Token via exchange');
+            this.tokenCache = data.token;
+            this.tokenExpiry = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
+
+            return {
+              'Authorization': `Bearer ${data.token}`,
+              'Content-Type': 'application/json',
+            };
+          }
+        } else {
+          console.warn('[NextAuth] Token exchange failed:', response.status);
+        }
+      }
+    } catch (exchangeError) {
+      console.error('[NextAuth] Token exchange error:', exchangeError);
+    }
+
+    // ORIGINAL LOGIC (Fallback if exchange fails or not wallet user)
+
     // PRIORITY 1: Check for siz_sso_token cookie first (this is a proper JWT)
     const ssoTokenCookie = getCookie('siz_sso_token');
     if (ssoTokenCookie && this.isLikelyJwt(ssoTokenCookie)) {
