@@ -3,10 +3,17 @@
  */
 
 export function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) {
-    return parts.pop()?.split(';').shift() || null;
+    const cookieValue = parts.pop()?.split(';').shift() || null;
+    // Debug log for troubleshooting
+    if (cookieValue) {
+      console.log(`[Cookie] Found cookie: ${name} = ${cookieValue.substring(0, 50)}...`);
+    }
+    return cookieValue;
   }
   return null;
 }
@@ -22,9 +29,16 @@ export function deleteCookie(name: string): void {
 }
 
 export function getAllCookies(): Record<string, string> {
+  if (typeof document === 'undefined') return {};
   return document.cookie.split(';').reduce((acc, cookie) => {
     const [key, value] = cookie.trim().split('=');
     if (key) acc[key] = value;
     return acc;
   }, {} as Record<string, string>);
+}
+
+// Debug helper - logs all cookies
+export function debugCookies(): void {
+  console.log('[Cookie] All available cookies:', Object.keys(getAllCookies()));
+  console.log('[Cookie] Raw document.cookie:', document.cookie);
 }

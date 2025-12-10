@@ -120,6 +120,12 @@ router.beforeEach(async (to, from, next) => {
     }
   });
 
+  //DEBUG: Show all available cookies
+  if (typeof window !== 'undefined' && document.cookie) {
+    const { debugCookies } = await import('@/utils/cookies');
+    debugCookies();
+  }
+
   if (authRequired) {
     if (hasSession) {
       // Session exists, proceed
