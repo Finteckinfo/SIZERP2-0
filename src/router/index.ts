@@ -97,16 +97,37 @@ router.beforeEach(async (to, from, next) => {
   const authRequired = !isPublicPage && to.matched.some((record) => record.meta.requiresAuth);
 
   // Check for session (either cookie or sessionStorage from SSO)
-  const hasSession = hasNextAuthSession() || hasSessionStorageAuth();
+  const hasCookieSession = hasNextAuthSession();
+  const hasStorageSession = hasSessionStorageAuth();
+  const hasSession = hasCookieSession || hasStorageSession;
+
+  // DEBUG: Log session detection details
+  console.log('[Router] 🔍 Session Detection Debug:', {
+    path: to.path,
+    authRequired,
+    hasCookieSession,
+    hasStorageSession,
+    hasSession,
+    cookieCheck: {
+      'next-auth.session-token': !!getCookie('next-auth.session-token'),
+      '__Secure-next-auth.session-token': !!getCookie('__Secure-next-auth.session-token'),
+      'siz_sso_token': !!getCookie('siz_sso_token')
+    },
+    sessionStorageCheck: {
+      'erp_user': !!sessionStorage.getItem('erp_user'),
+      'erp_session_token': !!sessionStorage.getItem('erp_session_token'),
+      'erp_auth_timestamp': !!sessionStorage.getItem('erp_auth_timestamp')
+    }
+  });
 
   if (authRequired) {
     if (hasSession) {
       // Session exists, proceed
-      console.log('[Router] Session found, allowing access');
+      console.log('[Router] ✅ Session found, allowing access');
       next();
     } else {
       // No session, redirect to SSO login
-      console.log('[Router] No session, redirecting to SSO login');
+      console.error('[Router] ❌ No session detected, redirecting to SSO login');
       const redirectUrl = encodeURIComponent(window.location.href);
       window.location.href = `${SSO_PRIMARY_DOMAIN}/login?redirect=${redirectUrl}`;
     }
