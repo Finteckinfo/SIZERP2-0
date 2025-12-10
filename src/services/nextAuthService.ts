@@ -140,31 +140,50 @@ export class NextAuthService {
     }
   }
 
-
   /**
    * Get authentication headers for API calls
    * Supports both NextAuth sessions and SSO sessions
    */
   public async getAuthHeaders(): Promise<Record<string, string>> {
-    // Prefer SSO session token first (guaranteed JWT)
+    // PRIORITY 1: Check for siz_sso_token cookie first (this is a proper JWT)
+    const ssoTokenCookie = getCookie('siz_sso_token');
+    if (ssoTokenCookie && this.isLikelyJwt(ssoTokenCookie)) {
+      logger.debug('[NextAuth] Using siz_sso_token cookie for API authentication');
+      console.log('[NextAuth] ✅ Found siz_sso_token cookie, using for API auth');
+      return {
+        'Authorization': `Bearer ${ssoTokenCookie}`,
+        'Content-Type': 'application/json',
+      };
+    }
+
+    // PRIORITY 2: SSO session token from sessionStorage
     const ssoToken = this.getValidSsoToken();
     if (ssoToken) {
       logger.debug('[NextAuth] Using SSO session for API authentication');
+      console.log('[NextAuth] ✅ Found SSO session token, using for API auth');
       return {
         'Authorization': `Bearer ${ssoToken}`,
         'Content-Type': 'application/json',
       };
     }
 
-    // Fallback to NextAuth cookie token only if it resembles a JWT
-    const sessionToken = this.getNextAuthCookieToken();
+    // PRIORITY 3: Fallback to other NextAuth cookie tokens only if they resemble a JWT
+    const sessionToken = getCookie('next-auth.session-token') ||
+      getCookie('__Secure-next-auth.session-token');
     if (sessionToken && this.isLikelyJwt(sessionToken)) {
+      console.log('[NextAuth] ✅ Found next-auth session token, using for API auth');
       return {
         'Authorization': `Bearer ${sessionToken}`,
         'Content-Type': 'application/json',
       };
     }
 
+    console.error('[NextAuth] ❌ No valid authentication token found');
+    console.error('[NextAuth] Available cookies:', {
+      'siz_sso_token': !!getCookie('siz_sso_token'),
+      'next-auth.session-token': !!getCookie('next-auth.session-token'),
+      '__Secure-next-auth.session-token': !!getCookie('__Secure-next-auth.session-token')
+    });
     throw new Error('No NextAuth session available');
   }
 
