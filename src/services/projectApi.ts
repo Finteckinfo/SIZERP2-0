@@ -12,7 +12,7 @@ if (!API_BASE_URL) {
 console.log('🌐 API Base URL configured:', API_BASE_URL || '(missing)');
 
 // Centralized axios instance with proper JWT authentication interceptor
-export const api = axios.create({ 
+export const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000 // 30 second timeout
 });
@@ -25,7 +25,7 @@ api.interceptors.request.use(async (config) => {
       const path = config.url.startsWith('/api') ? config.url : `/api${config.url.startsWith('/') ? '' : '/'}${config.url}`;
       config.url = path;
     }
-    
+
     // Get auth headers from NextAuth session
     const headers = await authService.getAuthHeaders();
     config.headers = {
@@ -80,10 +80,11 @@ api.interceptors.response.use(
 
     // Handle authentication errors globally
     if (error.response?.status === 401) {
-      console.error('🔥 401 ERROR - CALLING AUTH ERROR HANDLER');
-      authService.handleAuthError(error);
+      console.error('🔥 401 ERROR - AUTHENTICATION FAILED');
+      console.error('⚠️ Automatic redirect disabled for debugging');
+      // authService.handleAuthError(error); // Disabled to allow debugging of token issues
     }
-    
+
     return Promise.reject(error);
   }
 );
@@ -403,24 +404,24 @@ export const projectInviteApi = {
   respondToInvite: async (inviteId: string, status: 'ACCEPTED' | 'DECLINED') => {
     // Convert status to the expected response format
     const responseValue = status === 'ACCEPTED' ? 'ACCEPT' : 'DECLINE';
-    const response = await api.put(`/invites/${inviteId}/respond`, { 
-      response: responseValue 
+    const response = await api.put(`/invites/${inviteId}/respond`, {
+      response: responseValue
     });
     return response.data;
   },
 
   // Accept invite (using the existing respond endpoint)
   acceptInvite: async (inviteId: string) => {
-    const response = await api.put(`/invites/${inviteId}/respond`, { 
-      response: 'ACCEPT' 
+    const response = await api.put(`/invites/${inviteId}/respond`, {
+      response: 'ACCEPT'
     });
     return response.data;
   },
 
   // Decline invite (using the existing respond endpoint)
   declineInvite: async (inviteId: string) => {
-    const response = await api.put(`/invites/${inviteId}/respond`, { 
-      response: 'DECLINE' 
+    const response = await api.put(`/invites/${inviteId}/respond`, {
+      response: 'DECLINE'
     });
     return response.data;
   },
@@ -478,17 +479,17 @@ export const userRoleApi = {
         console.log(`⚠️ Endpoint not found, falling back to filtering all project roles`);
         const response = await api.get(`/user-roles/project/${projectId}`);
         const roles = response.data;
-        
+
         // Find the role for the specific user
-        const userRole = Array.isArray(roles) 
+        const userRole = Array.isArray(roles)
           ? roles.find((role: UserRole) => role.userId === userId)
           : null;
-        
+
         // If no role found, throw 404 to maintain expected behavior
         if (!userRole) {
           throw error; // Re-throw original 404
         }
-        
+
         return userRole;
       }
       throw error; // Re-throw other errors
@@ -687,7 +688,7 @@ export const taskApi = {
     sortBy?: 'dueDate' | 'priority' | 'createdAt' | 'title';
     sortOrder?: 'asc' | 'desc';
   }) => {
-    const response = await api.get(`/role-aware/projects/${projectId}/tasks`, { 
+    const response = await api.get(`/role-aware/projects/${projectId}/tasks`, {
       params: { ...params, scope: 'assigned_to_me' }
     });
     return response.data;
@@ -858,12 +859,12 @@ export const authApi = {
   }) => {
     console.log('🔄 Calling sync endpoint with data:', userData);
     console.log('🌐 Full URL:', `${API_BASE_URL}/api/auth/sync-user`);
-    
+
     const response = await api.post('/auth/sync-user', userData);
     console.log('✅ Sync response:', response.data);
     return response.data;
   },
-  
+
   // Get current authenticated user
   getCurrentUser: async () => {
     const response = await api.get('/auth/me');
