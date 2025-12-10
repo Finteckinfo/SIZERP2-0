@@ -222,7 +222,33 @@
                     </div>
                   </div>
 
-                  <div class="mt-4 d-flex justify-end">
+                  <div class="mt-4 d-flex flex-column align-end" style="gap: 8px;">
+                    <v-alert
+                      v-if="!canCreateQuickProject && !submitting"
+                      type="warning"
+                      variant="tonal"
+                      density="compact"
+                      class="mb-2"
+                    >
+                      <template v-slot:prepend>
+                        <v-icon size="small">mdi-alert-circle</v-icon>
+                      </template>
+                      <div class="text-caption">
+                        <strong>Cannot create project:</strong>
+                        <ul class="mt-1 pl-4 mb-0">
+                          <li v-if="!user?.id">User not authenticated - please log in again</li>
+                          <li v-if="!quickFormValid">Please fill in all required fields correctly</li>
+                          <li v-if="!quickProject.name">Project name is required</li>
+                          <li v-if="!quickProject.type">Project type is required</li>
+                          <li v-if="!quickProject.startDate">Start date is required</li>
+                          <li v-if="!quickProject.endDate">End date is required</li>
+                          <li v-if="!quickProject.templateKey">Board template is required</li>
+                          <li v-if="walletRequirementActive && !walletConnected">Wallet not connected - your account needs a wallet address</li>
+                          <li v-if="!meetsSizRequirement">Insufficient SIZ balance (need {{ minimumSizRequiredDisplay }} SIZ, have {{ sizBalance.toFixed(2) }} SIZ)</li>
+                        </ul>
+                      </div>
+                    </v-alert>
+                    
                     <v-btn
                       :color="'var(--erp-accent-green)'"
                       @click="createQuickProject"
@@ -933,18 +959,51 @@ const loadWalletSIZBalance = async () => {
 
 // Quick Project creation: map quickProject fields into projectData, then reuse createProject
 const createQuickProject = async () => {
+  console.log('[CreateProject] Starting Quick Project creation...');
+  console.log('[CreateProject] Validation state:', {
+    userId: user.value?.id,
+    userEmail: user.value?.email,
+    walletAddress: user.value?.walletAddress,
+    quickFormValid: quickFormValid.value,
+    projectName: quickProject.name,
+    projectType: quickProject.type,
+    startDate: quickProject.startDate,
+    endDate: quickProject.endDate,
+    templateKey: quickProject.templateKey,
+    walletRequirementActive: walletRequirementActive.value,
+    walletConnected: walletConnected.value,
+    sizBalance: sizBalance.value,
+    sizBalanceFormatted: sizBalanceFormatted.value,
+    minimumSizRequired: minimumSizRequired.value,
+    meetsSizRequirement: meetsSizRequirement.value,
+    canCreateQuickProject: canCreateQuickProject.value
+  });
+
+  // Enhanced user validation
   if (!user.value?.id) {
-    error.value = 'User not authenticated';
+    console.error('[CreateProject] User not authenticated - missing user ID');
+    error.value = 'User not authenticated. Please log in again.';
+    return;
+  }
+
+  if (!user.value?.email) {
+    console.error('[CreateProject] User email not found in session');
+    error.value = 'User email not found. Please update your profile.';
     return;
   }
 
   if (walletRequirementActive.value && !walletConnected.value) {
+    console.error('[CreateProject] Wallet requirement active but wallet not connected');
     error.value = 'Your Sizland account does not have an associated SIZ wallet yet. Please open Sizland, configure or generate a wallet, then return to create a project.';
     setTimeout(() => error.value = '', 5000);
     return;
   }
 
   if (!meetsSizRequirement.value) {
+    console.error('[CreateProject] Insufficient SIZ balance:', {
+      required: minimumSizRequired.value,
+      actual: sizBalanceFormatted.value
+    });
     error.value = `You need at least ${minimumSizRequiredDisplay.value} SIZ in your Sizland wallet to create a project.`;
     setTimeout(() => error.value = '', 5000);
     return;
@@ -953,7 +1012,14 @@ const createQuickProject = async () => {
   const validationResult = await quickForm.value?.validate();
   const isQuickFormValid = validationResult?.valid ?? quickFormValid.value;
 
+  console.log('[CreateProject] Form validation result:', {
+    validationResult,
+    isQuickFormValid,
+    quickFormValid: quickFormValid.value
+  });
+
   if (!isQuickFormValid) {
+    console.error('[CreateProject] Form validation failed');
     error.value = 'Please fill in all required Quick Project fields.';
     setTimeout(() => error.value = '', 4000);
     return;
@@ -961,10 +1027,14 @@ const createQuickProject = async () => {
 
   const template = selectedQuickTemplate.value;
   if (!template) {
+    console.error('[CreateProject] No template selected');
     error.value = 'Please select a board template for your Quick Project.';
     setTimeout(() => error.value = '', 4000);
     return;
   }
+
+  console.log('[CreateProject] All validations passed, preparing project data...');
+  console.log('[CreateProject] Using template:', template.label, 'with', template.stages.length, 'stages');
 
   // Map quickProject basics into full projectData
   projectData.name = quickProject.name;
@@ -984,14 +1054,22 @@ const createQuickProject = async () => {
     order: idx,
   })));
 
+  console.log('[CreateProject] Departments created:', projectData.departments.length);
+
   // Reset roles and ensure creator is PROJECT_OWNER
   projectData.roles.splice(0, projectData.roles.length);
   ensureOwnerRole();
 
+  console.log('[CreateProject] Roles created:', projectData.roles.length);
+  console.log('[CreateProject] Owner role:', projectData.roles[0]);
+  console.log('[CreateProject] Sending to API...');
+
   await sendProjectToApi((projectId) => {
     if (projectId) {
+      console.log('[CreateProject] Success! Redirecting to project workspace:', projectId);
       router.push(`/projects/${projectId}/workspace?panel=board`);
     } else {
+      console.warn('[CreateProject] Project created but no ID returned, redirecting to projects list');
       router.push('/projects');
     }
   });
@@ -1337,9 +1415,36 @@ const sendProjectToApi = async (onSuccess?: (projectId: string | null) => void) 
       throw new Error('Failed to create project');
     }
   } catch (err) {
-    console.error('[CreateProject] Error creating project:', err);
+    console.error('[CreateProject] ❌ Error creating project:', err);
+    console.error('[CreateProject] Full error details:', {
+      message: err instanceof Error ? err.message : 'Unknown error',
+      response: (err as any)?.response?.data,
+      status: (err as any)?.response?.status,
+      statusText: (err as any)?.response?.statusText,
+      headers: (err as any)?.response?.headers,
+      payload: {
+        name: projectData.name,
+        type: projectData.type,
+        departmentsCount: projectData.departments.length,
+        rolesCount: projectData.roles.length,
+        userId: user.value?.id,
+        walletAddress: ssoWalletAddress.value
+      }
+    });
+    
     const serverMsg = (err as any)?.response?.data?.error || (err as any)?.response?.data?.message;
-    error.value = serverMsg || (err instanceof Error ? err.message : 'Failed to create project');
+    const statusCode = (err as any)?.response?.status;
+    
+    if (statusCode === 401) {
+      error.value = 'Authentication failed. Please log in again.';
+    } else if (statusCode === 403) {
+      error.value = serverMsg || 'Access denied. You may not have permission to create projects.';
+    } else if (statusCode === 400) {
+      error.value = serverMsg || 'Invalid project data. Please check your inputs.';
+    } else {
+      error.value = serverMsg || (err instanceof Error ? err.message : 'Failed to create project');
+    }
+    
     setTimeout(() => error.value = '', 5000);
   } finally {
     submitting.value = false;
@@ -1390,6 +1495,25 @@ watch(projectData.departments, async (newDepartments) => {
     if (newDepartments.length === 0) {
       addDepartment();
     }
+  }
+});
+
+// Debug watcher for Quick Project validation state
+watch(canCreateQuickProject, (value, oldValue) => {
+  if (value !== oldValue) {
+    console.log('[CreateProject] 🔍 canCreateQuickProject changed:', value);
+    console.log('[CreateProject] Validation breakdown:', {
+      hasUser: !!user.value?.id,
+      formValid: quickFormValid.value,
+      hasName: !!quickProject.name,
+      hasType: !!quickProject.type,
+      hasStartDate: !!quickProject.startDate,
+      hasEndDate: !!quickProject.endDate,
+      hasTemplate: !!quickProject.templateKey,
+      walletRequirementActive: walletRequirementActive.value,
+      walletConnected: walletConnected.value,
+      meetsSizRequirement: meetsSizRequirement.value
+    });
   }
 });
 
